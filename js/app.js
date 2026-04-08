@@ -71,7 +71,7 @@ const i18n = {
 };
 
 /** @type {'en'|'fr'} */
-let currentLang = 'en';
+let currentLang = 'fr';
 
 /* ── State ──────────────────────────────────────────────────────── */
 const state = {
