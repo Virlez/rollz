@@ -40,6 +40,7 @@ const i18n = {
     disadvantageTag:    '(Disadvantage)',
     keptLabel:          'kept',
     discardedLabel:     'discarded',
+    advantageFirstOnly: 'Advantage/Disadvantage applies to the first die only',
   },
   fr: {
     tagline:            'Lanceur de Dés JDR',
@@ -67,6 +68,7 @@ const i18n = {
     disadvantageTag:    '(Désavantage)',
     keptLabel:          'gardé',
     discardedLabel:     'écarté',
+    advantageFirstOnly: 'L\'avantage/désavantage ne s\'applique qu\'au premier dé',
   },
 };
 
@@ -77,6 +79,8 @@ let currentLang = 'fr';
 const state = {
   /** @type {Record<number, number>} Map of die faces → count selected */
   selectedDice: {},
+  /** @type {number[]} Ordered list of die sides as clicked */
+  diceOrder: [],
   /** @type {'none'|'advantage'|'disadvantage'} */
   advantageMode: 'none',
   /** @type {Array<{formula: string, total: number, breakdown: string, timestamp: number}>} */
@@ -292,15 +296,20 @@ async function getRandomNumbers(count, sides) {
  */
 async function evaluateTokens(tokens) {
   const mode = state.advantageMode; // 'none' | 'advantage' | 'disadvantage'
-  const doubleRolls = mode !== 'none';
+  const hasAdvantage = mode !== 'none';
+
+  // Identify the first dice token index (advantage applies only to its FIRST die)
+  const firstDiceIdx = tokens.findIndex(tk => tk.type === 'dice');
 
   // Group dice by face count to minimise API requests
   const diceNeeded = {};
-  for (const t of tokens) {
-    if (t.type !== 'dice') continue;
-    const abs = Math.abs(t.count);
-    // If advantage/disadvantage, we need 2× the dice
-    diceNeeded[t.sides] = (diceNeeded[t.sides] || 0) + abs * (doubleRolls ? 2 : 1);
+  for (let i = 0; i < tokens.length; i++) {
+    const tk = tokens[i];
+    if (tk.type !== 'dice') continue;
+    const abs = Math.abs(tk.count);
+    // Only the first die of the first dice group gets doubled
+    const extraForAdvantage = (hasAdvantage && i === firstDiceIdx) ? 1 : 0;
+    diceNeeded[tk.sides] = (diceNeeded[tk.sides] || 0) + abs + extraForAdvantage;
   }
 
   // Fetch all required random numbers in parallel
@@ -322,47 +331,53 @@ async function evaluateTokens(tokens) {
   // Evaluate
   let total = 0;
   const rolls = {};       // kept rolls
-  const rollPairs = {};   // full pairs for advantage display: { kept: [], discarded: [] }
+  const rollPairs = {};   // advantage pair for display (only the first die)
 
-  for (const t of tokens) {
-    if (t.type === 'dice') {
-      const abs  = Math.abs(t.count);
-      const pool = pools[t.sides];
+  for (let i = 0; i < tokens.length; i++) {
+    const tk = tokens[i];
+    if (tk.type === 'dice') {
+      const abs  = Math.abs(tk.count);
+      const pool = pools[tk.sides];
+      const isAdvGroup = hasAdvantage && i === firstDiceIdx;
 
-      if (doubleRolls) {
-        const kept = [];
-        const discarded = [];
-        for (let i = 0; i < abs; i++) {
-          const a = pool.numbers[pool.cursor++];
-          const b = pool.numbers[pool.cursor++];
-          if (mode === 'advantage') {
-            kept.push(Math.max(a, b));
-            discarded.push(Math.min(a, b));
-          } else {
-            kept.push(Math.min(a, b));
-            discarded.push(Math.max(a, b));
-          }
+      if (isAdvGroup) {
+        // First die of this group: roll with advantage (2 rolls, keep best/worst)
+        const a = pool.numbers[pool.cursor++];
+        const b = pool.numbers[pool.cursor++];
+        let keptFirst, discFirst;
+        if (mode === 'advantage') {
+          keptFirst  = Math.max(a, b);
+          discFirst  = Math.min(a, b);
+        } else {
+          keptFirst  = Math.min(a, b);
+          discFirst  = Math.max(a, b);
         }
-        rolls[t.raw] = kept;
-        rollPairs[t.raw] = { kept, discarded, allPairs: [] };
-        // Also store individual pairs for display
-        pool.cursor -= abs * 2;
-        for (let i = 0; i < abs; i++) {
-          const a = pool.numbers[pool.cursor++];
-          const b = pool.numbers[pool.cursor++];
-          rollPairs[t.raw].allPairs.push([a, b]);
-        }
-        const sum = kept.reduce((a, b) => a + b, 0);
-        total += t.count < 0 ? -sum : sum;
+
+        // Remaining dice of this group: normal rolls
+        const restCount = abs - 1;
+        const restDrawn = pool.numbers.slice(pool.cursor, pool.cursor + restCount);
+        pool.cursor += restCount;
+
+        const allKept = [keptFirst, ...restDrawn];
+        rolls[tk.raw] = allKept;
+        rollPairs[tk.raw] = {
+          // Only the first die has a pair
+          advantagePair: [a, b],
+          keptFirst,
+          discFirst,
+          restDrawn,
+        };
+        const sum = allKept.reduce((x, y) => x + y, 0);
+        total += tk.count < 0 ? -sum : sum;
       } else {
         const drawn = pool.numbers.slice(pool.cursor, pool.cursor + abs);
         pool.cursor += abs;
-        rolls[t.raw] = drawn;
-        const sum = drawn.reduce((a, b) => a + b, 0);
-        total += t.count < 0 ? -sum : sum;
+        rolls[tk.raw] = drawn;
+        const sum = drawn.reduce((x, y) => x + y, 0);
+        total += tk.count < 0 ? -sum : sum;
       }
     } else {
-      total += t.value;
+      total += tk.value;
     }
   }
 
@@ -405,35 +420,42 @@ function renderResult(result) {
       const drawn = rolls[t.raw] || [];
       const pairs = rollPairs && rollPairs[t.raw];
 
-      if (pairs && pairs.allPairs.length > 0) {
-        // Advantage/disadvantage: show both dice per pair
-        pairs.allPairs.forEach(([a, b], idx) => {
-          const kept = drawn[idx];
-          const disc = (a === kept) ? b : a;
-          // If both are equal, just show the kept one differently
-          const bothEqual = a === b;
+      if (pairs && pairs.advantagePair) {
+        // ── First die: advantage pair (kept + discarded) ──
+        const [a, b] = pairs.advantagePair;
+        const kept = pairs.keptFirst;
+        const disc = pairs.discFirst;
+        const bothEqual = a === b;
 
-          // Pair container
-          const pairWrap = document.createElement('div');
-          pairWrap.className = 'die-pair';
+        const pairWrap = document.createElement('div');
+        pairWrap.className = 'die-pair';
 
-          // Kept chip
-          const keptChip = document.createElement('div');
-          keptChip.className = 'die-result is-kept';
-          if (kept === t.sides) keptChip.classList.add('is-max');
-          if (kept === 1)       keptChip.classList.add('is-min');
-          keptChip.textContent = String(kept);
-          keptChip.style.animationDelay = `${(rollIndex + idx * 2) * 60}ms`;
+        const keptChip = document.createElement('div');
+        keptChip.className = 'die-result is-kept';
+        if (kept === t.sides) keptChip.classList.add('is-max');
+        if (kept === 1)       keptChip.classList.add('is-min');
+        keptChip.textContent = String(kept);
+        keptChip.style.animationDelay = `${rollIndex * 60}ms`;
 
-          // Discarded chip
-          const discChip = document.createElement('div');
-          discChip.className = 'die-result is-discarded';
-          discChip.textContent = String(disc);
-          discChip.style.animationDelay = `${(rollIndex + idx * 2 + 1) * 60}ms`;
+        const discChip = document.createElement('div');
+        discChip.className = 'die-result is-discarded';
+        discChip.textContent = String(disc);
+        discChip.style.animationDelay = `${(rollIndex + 1) * 60}ms`;
 
-          pairWrap.appendChild(keptChip);
-          if (!bothEqual) pairWrap.appendChild(discChip);
-          diceRow.appendChild(pairWrap);
+        pairWrap.appendChild(keptChip);
+        if (!bothEqual) pairWrap.appendChild(discChip);
+        diceRow.appendChild(pairWrap);
+
+        // ── Remaining dice in this group: normal chips ──
+        const animOffset = rollIndex + 2; // after the pair
+        pairs.restDrawn.forEach((n, idx) => {
+          const chip = document.createElement('div');
+          chip.className = 'die-result';
+          if (n === t.sides)  chip.classList.add('is-max');
+          if (n === 1)        chip.classList.add('is-min');
+          chip.textContent = String(n);
+          chip.style.animationDelay = `${(animOffset + idx) * 60}ms`;
+          diceRow.appendChild(chip);
         });
       } else {
         // Normal mode
@@ -456,7 +478,11 @@ function renderResult(result) {
         sub.textContent = `= ${t.count < 0 ? '-' : ''}${sum}`;
         group.appendChild(sub);
       }
-      rollIndex += drawn.length;
+      // Advance animation counter: pair shows 2 chips + rest, normal shows drawn.length
+      const pairsInfo = rollPairs && rollPairs[t.raw];
+      rollIndex += pairsInfo && pairsInfo.advantagePair
+        ? 2 + pairsInfo.restDrawn.length
+        : drawn.length;
     } else {
       const chip = document.createElement('div');
       chip.className = 'modifier-chip';
@@ -498,7 +524,13 @@ function updateFormulaPreview() {
     return;
   }
 
-  dom.formulaPreview.textContent = '✓  ' + describeFormula(tokens);
+  // Check if advantage is active and there are multiple dice groups
+  const diceTokens = tokens.filter(tk => tk.type === 'dice');
+  const advWarning = (state.advantageMode !== 'none' && diceTokens.length > 1)
+    ? '  ⚠ ' + t('advantageFirstOnly')
+    : '';
+
+  dom.formulaPreview.textContent = '✓  ' + describeFormula(tokens) + advWarning;
   dom.formulaPreview.className   = 'formula-preview is-valid';
   dom.rollBtn.disabled           = false;
 }
@@ -513,6 +545,10 @@ function updateFormulaPreview() {
  */
 function addDieToFormula(sides) {
   state.selectedDice[sides] = (state.selectedDice[sides] || 0) + 1;
+  // Track insertion order — only add to the list the first time this die type is clicked
+  if (!state.diceOrder.includes(sides)) {
+    state.diceOrder.push(sides);
+  }
   rebuildFormulaFromDice();
   updateDiceButtons();
 }
@@ -523,7 +559,7 @@ function addDieToFormula(sides) {
  * typing clears selectedDice so the two modes never mix.
  */
 function rebuildFormulaFromDice() {
-  const diceParts = DICE_SIDES
+  const diceParts = state.diceOrder
     .filter(s => (state.selectedDice[s] || 0) > 0)
     .map(s => `${state.selectedDice[s]}d${s}`);
 
@@ -722,6 +758,7 @@ function init() {
       } else {
         state.advantageMode = 'none';
       }
+      updateFormulaPreview();
     });
   }
   if (dom.disadvantageCheck) {
@@ -732,6 +769,7 @@ function init() {
       } else {
         state.advantageMode = 'none';
       }
+      updateFormulaPreview();
     });
   }
 
@@ -748,6 +786,7 @@ function init() {
   dom.formulaInput.addEventListener('input', () => {
     // Reset selected-dice state when user types manually
     state.selectedDice = {};
+    state.diceOrder = [];
     updateDiceButtons();
     updateFormulaPreview();
   });
@@ -761,6 +800,7 @@ function init() {
   dom.clearBtn.addEventListener('click', () => {
     dom.formulaInput.value = '';
     state.selectedDice = {};
+    state.diceOrder = [];
     updateDiceButtons();
     updateFormulaPreview();
     dom.resultSection.hidden = true;
