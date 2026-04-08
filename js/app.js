@@ -69,7 +69,6 @@ function parseFormula(formula) {
   // Tokenise: each segment starts with an optional +/- then either NdM or a plain integer
   const re = /([+-]?)(\d*)d(\d+)|([+-]?\d+)/gi;
   let match;
-  let first = true;
 
   while ((match = re.exec(str)) !== null) {
     if (match[3] !== undefined) {
@@ -81,13 +80,11 @@ function parseFormula(formula) {
       if (sides < 1 || count < 1) return []; // malformed
       tokens.push({ type: 'dice', count: sign * count, sides, raw: match[0] });
     } else if (match[4] !== undefined) {
-      // Numeric modifier
+      // Numeric modifier (e.g. "+4", "-2", "3")
       const value = parseInt(match[4], 10);
-      // A leading "+" on the very first token is fine; no leading "+" expected by re already
-      if (first && match[4].startsWith('+')) return []; // e.g. "+4" alone is ambiguous
+      if (isNaN(value)) return []; // malformed
       tokens.push({ type: 'modifier', value, raw: match[0] });
     }
-    first = false;
   }
 
   // Sanity: at least one dice token required
