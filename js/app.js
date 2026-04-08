@@ -8,9 +8,67 @@
 
 /* ── Constants ──────────────────────────────────────────────────── */
 const HISTORY_KEY  = 'rollz_history';
+const LANG_KEY     = 'rollz_lang';
 const MAX_HISTORY  = 30;
 const RANDOM_ORG   = 'https://www.random.org/integers/';
 const DICE_SIDES   = [4, 6, 8, 10, 12, 20, 100];
+
+/* ── i18n Dictionaries ──────────────────────────────────────────── */
+const i18n = {
+  en: {
+    tagline:            'TTRPG Dice Roller',
+    diceTitle:          'Choose Your Dice',
+    diceHint:           'Click a die to add it to your formula',
+    formulaTitle:       'Roll Formula',
+    formulaPlaceholder: 'e.g. 2d6 + 4  ·  1d20 - 2  ·  3d8 + 1d4 + 5',
+    formulaPreviewEmpty:'Enter a formula or click dice above',
+    formulaInvalid:     'Formula not recognised — try e.g. 2d6 + 4',
+    rollBtn:            'Roll!',
+    totalLabel:         'Total',
+    historyTitle:       'Roll History',
+    clearAll:           'Clear all',
+    historyEmpty:       'No rolls yet — start rolling!',
+    rolling:            'Rolling…',
+    footerMain:         'True random numbers by <a href="https://www.random.org" target="_blank" rel="noopener noreferrer">random.org</a> &bull; <a href="https://github.com/Virlez/rollz" target="_blank" rel="noopener noreferrer">GitHub</a>',
+    footerNote:         'Falls back to <code>crypto.getRandomValues</code> when random.org is unavailable',
+    errorInvalid:       'Invalid formula. Try something like: 2d6 + 4',
+    errorRoll:          'Roll failed: ',
+    apiOk:              'random.org',
+    apiFallback:        'local fallback',
+    apiUnknown:         'random.org',
+    justNow:            'just now',
+    mAgo:               'm ago',
+    hAgo:               'h ago',
+  },
+  fr: {
+    tagline:            'Lanceur de Dés JDR',
+    diceTitle:          'Choisissez Vos Dés',
+    diceHint:           'Cliquez sur un dé pour l\'ajouter à votre formule',
+    formulaTitle:       'Formule de Lancer',
+    formulaPlaceholder: 'ex. 2d6 + 4  ·  1d20 - 2  ·  3d8 + 1d4 + 5',
+    formulaPreviewEmpty:'Entrez une formule ou cliquez sur les dés',
+    formulaInvalid:     'Formule non reconnue — essayez ex. 2d6 + 4',
+    rollBtn:            'Lancer !',
+    totalLabel:         'Total',
+    historyTitle:       'Historique des Lancers',
+    clearAll:           'Tout effacer',
+    historyEmpty:       'Aucun lancer — commencez à jouer !',
+    rolling:            'Lancer en cours…',
+    footerMain:         'Nombres aléatoires vrais par <a href="https://www.random.org" target="_blank" rel="noopener noreferrer">random.org</a> &bull; <a href="https://github.com/Virlez/rollz" target="_blank" rel="noopener noreferrer">GitHub</a>',
+    footerNote:         'Se rabat sur <code>crypto.getRandomValues</code> quand random.org est indisponible',
+    errorInvalid:       'Formule invalide. Essayez par exemple : 2d6 + 4',
+    errorRoll:          'Le lancer a échoué : ',
+    apiOk:              'random.org',
+    apiFallback:        'fallback local',
+    apiUnknown:         'random.org',
+    justNow:            'à l\'instant',
+    mAgo:               ' min',
+    hAgo:               ' h',
+  },
+};
+
+/** @type {'en'|'fr'} */
+let currentLang = 'en';
 
 /* ── State ──────────────────────────────────────────────────────── */
 const state = {
@@ -21,6 +79,64 @@ const state = {
   /** @type {Array<{formula: string, total: number, breakdown: string, timestamp: number}>} */
   history: [],
 };
+
+/* ── i18n Functions ──────────────────────────────────────────────── */
+
+/**
+ * Get a translated string for the current language.
+ * @param {string} key
+ * @returns {string}
+ */
+function t(key) {
+  return (i18n[currentLang] && i18n[currentLang][key]) || i18n.en[key] || key;
+}
+
+/**
+ * Apply translations to all elements with data-i18n, data-i18n-placeholder, and data-i18n-html.
+ */
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  });
+
+  // Update lang attribute
+  document.documentElement.lang = currentLang;
+
+  // Update lang toggle button — show the flag of the CURRENT language
+  const flagEl = document.getElementById('lang-flag');
+  if (flagEl) flagEl.textContent = currentLang === 'en' ? '🇬🇧' : '🇫🇷';
+}
+
+/**
+ * Toggle between EN and FR, persist, and re-apply.
+ */
+function toggleLanguage() {
+  currentLang = currentLang === 'en' ? 'fr' : 'en';
+  try { localStorage.setItem(LANG_KEY, currentLang); } catch {}
+  applyTranslations();
+  // Re-run formula preview to translate its dynamic text
+  updateFormulaPreview();
+  // Re-render API status label
+  setApiStatus(state.apiStatus);
+  // Re-render history to update time labels
+  renderHistory();
+}
+
+/**
+ * Load persisted language preference.
+ */
+function loadLanguage() {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    if (saved === 'fr' || saved === 'en') currentLang = saved;
+  } catch {}
+}
 
 /* ── DOM references ─────────────────────────────────────────────── */
 const dom = {
@@ -314,13 +430,12 @@ function renderResult(result) {
 
 /** @param {'ok'|'fallback'|'unknown'} status */
 function setApiStatus(status) {
-  if (state.apiStatus === status) return;
-  state.apiStatus = status;
+  if (state.apiStatus !== status) state.apiStatus = status;
   dom.apiBadge.className = `api-badge status-${status}`;
   dom.apiLabel.textContent =
-    status === 'ok'       ? 'random.org'       :
-    status === 'fallback' ? 'local fallback'   :
-                            'random.org';
+    status === 'ok'       ? t('apiOk')       :
+    status === 'fallback' ? t('apiFallback') :
+                            t('apiUnknown');
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -332,14 +447,14 @@ function updateFormulaPreview() {
   const tokens = parseFormula(raw);
 
   if (!raw) {
-    dom.formulaPreview.textContent = 'Enter a formula or click dice above';
+    dom.formulaPreview.textContent = t('formulaPreviewEmpty');
     dom.formulaPreview.className   = 'formula-preview';
     dom.rollBtn.disabled           = true;
     return;
   }
 
   if (tokens.length === 0) {
-    dom.formulaPreview.textContent = 'Formula not recognised — try e.g. 2d6 + 4';
+    dom.formulaPreview.textContent = t('formulaInvalid');
     dom.formulaPreview.className   = 'formula-preview is-invalid';
     dom.rollBtn.disabled           = true;
     return;
@@ -487,10 +602,10 @@ function escapeHtml(str) {
 /** Format a timestamp as a relative time string. */
 function formatTime(ts) {
   const diff = Date.now() - ts;
-  if (diff < 60_000)  return 'just now';
-  if (diff < 3600_000) return `${Math.floor(diff / 60_000)}m ago`;
-  if (diff < 86_400_000) return `${Math.floor(diff / 3600_000)}h ago`;
-  return new Date(ts).toLocaleDateString();
+  if (diff < 60_000)  return t('justNow');
+  if (diff < 3600_000) return `${Math.floor(diff / 60_000)}${t('mAgo')}`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3600_000)}${t('hAgo')}`;
+  return new Date(ts).toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-GB');
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -502,7 +617,7 @@ async function doRoll() {
   const tokens = parseFormula(raw);
 
   if (tokens.length === 0) {
-    showError('Invalid formula. Try something like: 2d6 + 4');
+    showError(t('errorInvalid'));
     return;
   }
 
@@ -534,7 +649,7 @@ async function doRoll() {
       timestamp: Date.now(),
     });
   } catch (err) {
-    showError(`Roll failed: ${err.message}`);
+    showError(`${t('errorRoll')}${err.message}`);
   } finally {
     dom.rollBtn.disabled = false;
     dom.rollBtn.classList.remove('is-rolling');
@@ -548,8 +663,16 @@ async function doRoll() {
    ═══════════════════════════════════════════════════════════════════ */
 
 function init() {
+  // Load persisted language
+  loadLanguage();
+  applyTranslations();
+
   // Load persisted history
   loadHistory();
+
+  // Language toggle
+  const langToggle = document.getElementById('lang-toggle');
+  if (langToggle) langToggle.addEventListener('click', toggleLanguage);
 
   // Dice button clicks
   document.querySelectorAll('.die-btn').forEach(btn => {

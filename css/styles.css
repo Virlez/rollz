@@ -177,6 +177,44 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 }
 
 /* API badge */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+/* Language toggle */
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--clr-border);
+  user-select: none;
+  transition: background var(--tr), border-color var(--tr), transform var(--tr), box-shadow var(--tr);
+}
+
+.lang-toggle:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(240,180,41,0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(240,180,41,0.2);
+}
+
+.lang-toggle:active {
+  transform: scale(0.9);
+}
+
+.lang-flag {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+/* API badge */
 .api-badge {
   display: flex;
   align-items: center;

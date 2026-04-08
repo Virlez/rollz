@@ -39,13 +39,18 @@
           </div>
           <div class="logo-text">
             <h1>Rollz</h1>
-            <p class="logo-tagline">TTRPG Dice Roller</p>
+            <p class="logo-tagline" data-i18n="tagline">TTRPG Dice Roller</p>
           </div>
         </div>
 
-        <div class="api-badge" id="api-badge" title="Randomness source status">
-          <span class="api-dot" id="api-dot"></span>
-          <span class="api-label" id="api-label">random.org</span>
+        <div class="header-actions">
+          <button class="lang-toggle" id="lang-toggle" aria-label="Switch language" title="Switch language">
+            <span class="lang-flag" id="lang-flag">🇬🇧</span>
+          </button>
+          <div class="api-badge" id="api-badge" title="Randomness source status">
+            <span class="api-dot" id="api-dot"></span>
+            <span class="api-label" id="api-label">random.org</span>
+          </div>
         </div>
       </div>
     </header>
@@ -56,8 +61,8 @@
 
         <!-- Dice selector -->
         <section class="card" aria-labelledby="dice-heading">
-          <h2 id="dice-heading" class="card-title">Choose Your Dice</h2>
-          <p class="card-hint">Click a die to add it to your formula</p>
+          <h2 id="dice-heading" class="card-title" data-i18n="diceTitle">Choose Your Dice</h2>
+          <p class="card-hint" data-i18n="diceHint">Click a die to add it to your formula</p>
           <div class="dice-grid" role="group" aria-label="Dice type selector">
 
             <!-- ─── D4 · Green Triangle ─── -->
@@ -398,7 +403,7 @@
 
         <!-- Formula input -->
         <section class="card" aria-labelledby="formula-heading">
-          <h2 id="formula-heading" class="card-title">Roll Formula</h2>
+          <h2 id="formula-heading" class="card-title" data-i18n="formulaTitle">Roll Formula</h2>
           <div class="formula-row">
             <div class="formula-input-wrap">
               <span class="formula-icon" aria-hidden="true">⚄</span>
@@ -407,6 +412,7 @@
                 id="formula-input"
                 class="formula-input"
                 placeholder="e.g. 2d6 + 4  ·  1d20 - 2  ·  3d8 + 1d4 + 5"
+                data-i18n-placeholder="formulaPlaceholder"
                 aria-label="Dice roll formula"
                 autocomplete="off"
                 spellcheck="false"
@@ -417,7 +423,7 @@
                 </svg>
               </button>
             </div>
-            <p class="formula-preview" id="formula-preview" role="status" aria-live="polite">
+            <p class="formula-preview" id="formula-preview" role="status" aria-live="polite" data-i18n="formulaPreviewEmpty">
               Enter a formula or click dice above
             </p>
           </div>
@@ -434,7 +440,7 @@
               <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" stroke="none"/>
               <circle cx="12"   cy="12"   r="1.5" fill="currentColor" stroke="none"/>
             </svg>
-            <span>Roll!</span>
+            <span data-i18n="rollBtn">Roll!</span>
           </button>
         </div>
 
@@ -453,7 +459,7 @@
             <div class="result-formula" id="result-formula"></div>
             <div class="result-breakdown" id="result-breakdown"></div>
             <div class="result-total-row">
-              <span class="result-total-label">Total</span>
+              <span class="result-total-label" data-i18n="totalLabel">Total</span>
               <span class="result-total" id="result-total"></span>
             </div>
           </div>
@@ -462,8 +468,8 @@
         <!-- Roll history -->
         <section class="card history-card" aria-labelledby="history-heading">
           <div class="history-header">
-            <h2 id="history-heading" class="card-title">Roll History</h2>
-            <button class="btn-ghost" id="clear-history-btn" aria-label="Clear roll history">
+            <h2 id="history-heading" class="card-title" data-i18n="historyTitle">Roll History</h2>
+            <button class="btn-ghost" id="clear-history-btn" aria-label="Clear roll history" data-i18n="clearAll">
               Clear all
             </button>
           </div>
@@ -473,7 +479,7 @@
                 <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
                 <rect x="9" y="3" width="6" height="4" rx="1"/>
               </svg>
-              <p>No rolls yet — start rolling!</p>
+              <p data-i18n="historyEmpty">No rolls yet — start rolling!</p>
             </div>
           </div>
         </section>
@@ -483,13 +489,13 @@
 
     <!-- ── Footer ─────────────────────────────────────────────────── -->
     <footer class="footer">
-      <p>
+      <p data-i18n-html="footerMain">
         True random numbers by
         <a href="https://www.random.org" target="_blank" rel="noopener noreferrer">random.org</a>
         &bull;
         <a href="https://github.com/Virlez/rollz" target="_blank" rel="noopener noreferrer">GitHub</a>
       </p>
-      <p class="footer-note">Falls back to <code>crypto.getRandomValues</code> when random.org is unavailable</p>
+      <p class="footer-note" data-i18n-html="footerNote">Falls back to <code>crypto.getRandomValues</code> when random.org is unavailable</p>
     </footer>
 
   </div><!-- /.app -->
@@ -501,7 +507,7 @@
         <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="5"
           stroke-dasharray="94 31" stroke-linecap="round"/>
       </svg>
-      <p>Rolling…</p>
+      <p data-i18n="rolling">Rolling…</p>
     </div>
   </div>
 
