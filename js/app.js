@@ -39,6 +39,12 @@ const i18n = {
     justNow:            'just now',
     mAgo:               'm ago',
     hAgo:               'h ago',
+    advantageLabel:     'Advantage',
+    disadvantageLabel:  'Disadvantage',
+    advantageTag:       '(Advantage)',
+    disadvantageTag:    '(Disadvantage)',
+    keptLabel:          'kept',
+    discardedLabel:     'discarded',
   },
   fr: {
     tagline:            'Lanceur de Dés JDR',
@@ -64,6 +70,12 @@ const i18n = {
     justNow:            'à l\'instant',
     mAgo:               ' min',
     hAgo:               ' h',
+    advantageLabel:     'Avantage',
+    disadvantageLabel:  'Désavantage',
+    advantageTag:       '(Avantage)',
+    disadvantageTag:    '(Désavantage)',
+    keptLabel:          'gardé',
+    discardedLabel:     'écarté',
   },
 };
 
@@ -76,6 +88,8 @@ const state = {
   selectedDice: {},
   /** @type {'ok'|'fallback'|'unknown'} */
   apiStatus: 'unknown',
+  /** @type {'none'|'advantage'|'disadvantage'} */
+  advantageMode: 'none',
   /** @type {Array<{formula: string, total: number, breakdown: string, timestamp: number}>} */
   history: [],
 };
@@ -157,6 +171,8 @@ const dom = {
   apiBadge:         document.getElementById('api-badge'),
   apiLabel:         document.getElementById('api-label'),
   spinnerOverlay:   document.getElementById('spinner-overlay'),
+  advantageCheck:    /** @type {HTMLInputElement} */ (document.getElementById('advantage-check')),
+  disadvantageCheck: /** @type {HTMLInputElement} */ (document.getElementById('disadvantage-check')),
 };
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -302,16 +318,23 @@ async function getRandomNumbers(count, sides) {
 
 /**
  * Evaluate a parsed formula, fetching random numbers.
+ * When advantage/disadvantage is active, each individual die is rolled twice
+ * and the best (advantage) or worst (disadvantage) is kept.
+ * Modifiers are simply added on top.
  * @param {Token[]} tokens
  * @returns {Promise<RollResult>}
  */
 async function evaluateTokens(tokens) {
+  const mode = state.advantageMode; // 'none' | 'advantage' | 'disadvantage'
+  const doubleRolls = mode !== 'none';
+
   // Group dice by face count to minimise API requests
   const diceNeeded = {};
   for (const t of tokens) {
     if (t.type !== 'dice') continue;
     const abs = Math.abs(t.count);
-    diceNeeded[t.sides] = (diceNeeded[t.sides] || 0) + abs;
+    // If advantage/disadvantage, we need 2× the dice
+    diceNeeded[t.sides] = (diceNeeded[t.sides] || 0) + abs * (doubleRolls ? 2 : 1);
   }
 
   // Fetch all required random numbers in parallel
@@ -335,24 +358,52 @@ async function evaluateTokens(tokens) {
 
   // Evaluate
   let total = 0;
-  const rolls = {};
+  const rolls = {};       // kept rolls
+  const rollPairs = {};   // full pairs for advantage display: { kept: [], discarded: [] }
 
   for (const t of tokens) {
     if (t.type === 'dice') {
       const abs  = Math.abs(t.count);
       const pool = pools[t.sides];
-      const drawn = pool.numbers.slice(pool.cursor, pool.cursor + abs);
-      pool.cursor += abs;
 
-      rolls[`${t.raw}`] = drawn;
-      const sum = drawn.reduce((a, b) => a + b, 0);
-      total += t.count < 0 ? -sum : sum;
+      if (doubleRolls) {
+        const kept = [];
+        const discarded = [];
+        for (let i = 0; i < abs; i++) {
+          const a = pool.numbers[pool.cursor++];
+          const b = pool.numbers[pool.cursor++];
+          if (mode === 'advantage') {
+            kept.push(Math.max(a, b));
+            discarded.push(Math.min(a, b));
+          } else {
+            kept.push(Math.min(a, b));
+            discarded.push(Math.max(a, b));
+          }
+        }
+        rolls[t.raw] = kept;
+        rollPairs[t.raw] = { kept, discarded, allPairs: [] };
+        // Also store individual pairs for display
+        pool.cursor -= abs * 2;
+        for (let i = 0; i < abs; i++) {
+          const a = pool.numbers[pool.cursor++];
+          const b = pool.numbers[pool.cursor++];
+          rollPairs[t.raw].allPairs.push([a, b]);
+        }
+        const sum = kept.reduce((a, b) => a + b, 0);
+        total += t.count < 0 ? -sum : sum;
+      } else {
+        const drawn = pool.numbers.slice(pool.cursor, pool.cursor + abs);
+        pool.cursor += abs;
+        rolls[t.raw] = drawn;
+        const sum = drawn.reduce((a, b) => a + b, 0);
+        total += t.count < 0 ? -sum : sum;
+      }
     } else {
       total += t.value;
     }
   }
 
-  return { total, tokens, rolls, usedApi };
+  return { total, tokens, rolls, rollPairs, usedApi, advantageMode: mode };
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -364,10 +415,13 @@ async function evaluateTokens(tokens) {
  * @param {RollResult} result
  */
 function renderResult(result) {
-  const { total, tokens, rolls } = result;
+  const { total, tokens, rolls, rollPairs, advantageMode } = result;
 
-  // Reconstruct formula string
-  dom.resultFormula.textContent = describeFormula(tokens);
+  // Reconstruct formula string + advantage tag
+  let formulaStr = describeFormula(tokens);
+  if (advantageMode === 'advantage')    formulaStr += '  ' + t('advantageTag');
+  if (advantageMode === 'disadvantage') formulaStr += '  ' + t('disadvantageTag');
+  dom.resultFormula.textContent = formulaStr;
 
   // Breakdown
   dom.resultBreakdown.innerHTML = '';
@@ -386,15 +440,50 @@ function renderResult(result) {
       const diceRow = document.createElement('div');
       diceRow.className = 'breakdown-dice';
       const drawn = rolls[t.raw] || [];
-      drawn.forEach((n, idx) => {
-        const chip = document.createElement('div');
-        chip.className = 'die-result';
-        if (n === t.sides)  chip.classList.add('is-max');
-        if (n === 1)        chip.classList.add('is-min');
-        chip.textContent = String(n);
-        chip.style.animationDelay = `${(rollIndex + idx) * 60}ms`;
-        diceRow.appendChild(chip);
-      });
+      const pairs = rollPairs && rollPairs[t.raw];
+
+      if (pairs && pairs.allPairs.length > 0) {
+        // Advantage/disadvantage: show both dice per pair
+        pairs.allPairs.forEach(([a, b], idx) => {
+          const kept = drawn[idx];
+          const disc = (a === kept) ? b : a;
+          // If both are equal, just show the kept one differently
+          const bothEqual = a === b;
+
+          // Pair container
+          const pairWrap = document.createElement('div');
+          pairWrap.className = 'die-pair';
+
+          // Kept chip
+          const keptChip = document.createElement('div');
+          keptChip.className = 'die-result is-kept';
+          if (kept === t.sides) keptChip.classList.add('is-max');
+          if (kept === 1)       keptChip.classList.add('is-min');
+          keptChip.textContent = String(kept);
+          keptChip.style.animationDelay = `${(rollIndex + idx * 2) * 60}ms`;
+
+          // Discarded chip
+          const discChip = document.createElement('div');
+          discChip.className = 'die-result is-discarded';
+          discChip.textContent = String(disc);
+          discChip.style.animationDelay = `${(rollIndex + idx * 2 + 1) * 60}ms`;
+
+          pairWrap.appendChild(keptChip);
+          if (!bothEqual) pairWrap.appendChild(discChip);
+          diceRow.appendChild(pairWrap);
+        });
+      } else {
+        // Normal mode
+        drawn.forEach((n, idx) => {
+          const chip = document.createElement('div');
+          chip.className = 'die-result';
+          if (n === t.sides)  chip.classList.add('is-max');
+          if (n === 1)        chip.classList.add('is-min');
+          chip.textContent = String(n);
+          chip.style.animationDelay = `${(rollIndex + idx) * 60}ms`;
+          diceRow.appendChild(chip);
+        });
+      }
       group.appendChild(diceRow);
 
       if (drawn.length > 1) {
@@ -634,13 +723,15 @@ async function doRoll() {
     renderResult(result);
 
     // Build compact breakdown summary for history
+    const advTag = result.advantageMode === 'advantage'    ? ` ${t('advantageTag')}` :
+                   result.advantageMode === 'disadvantage' ? ` ${t('disadvantageTag')}` : '';
     const breakdownSummary = tokens.map(t => {
       if (t.type === 'dice') {
         const drawn = result.rolls[t.raw] || [];
         return `[${drawn.join(', ')}]`;
       }
       return String(t.value);
-    }).join(' ');
+    }).join(' ') + advTag;
 
     pushHistory({
       formula:   raw,
@@ -673,6 +764,28 @@ function init() {
   // Language toggle
   const langToggle = document.getElementById('lang-toggle');
   if (langToggle) langToggle.addEventListener('click', toggleLanguage);
+
+  // Advantage / Disadvantage toggles (mutually exclusive)
+  if (dom.advantageCheck) {
+    dom.advantageCheck.addEventListener('change', () => {
+      if (dom.advantageCheck.checked) {
+        dom.disadvantageCheck.checked = false;
+        state.advantageMode = 'advantage';
+      } else {
+        state.advantageMode = 'none';
+      }
+    });
+  }
+  if (dom.disadvantageCheck) {
+    dom.disadvantageCheck.addEventListener('change', () => {
+      if (dom.disadvantageCheck.checked) {
+        dom.advantageCheck.checked = false;
+        state.advantageMode = 'disadvantage';
+      } else {
+        state.advantageMode = 'none';
+      }
+    });
+  }
 
   // Dice button clicks
   document.querySelectorAll('.die-btn').forEach(btn => {

@@ -500,6 +500,129 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 .formula-preview.is-valid   { color: var(--clr-green); }
 .formula-preview.is-invalid { color: var(--clr-red); }
 
+/* ── Advantage / Disadvantage Toggle ────────────────────────────── */
+.advantage-row {
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.advantage-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  cursor: pointer;
+  user-select: none;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-full);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--clr-border);
+  transition: background var(--tr), border-color var(--tr), box-shadow var(--tr);
+}
+
+.advantage-toggle:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.15);
+}
+
+/* Hide native checkbox */
+.advantage-check {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Custom switch track */
+.advantage-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border-radius: var(--r-full);
+  background: var(--clr-surface-2);
+  border: 1px solid var(--clr-border);
+  transition: background var(--tr), border-color var(--tr), box-shadow var(--tr);
+  flex-shrink: 0;
+}
+
+/* Switch thumb */
+.advantage-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--clr-text-3);
+  transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1), background var(--tr);
+}
+
+/* Checked state — advantage (green) */
+.advantage-check:checked + .advantage-switch {
+  background: rgba(16,185,129,0.2);
+  border-color: var(--clr-green);
+  box-shadow: 0 0 12px rgba(16,185,129,0.3);
+}
+
+.advantage-check:checked + .advantage-switch::after {
+  transform: translateX(16px);
+  background: var(--clr-green);
+}
+
+/* Checked state — disadvantage (red) */
+.advantage-check:checked + .disadvantage-switch {
+  background: rgba(239,68,68,0.2);
+  border-color: var(--clr-red);
+  box-shadow: 0 0 12px rgba(239,68,68,0.3);
+}
+
+.advantage-check:checked + .disadvantage-switch::after {
+  transform: translateX(16px);
+  background: var(--clr-red);
+}
+
+/* Label text */
+.advantage-text {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--clr-text-2);
+  transition: color var(--tr);
+}
+
+.advantage-check:checked ~ .advantage-text {
+  color: var(--clr-text);
+}
+
+/* Focus visible on the toggle */
+.advantage-check:focus-visible + .advantage-switch {
+  outline: 2px solid var(--clr-gold);
+  outline-offset: 2px;
+}
+
+/* ── Die pair (advantage display) ───────────────────────────────── */
+.die-pair {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.die-result.is-kept {
+  border-width: 2px;
+}
+
+.die-result.is-discarded {
+  opacity: 0.35;
+  text-decoration: line-through;
+  font-size: 0.72rem;
+  min-width: 28px;
+  height: 28px;
+  background: rgba(255,255,255,0.02);
+  border-color: rgba(255,255,255,0.05);
+}
+
 /* ── Roll Button ─────────────────────────────────────────────────── */
 .roll-row {
   display: flex;
@@ -896,4 +1019,5 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   .footer { font-size: 0.88rem; }
   .api-label { font-size: 0.8rem; }
   .container { max-width: 960px; }
+  .advantage-text { font-size: 0.92rem; }
 }
