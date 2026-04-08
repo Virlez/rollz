@@ -115,9 +115,14 @@ function applyTranslations() {
   // Update lang attribute
   document.documentElement.lang = currentLang;
 
-  // Update lang toggle button — show the flag of the CURRENT language
+  // Update lang toggle button — show the flag of the OTHER language (click to switch)
   const flagEl = document.getElementById('lang-flag');
-  if (flagEl) flagEl.textContent = currentLang === 'en' ? '🇬🇧' : '🇫🇷';
+  if (flagEl) {
+    flagEl.src = currentLang === 'en'
+      ? 'https://flagcdn.com/w40/fr.png'
+      : 'https://flagcdn.com/w40/gb.png';
+    flagEl.alt = currentLang === 'en' ? 'FR' : 'EN';
+  }
 }
 
 /**
