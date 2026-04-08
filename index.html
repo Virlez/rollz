@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Rollz — A gorgeous TTRPG dice roller using true random numbers from random.org" />
+  <meta name="theme-color" content="#0f0e17" />
+  <meta property="og:title" content="Rollz — TTRPG Dice Roller" />
+  <meta property="og:description" content="Roll your TTRPG dice with true randomness from random.org" />
+  <meta property="og:type" content="website" />
+  <title>Rollz — TTRPG Dice Roller</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- ── Header ─────────────────────────────────────────────────── -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-icon" aria-hidden="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="50,4 96,28 96,72 50,96 4,72 4,28" fill="none" stroke="currentColor" stroke-width="4"/>
+              <line x1="50" y1="4"  x2="4"  y2="72" stroke="currentColor" stroke-width="2" opacity="0.45"/>
+              <line x1="50" y1="4"  x2="96" y2="72" stroke="currentColor" stroke-width="2" opacity="0.45"/>
+              <line x1="4"  y1="28" x2="96" y2="28" stroke="currentColor" stroke-width="2" opacity="0.45"/>
+              <line x1="4"  y1="72" x2="96" y2="72" stroke="currentColor" stroke-width="2" opacity="0.45"/>
+              <line x1="4"  y1="28" x2="50" y2="96" stroke="currentColor" stroke-width="2" opacity="0.45"/>
+              <line x1="96" y1="28" x2="50" y2="96" stroke="currentColor" stroke-width="2" opacity="0.45"/>
+              <text x="50" y="60" text-anchor="middle" font-size="26" font-weight="bold" fill="currentColor">20</text>
+            </svg>
+          </div>
+          <div class="logo-text">
+            <h1>Rollz</h1>
+            <p class="logo-tagline">TTRPG Dice Roller</p>
+          </div>
+        </div>
+
+        <div class="api-badge" id="api-badge" title="Randomness source status">
+          <span class="api-dot" id="api-dot"></span>
+          <span class="api-label" id="api-label">random.org</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Main ───────────────────────────────────────────────────── -->
+    <main class="main">
+      <div class="container">
+
+        <!-- Dice selector -->
+        <section class="card" aria-labelledby="dice-heading">
+          <h2 id="dice-heading" class="card-title">Choose Your Dice</h2>
+          <p class="card-hint">Click a die to add it to your formula</p>
+          <div class="dice-grid" role="group" aria-label="Dice type selector">
+
+            <button class="die-btn" data-sides="4" aria-label="Add d4 to formula">
+              <div class="die-shape die-d4">
+                <svg viewBox="0 0 100 92" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <polygon points="50,4 96,88 4,88"/>
+                  <line x1="50" y1="4"  x2="50" y2="88" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="4"  y1="88" x2="73" y2="46" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                </svg>
+                <span class="die-num">d4</span>
+              </div>
+              <span class="die-counter" data-count="0" aria-live="polite">0</span>
+            </button>
+
+            <button class="die-btn" data-sides="6" aria-label="Add d6 to formula">
+              <div class="die-shape die-d6">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect x="4" y="4" width="92" height="92" rx="16"/>
+                  <circle cx="30" cy="30" r="7" class="pip"/>
+                  <circle cx="70" cy="30" r="7" class="pip"/>
+                  <circle cx="50" cy="50" r="7" class="pip"/>
+                  <circle cx="30" cy="70" r="7" class="pip"/>
+                  <circle cx="70" cy="70" r="7" class="pip"/>
+                  <circle cx="30" cy="50" r="7" class="pip"/>
+                </svg>
+                <span class="die-num">d6</span>
+              </div>
+              <span class="die-counter" data-count="0" aria-live="polite">0</span>
+            </button>
+
+            <button class="die-btn" data-sides="8" aria-label="Add d8 to formula">
+              <div class="die-shape die-d8">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <polygon points="50,4 96,50 50,96 4,50"/>
+                  <line x1="50" y1="4"  x2="50" y2="96" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="4"  y1="50" x2="96" y2="50" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                </svg>
+                <span class="die-num">d8</span>
+              </div>
+              <span class="die-counter" data-count="0" aria-live="polite">0</span>
+            </button>
+
+            <button class="die-btn" data-sides="10" aria-label="Add d10 to formula">
+              <div class="die-shape die-d10">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <polygon points="50,4 92,32 80,82 20,82 8,32"/>
+                  <line x1="50" y1="4"  x2="20" y2="82" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="50" y1="4"  x2="80" y2="82" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="8"  y1="32" x2="92" y2="32" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                </svg>
+                <span class="die-num">d10</span>
+              </div>
+              <span class="die-counter" data-count="0" aria-live="polite">0</span>
+            </button>
+
+            <button class="die-btn" data-sides="12" aria-label="Add d12 to formula">
+              <div class="die-shape die-d12">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <polygon points="50,4 78,14 95,40 88,70 62,92 38,92 12,70 5,40 22,14"/>
+                  <line x1="50" y1="4"  x2="50" y2="92" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="12" y1="70" x2="88" y2="70" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="5"  y1="40" x2="95" y2="40" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                </svg>
+                <span class="die-num">d12</span>
+              </div>
+              <span class="die-counter" data-count="0" aria-live="polite">0</span>
+            </button>
+
+            <button class="die-btn die-btn--hero" data-sides="20" aria-label="Add d20 to formula">
+              <div class="die-shape die-d20">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <polygon points="50,4 96,28 96,72 50,96 4,72 4,28"/>
+                  <line x1="50" y1="4"  x2="4"  y2="72" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="50" y1="4"  x2="96" y2="72" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="4"  y1="28" x2="96" y2="28" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="4"  y1="72" x2="96" y2="72" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="4"  y1="28" x2="50" y2="96" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="96" y1="28" x2="50" y2="96" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                </svg>
+                <span class="die-num">d20</span>
+              </div>
+              <span class="die-counter" data-count="0" aria-live="polite">0</span>
+            </button>
+
+            <button class="die-btn" data-sides="100" aria-label="Add d100 to formula">
+              <div class="die-shape die-d100">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <circle cx="50" cy="50" r="44"/>
+                  <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="50" y1="6"  x2="50" y2="94" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                  <line x1="6"  y1="50" x2="94" y2="50" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+                </svg>
+                <span class="die-num">d%</span>
+              </div>
+              <span class="die-counter" data-count="0" aria-live="polite">0</span>
+            </button>
+
+          </div><!-- /.dice-grid -->
+        </section>
+
+        <!-- Formula input -->
+        <section class="card" aria-labelledby="formula-heading">
+          <h2 id="formula-heading" class="card-title">Roll Formula</h2>
+          <div class="formula-row">
+            <div class="formula-input-wrap">
+              <span class="formula-icon" aria-hidden="true">⚄</span>
+              <input
+                type="text"
+                id="formula-input"
+                class="formula-input"
+                placeholder="e.g. 2d6 + 4  ·  1d20 - 2  ·  3d8 + 1d4 + 5"
+                aria-label="Dice roll formula"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button class="formula-clear" id="clear-btn" aria-label="Clear formula" title="Clear">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <p class="formula-preview" id="formula-preview" role="status" aria-live="polite">
+              Enter a formula or click dice above
+            </p>
+          </div>
+        </section>
+
+        <!-- Roll button -->
+        <div class="roll-row">
+          <button class="roll-btn" id="roll-btn" aria-label="Roll dice" disabled>
+            <svg class="roll-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="4"/>
+              <circle cx="8.5"  cy="8.5"  r="1.5" fill="currentColor" stroke="none"/>
+              <circle cx="15.5" cy="8.5"  r="1.5" fill="currentColor" stroke="none"/>
+              <circle cx="8.5"  cy="15.5" r="1.5" fill="currentColor" stroke="none"/>
+              <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" stroke="none"/>
+              <circle cx="12"   cy="12"   r="1.5" fill="currentColor" stroke="none"/>
+            </svg>
+            <span>Roll!</span>
+          </button>
+        </div>
+
+        <!-- Error banner -->
+        <div class="error-banner" id="error-banner" role="alert" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v4M12 16h.01"/>
+          </svg>
+          <span id="error-text"></span>
+        </div>
+
+        <!-- Result card -->
+        <section class="result-section" id="result-section" aria-live="polite" aria-atomic="true" hidden>
+          <div class="result-card" id="result-card">
+            <div class="result-formula" id="result-formula"></div>
+            <div class="result-breakdown" id="result-breakdown"></div>
+            <div class="result-total-row">
+              <span class="result-total-label">Total</span>
+              <span class="result-total" id="result-total"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Roll history -->
+        <section class="card history-card" aria-labelledby="history-heading">
+          <div class="history-header">
+            <h2 id="history-heading" class="card-title">Roll History</h2>
+            <button class="btn-ghost" id="clear-history-btn" aria-label="Clear roll history">
+              Clear all
+            </button>
+          </div>
+          <div class="history-list" id="history-list" role="list">
+            <div class="history-empty" id="history-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1"/>
+              </svg>
+              <p>No rolls yet — start rolling!</p>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /.container -->
+    </main>
+
+    <!-- ── Footer ─────────────────────────────────────────────────── -->
+    <footer class="footer">
+      <p>
+        True random numbers by
+        <a href="https://www.random.org" target="_blank" rel="noopener noreferrer">random.org</a>
+        &bull;
+        <a href="https://github.com/Virlez/rollz" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </p>
+      <p class="footer-note">Falls back to <code>crypto.getRandomValues</code> when random.org is unavailable</p>
+    </footer>
+
+  </div><!-- /.app -->
+
+  <!-- Rolling spinner overlay -->
+  <div class="spinner-overlay" id="spinner-overlay" hidden aria-hidden="true">
+    <div class="spinner-box">
+      <svg class="spinner-svg" viewBox="0 0 50 50" aria-hidden="true">
+        <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="5"
+          stroke-dasharray="94 31" stroke-linecap="round"/>
+      </svg>
+      <p>Rolling…</p>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
