@@ -296,15 +296,15 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 }
 
 .die-btn--hero {
-  border-color: rgba(240,180,41,0.25);
-  background: rgba(240,180,41,0.06);
-  color: var(--clr-gold);
+  border-color: rgba(249,115,22,0.3);
+  background: rgba(249,115,22,0.08);
+  color: #fb923c;
 }
 
 .die-btn--hero:hover {
-  background: rgba(240,180,41,0.14);
-  border-color: var(--clr-gold);
-  box-shadow: var(--glow-gold), 0 4px 20px rgba(0,0,0,0.5);
+  background: rgba(249,115,22,0.16);
+  border-color: #f97316;
+  box-shadow: 0 0 24px rgba(249,115,22,0.4), 0 4px 20px rgba(0,0,0,0.5);
 }
 
 .die-btn.is-selected {
@@ -316,8 +316,8 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 
 .die-shape {
   position: relative;
-  width: 52px;
-  height: 52px;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -326,31 +326,51 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 .die-shape svg {
   width: 100%;
   height: 100%;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 3.5;
   overflow: visible;
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), filter 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
 }
 
-/* Die pips (d6 dots) */
-.pip { fill: var(--bg-secondary, rgba(0,0,0,0.55)); stroke: none; }
+/* Hover: lift + glow per die type */
+.die-btn:hover .die-shape svg {
+  transform: translateY(-3px) scale(1.1);
+}
 
-/* Die label overlay */
+.die-btn:active .die-shape svg {
+  transform: scale(0.9);
+  transition-duration: 0.1s;
+}
+
+.die-btn:hover .die-d4 svg   { filter: drop-shadow(0 6px 16px rgba(46,204,113,0.65)); }
+.die-btn:hover .die-d6 svg   { filter: drop-shadow(0 6px 16px rgba(34,211,238,0.6)); }
+.die-btn:hover .die-d8 svg   { filter: drop-shadow(0 6px 16px rgba(168,85,247,0.65)); }
+.die-btn:hover .die-d10 svg  { filter: drop-shadow(0 6px 16px rgba(236,72,153,0.6)); }
+.die-btn:hover .die-d12 svg  { filter: drop-shadow(0 6px 16px rgba(239,68,68,0.6)); }
+.die-btn:hover .die-d20 svg  { filter: drop-shadow(0 6px 20px rgba(249,115,22,0.7)); }
+.die-btn:hover .die-d100 svg { filter: drop-shadow(0 6px 16px rgba(124,58,237,0.65)); }
+
+/* Selected state glow */
+.die-btn.is-selected .die-shape svg {
+  animation: die-pulse 1.8s ease-in-out infinite;
+}
+
+.die-btn.is-selected .die-d4 svg   { filter: drop-shadow(0 4px 14px rgba(46,204,113,0.7)); }
+.die-btn.is-selected .die-d6 svg   { filter: drop-shadow(0 4px 14px rgba(34,211,238,0.65)); }
+.die-btn.is-selected .die-d8 svg   { filter: drop-shadow(0 4px 14px rgba(168,85,247,0.7)); }
+.die-btn.is-selected .die-d10 svg  { filter: drop-shadow(0 4px 14px rgba(236,72,153,0.65)); }
+.die-btn.is-selected .die-d12 svg  { filter: drop-shadow(0 4px 14px rgba(239,68,68,0.65)); }
+.die-btn.is-selected .die-d20 svg  { filter: drop-shadow(0 4px 18px rgba(249,115,22,0.75)); }
+.die-btn.is-selected .die-d100 svg { filter: drop-shadow(0 4px 14px rgba(124,58,237,0.7)); }
+
+@keyframes die-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08) translateY(-2px); }
+}
+
+/* Die label — hidden since numbers are in SVG */
 .die-num {
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  pointer-events: none;
-  white-space: nowrap;
+  display: none;
 }
-
-/* d4 label needs more room */
-.die-d4 .die-num { bottom: -6px; }
 
 /* Counter badge */
 .die-counter {
