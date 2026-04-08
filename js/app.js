@@ -1,7 +1,6 @@
 /**
  * Rollz — TTRPG Dice Roller
- * Uses random.org API for true random numbers, falls back to
- * crypto.getRandomValues when the API is unavailable.
+ * Uses random.org API for true random numbers.
  */
 
 'use strict';
@@ -30,12 +29,8 @@ const i18n = {
     historyEmpty:       'No rolls yet — start rolling!',
     rolling:            'Rolling…',
     footerMain:         'True random numbers by <a href="https://www.random.org" target="_blank" rel="noopener noreferrer">random.org</a> &bull; <a href="https://github.com/Virlez/rollz" target="_blank" rel="noopener noreferrer">GitHub</a>',
-    footerNote:         'Falls back to <code>crypto.getRandomValues</code> when random.org is unavailable',
     errorInvalid:       'Invalid formula. Try something like: 2d6 + 4',
     errorRoll:          'Roll failed: ',
-    apiOk:              'random.org',
-    apiFallback:        'local fallback',
-    apiUnknown:         'random.org',
     justNow:            'just now',
     mAgo:               'm ago',
     hAgo:               'h ago',
@@ -61,12 +56,8 @@ const i18n = {
     historyEmpty:       'Aucun lancer — commencez à jouer !',
     rolling:            'Lancer en cours…',
     footerMain:         'Nombres aléatoires vrais par <a href="https://www.random.org" target="_blank" rel="noopener noreferrer">random.org</a> &bull; <a href="https://github.com/Virlez/rollz" target="_blank" rel="noopener noreferrer">GitHub</a>',
-    footerNote:         'Se rabat sur <code>crypto.getRandomValues</code> quand random.org est indisponible',
     errorInvalid:       'Formule invalide. Essayez par exemple : 2d6 + 4',
     errorRoll:          'Le lancer a échoué : ',
-    apiOk:              'random.org',
-    apiFallback:        'fallback local',
-    apiUnknown:         'random.org',
     justNow:            'à l\'instant',
     mAgo:               ' min',
     hAgo:               ' h',
@@ -86,8 +77,6 @@ let currentLang = 'en';
 const state = {
   /** @type {Record<number, number>} Map of die faces → count selected */
   selectedDice: {},
-  /** @type {'ok'|'fallback'|'unknown'} */
-  apiStatus: 'unknown',
   /** @type {'none'|'advantage'|'disadvantage'} */
   advantageMode: 'none',
   /** @type {Array<{formula: string, total: number, breakdown: string, timestamp: number}>} */
@@ -136,8 +125,6 @@ function toggleLanguage() {
   applyTranslations();
   // Re-run formula preview to translate its dynamic text
   updateFormulaPreview();
-  // Re-render API status label
-  setApiStatus(state.apiStatus);
   // Re-render history to update time labels
   renderHistory();
 }
@@ -168,8 +155,6 @@ const dom = {
   historyList:      document.getElementById('history-list'),
   historyEmpty:     document.getElementById('history-empty'),
   clearHistoryBtn:  document.getElementById('clear-history-btn'),
-  apiBadge:         document.getElementById('api-badge'),
-  apiLabel:         document.getElementById('api-label'),
   spinnerOverlay:   document.getElementById('spinner-overlay'),
   advantageCheck:    /** @type {HTMLInputElement} */ (document.getElementById('advantage-check')),
   disadvantageCheck: /** @type {HTMLInputElement} */ (document.getElementById('disadvantage-check')),
@@ -274,33 +259,13 @@ async function fetchFromRandomOrg(count, min, max) {
 }
 
 /**
- * Secure local fallback using Web Crypto API.
- * @param {number} count
- * @param {number} min
- * @param {number} max
- * @returns {number[]}
- */
-function localRandom(count, min, max) {
-  const range  = max - min + 1;
-  const buffer = new Uint32Array(count);
-  crypto.getRandomValues(buffer);
-  return Array.from(buffer, n => (n % range) + min);
-}
-
-/**
- * Obtain `count` random integers in [1, sides], preferring random.org.
- * Sets state.apiStatus to reflect the source used.
+ * Obtain `count` random integers in [1, sides] from random.org.
  * @param {number} count
  * @param {number} sides
- * @returns {Promise<{ numbers: number[], usedApi: boolean }>}
+ * @returns {Promise<number[]>}
  */
 async function getRandomNumbers(count, sides) {
-  try {
-    const numbers = await fetchFromRandomOrg(count, 1, sides);
-    return { numbers, usedApi: true };
-  } catch {
-    return { numbers: localRandom(count, 1, sides), usedApi: false };
-  }
+  return fetchFromRandomOrg(count, 1, sides);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -311,8 +276,9 @@ async function getRandomNumbers(count, sides) {
  * @typedef {{
  *   total: number,
  *   tokens: Token[],
- *   rolls: Record<number, number[]>,
- *   usedApi: boolean,
+ *   rolls: Record<string, number[]>,
+ *   rollPairs: Record<string, {kept: number[], discarded: number[], allPairs: number[][]}>,
+ *   advantageMode: string,
  * }} RollResult
  */
 
@@ -339,10 +305,9 @@ async function evaluateTokens(tokens) {
 
   // Fetch all required random numbers in parallel
   const fetchPromises = Object.entries(diceNeeded).map(([sides, count]) =>
-    getRandomNumbers(count, Number(sides)).then(res => ({
+    getRandomNumbers(count, Number(sides)).then(numbers => ({
       sides: Number(sides),
-      numbers: res.numbers,
-      usedApi: res.usedApi,
+      numbers,
     }))
   );
 
@@ -350,10 +315,8 @@ async function evaluateTokens(tokens) {
 
   // Build a cursor-map per face count
   const pools = {};
-  let usedApi = true;
-  for (const { sides, numbers, usedApi: api } of fetched) {
+  for (const { sides, numbers } of fetched) {
     pools[sides] = { numbers, cursor: 0 };
-    if (!api) usedApi = false;
   }
 
   // Evaluate
@@ -403,7 +366,7 @@ async function evaluateTokens(tokens) {
     }
   }
 
-  return { total, tokens, rolls, rollPairs, usedApi, advantageMode: mode };
+  return { total, tokens, rolls, rollPairs, advantageMode: mode };
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -511,20 +474,6 @@ function renderResult(result) {
   // Show section
   dom.resultSection.hidden = false;
   dom.resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   UI — API STATUS BADGE
-   ═══════════════════════════════════════════════════════════════════ */
-
-/** @param {'ok'|'fallback'|'unknown'} status */
-function setApiStatus(status) {
-  if (state.apiStatus !== status) state.apiStatus = status;
-  dom.apiBadge.className = `api-badge status-${status}`;
-  dom.apiLabel.textContent =
-    status === 'ok'       ? t('apiOk')       :
-    status === 'fallback' ? t('apiFallback') :
-                            t('apiUnknown');
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -719,7 +668,6 @@ async function doRoll() {
   try {
     const result = await evaluateTokens(tokens);
 
-    setApiStatus(result.usedApi ? 'ok' : 'fallback');
     renderResult(result);
 
     // Build compact breakdown summary for history
