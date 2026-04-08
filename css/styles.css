@@ -867,3 +867,33 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   .api-badge .api-label { display: none; }
   .die-shape { width: 42px; height: 42px; }
 }
+
+/* ── Large screen: bigger text ──────────────────────────────────── */
+@media (min-width: 1200px) {
+  body { font-size: 1.1rem; }
+  .logo-text h1 { font-size: 2rem; }
+  .logo-tagline { font-size: 0.82rem; }
+  .card-title { font-size: 1.15rem; }
+  .card-hint { font-size: 0.92rem; }
+  .die-shape { width: 72px; height: 72px; }
+  .die-counter { min-width: 26px; height: 26px; font-size: 0.82rem; }
+  .formula-input { height: 58px; font-size: 1.15rem; }
+  .formula-input::placeholder { font-size: 0.95rem; }
+  .formula-preview { font-size: 0.92rem; }
+  .roll-btn { font-size: 1.3rem; padding: var(--sp-5) var(--sp-12); }
+  .roll-icon { width: 26px; height: 26px; }
+  .result-formula { font-size: 1.05rem; }
+  .die-result { min-width: 42px; height: 42px; font-size: 1.05rem; }
+  .modifier-chip { height: 42px; font-size: 1.05rem; }
+  .breakdown-label { font-size: 0.78rem; }
+  .breakdown-subtotal { font-size: 0.88rem; }
+  .result-total-label { font-size: 0.85rem; }
+  .result-total { font-size: clamp(3.5rem, 11vw, 6rem); }
+  .history-formula { font-size: 0.95rem; }
+  .history-meta { font-size: 0.78rem; }
+  .history-total { font-size: 1.6rem; }
+  .error-banner { font-size: 1rem; }
+  .footer { font-size: 0.88rem; }
+  .api-label { font-size: 0.8rem; }
+  .container { max-width: 960px; }
+}
