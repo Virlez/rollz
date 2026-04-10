@@ -36,11 +36,20 @@ const i18n = {
     hAgo:               'h ago',
     advantageLabel:     'Advantage',
     disadvantageLabel:  'Disadvantage',
+    successLabel:       'Success Mode',
     advantageTag:       '(Advantage)',
     disadvantageTag:    '(Disadvantage)',
+    successTag:         '(Success Mode)',
     keptLabel:          'kept',
     discardedLabel:     'discarded',
     advantageFirstOnly: 'Advantage/Disadvantage applies to the first die only',
+    successFirstGroupOnly: 'In success mode, only the first dice group is used',
+    successBonusAdded:  'Fixed modifiers are added to successes',
+    successTotalLabel:  'Successes',
+    ignoredLabel:       'ignored',
+    successesSuffix:    'successes',
+    successBonusRerollLabel: 'Bonus reroll',
+    successBonusRerollNote:  'All dice were even: one bonus reroll',
   },
   fr: {
     tagline:            'Lanceur de Dés JDR',
@@ -64,11 +73,20 @@ const i18n = {
     hAgo:               ' h',
     advantageLabel:     'Avantage',
     disadvantageLabel:  'Désavantage',
+    successLabel:       'Mode réussites',
     advantageTag:       '(Avantage)',
     disadvantageTag:    '(Désavantage)',
+    successTag:         '(Réussites)',
     keptLabel:          'gardé',
     discardedLabel:     'écarté',
     advantageFirstOnly: 'L\'avantage/désavantage ne s\'applique qu\'au premier dé',
+    successFirstGroupOnly: 'En mode réussites, seul le premier groupe de dés est pris en compte',
+    successBonusAdded:  'Les bonus fixes sont ajoutés aux réussites',
+    successTotalLabel:  'Réussites',
+    ignoredLabel:       'ignoré',
+    successesSuffix:    'réussites',
+    successBonusRerollLabel: 'Relance bonus',
+    successBonusRerollNote:  'Tous les dés sont pairs : une relance bonus',
   },
 };
 
@@ -83,6 +101,8 @@ const state = {
   diceOrder: [],
   /** @type {'none'|'advantage'|'disadvantage'} */
   advantageMode: 'none',
+  /** @type {boolean} */
+  successMode: false,
   /** @type {Array<{formula: string, total: number, breakdown: string, timestamp: number}>} */
   history: [],
 };
@@ -158,6 +178,7 @@ const dom = {
   resultCard:       document.getElementById('result-card'),
   resultFormula:    document.getElementById('result-formula'),
   resultBreakdown:  document.getElementById('result-breakdown'),
+  resultTotalLabel: document.getElementById('result-total-label'),
   resultTotal:      document.getElementById('result-total'),
   errorBanner:      document.getElementById('error-banner'),
   errorText:        document.getElementById('error-text'),
@@ -167,6 +188,7 @@ const dom = {
   spinnerOverlay:   document.getElementById('spinner-overlay'),
   advantageCheck:    /** @type {HTMLInputElement} */ (document.getElementById('advantage-check')),
   disadvantageCheck: /** @type {HTMLInputElement} */ (document.getElementById('disadvantage-check')),
+  successCheck:      /** @type {HTMLInputElement} */ (document.getElementById('success-check')),
 };
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -286,8 +308,14 @@ async function getRandomNumbers(count, sides) {
  *   total: number,
  *   tokens: Token[],
  *   rolls: Record<string, number[]>,
- *   rollPairs: Record<string, {kept: number[], discarded: number[], allPairs: number[][]}>,
+ *   rollPairs: Record<string, {advantagePair: number[], keptFirst: number, discFirst: number, restDrawn: number[]}>,
  *   advantageMode: string,
+ *   successMode?: boolean,
+ *   countedDiceIndex?: number,
+ *   successesByToken?: Record<string, number>,
+ *   ignoredDiceIndices?: number[],
+ *   successBonusRolls?: number[],
+ *   successBonusCount?: number,
  * }} RollResult
  */
 
@@ -300,6 +328,51 @@ async function getRandomNumbers(count, sides) {
  * @returns {Promise<RollResult>}
  */
 async function evaluateTokens(tokens) {
+  if (state.successMode) {
+    const firstDiceIndex = tokens.findIndex(tk => tk.type === 'dice');
+    const firstDiceToken = firstDiceIndex >= 0 ? tokens[firstDiceIndex] : null;
+
+    if (!firstDiceToken || firstDiceToken.type !== 'dice') {
+      return {
+        total: 0,
+        tokens,
+        rolls: {},
+        rollPairs: {},
+        advantageMode: 'none',
+        successMode: true,
+        countedDiceIndex: undefined,
+        successesByToken: {},
+        ignoredDiceIndices: [],
+      };
+    }
+
+    const diceCount = Math.abs(firstDiceToken.count);
+    const drawn = await getRandomNumbers(diceCount, firstDiceToken.sides);
+    const successCount = drawn.reduce((sum, value) => sum + (value % 2 === 0 ? 1 : 0), 0);
+    const allEven = drawn.length > 0 && drawn.every(value => value % 2 === 0);
+    const successBonusRolls = allEven ? await getRandomNumbers(diceCount, firstDiceToken.sides) : [];
+    const successBonusCount = successBonusRolls.reduce((sum, value) => sum + (value % 2 === 0 ? 1 : 0), 0);
+    const modifierTotal = tokens.reduce((sum, tk) => tk.type === 'modifier' ? sum + tk.value : sum, 0);
+    const ignoredDiceIndices = tokens
+      .map((tk, idx) => ({ tk, idx }))
+      .filter(({ tk, idx }) => tk.type === 'dice' && idx !== firstDiceIndex)
+      .map(({ idx }) => idx);
+
+    return {
+      total: successCount + successBonusCount + modifierTotal,
+      tokens,
+      rolls: { [firstDiceToken.raw]: drawn },
+      rollPairs: {},
+      advantageMode: 'none',
+      successMode: true,
+      countedDiceIndex: firstDiceIndex,
+      successesByToken: { [firstDiceToken.raw]: successCount },
+      ignoredDiceIndices,
+      successBonusRolls,
+      successBonusCount,
+    };
+  }
+
   const mode = state.advantageMode; // 'none' | 'advantage' | 'disadvantage'
   const hasAdvantage = mode !== 'none';
 
@@ -398,100 +471,173 @@ async function evaluateTokens(tokens) {
  * @param {RollResult} result
  */
 function renderResult(result) {
-  const { total, tokens, rolls, rollPairs, advantageMode } = result;
+  const {
+    total,
+    tokens,
+    rolls,
+    rollPairs,
+    advantageMode,
+    successMode,
+    countedDiceIndex,
+    successesByToken,
+    ignoredDiceIndices,
+    successBonusRolls,
+    successBonusCount,
+  } = result;
 
-  // Reconstruct formula string + advantage tag
   let formulaStr = describeFormula(tokens);
   if (advantageMode === 'advantage')    formulaStr += '  ' + t('advantageTag');
   if (advantageMode === 'disadvantage') formulaStr += '  ' + t('disadvantageTag');
+  if (successMode)                      formulaStr += '  ' + t('successTag');
   dom.resultFormula.textContent = formulaStr;
 
-  // Breakdown
+  if (dom.resultTotalLabel) {
+    dom.resultTotalLabel.textContent = successMode ? t('successTotalLabel') : t('totalLabel');
+  }
+
   dom.resultBreakdown.innerHTML = '';
 
   let rollIndex = 0;
-  for (const t of tokens) {
+  for (const [tokenIndex, token] of tokens.entries()) {
     const group = document.createElement('div');
     group.className = 'breakdown-group';
 
-    if (t.type === 'dice') {
-      const label  = document.createElement('div');
+    if (token.type === 'dice') {
+      const isIgnoredInSuccess = Boolean(successMode && ignoredDiceIndices && ignoredDiceIndices.includes(tokenIndex));
+      if (isIgnoredInSuccess) group.classList.add('is-ignored');
+
+      const label = document.createElement('div');
       label.className = 'breakdown-label';
-      label.textContent = t.raw.startsWith('-') ? `(${t.raw.replace(/^-/, '−')})` : t.raw;
+      label.textContent = token.raw.startsWith('-') ? `(${token.raw.replace(/^-/, '−')})` : token.raw;
       group.appendChild(label);
 
       const diceRow = document.createElement('div');
       diceRow.className = 'breakdown-dice';
-      const drawn = rolls[t.raw] || [];
-      const pairs = rollPairs && rollPairs[t.raw];
+      const drawn = rolls[token.raw] || [];
+      const pairs = rollPairs && rollPairs[token.raw];
 
-      if (pairs && pairs.advantagePair) {
-        // ── First die: advantage pair (kept + discarded) ──
-        const [a, b] = pairs.advantagePair;
-        const kept = pairs.keptFirst;
-        const disc = pairs.discFirst;
-        const bothEqual = a === b;
+      if (successMode) {
+        if (tokenIndex === countedDiceIndex) {
+          drawn.forEach((value, idx) => {
+            const chip = document.createElement('div');
+            chip.className = 'die-result';
+            chip.classList.add(value % 2 === 0 ? 'is-success' : 'is-failure');
+            if (value === token.sides) chip.classList.add('is-max');
+            if (value === 1) chip.classList.add('is-min');
+            chip.textContent = String(value);
+            chip.style.animationDelay = `${(rollIndex + idx) * 60}ms`;
+            diceRow.appendChild(chip);
+          });
 
-        const pairWrap = document.createElement('div');
-        pairWrap.className = 'die-pair';
+          if (successBonusRolls && successBonusRolls.length > 0) {
+            const bonusRow = document.createElement('div');
+            bonusRow.className = 'breakdown-dice breakdown-bonus';
 
-        const keptChip = document.createElement('div');
-        keptChip.className = 'die-result is-kept';
-        if (kept === t.sides) keptChip.classList.add('is-max');
-        if (kept === 1)       keptChip.classList.add('is-min');
-        keptChip.textContent = String(kept);
-        keptChip.style.animationDelay = `${rollIndex * 60}ms`;
+            successBonusRolls.forEach((value, idx) => {
+              const chip = document.createElement('div');
+              chip.className = 'die-result';
+              chip.classList.add(value % 2 === 0 ? 'is-success' : 'is-failure');
+              if (value === token.sides) chip.classList.add('is-max');
+              if (value === 1) chip.classList.add('is-min');
+              chip.textContent = String(value);
+              chip.style.animationDelay = `${(rollIndex + drawn.length + idx) * 60}ms`;
+              bonusRow.appendChild(chip);
+            });
 
-        const discChip = document.createElement('div');
-        discChip.className = 'die-result is-discarded';
-        discChip.textContent = String(disc);
-        discChip.style.animationDelay = `${(rollIndex + 1) * 60}ms`;
+            group.appendChild(diceRow);
 
-        pairWrap.appendChild(keptChip);
-        if (!bothEqual) pairWrap.appendChild(discChip);
-        diceRow.appendChild(pairWrap);
+            const bonusLabel = document.createElement('div');
+            bonusLabel.className = 'breakdown-note';
+            bonusLabel.textContent = `${t('successBonusRerollLabel')} • +${successBonusCount || 0}`;
+            group.appendChild(bonusLabel);
+            group.appendChild(bonusRow);
+          } else {
+            group.appendChild(diceRow);
+          }
+        } else {
+          group.appendChild(diceRow);
+        }
 
-        // ── Remaining dice in this group: normal chips ──
-        const animOffset = rollIndex + 2; // after the pair
-        pairs.restDrawn.forEach((n, idx) => {
-          const chip = document.createElement('div');
-          chip.className = 'die-result';
-          if (n === t.sides)  chip.classList.add('is-max');
-          if (n === 1)        chip.classList.add('is-min');
-          chip.textContent = String(n);
-          chip.style.animationDelay = `${(animOffset + idx) * 60}ms`;
-          diceRow.appendChild(chip);
-        });
+        const note = document.createElement('div');
+        note.className = 'breakdown-note';
+        if (isIgnoredInSuccess) {
+          note.textContent = t('ignoredLabel');
+        } else {
+          const successCount = successesByToken && successesByToken[token.raw] ? successesByToken[token.raw] : 0;
+          const totalSuccessCount = successCount + (successBonusCount || 0);
+          note.textContent = successBonusRolls && successBonusRolls.length > 0
+            ? `${t('successBonusRerollNote')} • = ${totalSuccessCount} ${t('successesSuffix')}`
+            : `= ${successCount} ${t('successesSuffix')}`;
+        }
+        group.appendChild(note);
+        rollIndex += drawn.length + (successBonusRolls ? successBonusRolls.length : 0);
       } else {
-        // Normal mode
-        drawn.forEach((n, idx) => {
-          const chip = document.createElement('div');
-          chip.className = 'die-result';
-          if (n === t.sides)  chip.classList.add('is-max');
-          if (n === 1)        chip.classList.add('is-min');
-          chip.textContent = String(n);
-          chip.style.animationDelay = `${(rollIndex + idx) * 60}ms`;
-          diceRow.appendChild(chip);
-        });
-      }
-      group.appendChild(diceRow);
+        if (pairs && pairs.advantagePair) {
+          const [firstRoll, secondRoll] = pairs.advantagePair;
+          const kept = pairs.keptFirst;
+          const discarded = pairs.discFirst;
+          const bothEqual = firstRoll === secondRoll;
 
-      if (drawn.length > 1) {
-        const sub = document.createElement('div');
-        sub.className = 'breakdown-subtotal';
-        const sum = drawn.reduce((a, b) => a + b, 0);
-        sub.textContent = `= ${t.count < 0 ? '-' : ''}${sum}`;
-        group.appendChild(sub);
+          const pairWrap = document.createElement('div');
+          pairWrap.className = 'die-pair';
+
+          const keptChip = document.createElement('div');
+          keptChip.className = 'die-result is-kept';
+          if (kept === token.sides) keptChip.classList.add('is-max');
+          if (kept === 1) keptChip.classList.add('is-min');
+          keptChip.textContent = String(kept);
+          keptChip.style.animationDelay = `${rollIndex * 60}ms`;
+
+          const discardedChip = document.createElement('div');
+          discardedChip.className = 'die-result is-discarded';
+          discardedChip.textContent = String(discarded);
+          discardedChip.style.animationDelay = `${(rollIndex + 1) * 60}ms`;
+
+          pairWrap.appendChild(keptChip);
+          if (!bothEqual) pairWrap.appendChild(discardedChip);
+          diceRow.appendChild(pairWrap);
+
+          const animOffset = rollIndex + 2;
+          pairs.restDrawn.forEach((value, idx) => {
+            const chip = document.createElement('div');
+            chip.className = 'die-result';
+            if (value === token.sides) chip.classList.add('is-max');
+            if (value === 1) chip.classList.add('is-min');
+            chip.textContent = String(value);
+            chip.style.animationDelay = `${(animOffset + idx) * 60}ms`;
+            diceRow.appendChild(chip);
+          });
+        } else {
+          drawn.forEach((value, idx) => {
+            const chip = document.createElement('div');
+            chip.className = 'die-result';
+            if (value === token.sides) chip.classList.add('is-max');
+            if (value === 1) chip.classList.add('is-min');
+            chip.textContent = String(value);
+            chip.style.animationDelay = `${(rollIndex + idx) * 60}ms`;
+            diceRow.appendChild(chip);
+          });
+        }
+
+        group.appendChild(diceRow);
+
+        if (drawn.length > 1) {
+          const sub = document.createElement('div');
+          sub.className = 'breakdown-subtotal';
+          const sum = drawn.reduce((a, b) => a + b, 0);
+          sub.textContent = `= ${token.count < 0 ? '-' : ''}${sum}`;
+          group.appendChild(sub);
+        }
+
+        const pairsInfo = rollPairs && rollPairs[token.raw];
+        rollIndex += pairsInfo && pairsInfo.advantagePair
+          ? 2 + pairsInfo.restDrawn.length
+          : drawn.length;
       }
-      // Advance animation counter: pair shows 2 chips + rest, normal shows drawn.length
-      const pairsInfo = rollPairs && rollPairs[t.raw];
-      rollIndex += pairsInfo && pairsInfo.advantagePair
-        ? 2 + pairsInfo.restDrawn.length
-        : drawn.length;
     } else {
       const chip = document.createElement('div');
       chip.className = 'modifier-chip';
-      chip.textContent = t.value >= 0 ? `+${t.value}` : String(t.value);
+      chip.textContent = token.value >= 0 ? `+${token.value}` : String(token.value);
       chip.style.animationDelay = `${rollIndex * 60}ms`;
       group.appendChild(chip);
     }
@@ -499,10 +645,7 @@ function renderResult(result) {
     dom.resultBreakdown.appendChild(group);
   }
 
-  // Total
   dom.resultTotal.textContent = String(total);
-
-  // Show section
   dom.resultSection.hidden = false;
   dom.resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -529,14 +672,22 @@ function updateFormulaPreview() {
     return;
   }
 
-  // Show warning when advantage/disadvantage is active and more than one die is rolled
   const diceTokens = tokens.filter(tk => tk.type === 'dice');
   const totalDiceCount = diceTokens.reduce((sum, tk) => sum + Math.abs(tk.count), 0);
+  const hasModifiers = tokens.some(tk => tk.type === 'modifier');
   const advWarning = (state.advantageMode !== 'none' && totalDiceCount > 1)
     ? '  ⚠ ' + t('advantageFirstOnly')
     : '';
+  const successWarnings = [];
+  if (state.successMode) {
+    successWarnings.push(`⚠ ${t('successFirstGroupOnly')}`);
+  }
+  if (state.successMode && hasModifiers) {
+    successWarnings.push(`➕ ${t('successBonusAdded')}`);
+  }
+  const successWarning = successWarnings.length > 0 ? `  ${successWarnings.join('  ')}` : '';
 
-  dom.formulaPreview.textContent = '✓  ' + describeFormula(tokens) + advWarning;
+  dom.formulaPreview.textContent = '✓  ' + describeFormula(tokens) + advWarning + successWarning;
   dom.formulaPreview.className   = 'formula-preview is-valid';
   dom.rollBtn.disabled           = false;
 }
@@ -715,13 +866,20 @@ async function doRoll() {
     // Build compact breakdown summary for history
     const advTag = result.advantageMode === 'advantage'    ? ` ${t('advantageTag')}` :
                    result.advantageMode === 'disadvantage' ? ` ${t('disadvantageTag')}` : '';
-    const breakdownSummary = tokens.map(t => {
-      if (t.type === 'dice') {
-        const drawn = result.rolls[t.raw] || [];
+    const successTag = result.successMode ? ` ${t('successTag')}` : '';
+    const breakdownSummary = tokens.map((token, index) => {
+      if (token.type === 'dice') {
+        if (result.successMode && result.ignoredDiceIndices && result.ignoredDiceIndices.includes(index)) {
+          return `[${t('ignoredLabel')}]`;
+        }
+        const drawn = result.rolls[token.raw] || [];
+        if (result.successMode && result.countedDiceIndex === index && result.successBonusRolls && result.successBonusRolls.length > 0) {
+          return `[${drawn.join(', ')}] → [${result.successBonusRolls.join(', ')}]`;
+        }
         return `[${drawn.join(', ')}]`;
       }
-      return String(t.value);
-    }).join(' ') + advTag;
+      return String(token.value);
+    }).join(' ') + advTag + successTag;
 
     pushHistory({
       formula:   raw,
@@ -760,7 +918,9 @@ function init() {
     dom.advantageCheck.addEventListener('change', () => {
       if (dom.advantageCheck.checked) {
         dom.disadvantageCheck.checked = false;
+        if (dom.successCheck) dom.successCheck.checked = false;
         state.advantageMode = 'advantage';
+        state.successMode = false;
       } else {
         state.advantageMode = 'none';
       }
@@ -771,9 +931,24 @@ function init() {
     dom.disadvantageCheck.addEventListener('change', () => {
       if (dom.disadvantageCheck.checked) {
         dom.advantageCheck.checked = false;
+        if (dom.successCheck) dom.successCheck.checked = false;
         state.advantageMode = 'disadvantage';
+        state.successMode = false;
       } else {
         state.advantageMode = 'none';
+      }
+      updateFormulaPreview();
+    });
+  }
+  if (dom.successCheck) {
+    dom.successCheck.addEventListener('change', () => {
+      if (dom.successCheck.checked) {
+        dom.advantageCheck.checked = false;
+        dom.disadvantageCheck.checked = false;
+        state.advantageMode = 'none';
+        state.successMode = true;
+      } else {
+        state.successMode = false;
       }
       updateFormulaPreview();
     });

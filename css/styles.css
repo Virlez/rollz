@@ -558,6 +558,18 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   background: var(--clr-red);
 }
 
+/* Checked state — success mode (purple) */
+.advantage-check:checked + .success-switch {
+  background: rgba(124,58,237,0.22);
+  border-color: var(--clr-purple-lt);
+  box-shadow: 0 0 12px rgba(124,58,237,0.35);
+}
+
+.advantage-check:checked + .success-switch::after {
+  transform: translateX(16px);
+  background: var(--clr-purple-lt);
+}
+
 /* Label text */
 .advantage-text {
   font-size: 0.82rem;
@@ -595,6 +607,23 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   height: 28px;
   background: rgba(255,255,255,0.02);
   border-color: rgba(255,255,255,0.05);
+}
+
+.breakdown-group.is-ignored {
+  opacity: 0.45;
+}
+
+.breakdown-group.is-ignored .breakdown-label {
+  text-decoration: line-through;
+}
+
+.breakdown-note {
+  font-size: 0.72rem;
+  color: var(--clr-text-3);
+}
+
+.breakdown-bonus {
+  margin-top: var(--sp-2);
 }
 
 /* ── Roll Button ─────────────────────────────────────────────────── */
@@ -748,6 +777,20 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   background: rgba(239,68,68,0.1);
   border-color: rgba(239,68,68,0.4);
   color: #fca5a5;
+}
+
+.die-result.is-success {
+  background: rgba(16,185,129,0.16);
+  border-color: rgba(16,185,129,0.5);
+  color: #86efac;
+  box-shadow: 0 0 10px rgba(16,185,129,0.22);
+}
+
+.die-result.is-failure {
+  opacity: 0.55;
+  background: rgba(255,255,255,0.035);
+  border-color: rgba(255,255,255,0.06);
+  color: var(--clr-text-3);
 }
 
 .breakdown-subtotal {
