@@ -529,9 +529,10 @@ function updateFormulaPreview() {
     return;
   }
 
-  // Check if advantage is active and there are multiple dice groups
+  // Show warning when advantage/disadvantage is active and more than one die is rolled
   const diceTokens = tokens.filter(tk => tk.type === 'dice');
-  const advWarning = (state.advantageMode !== 'none' && diceTokens.length > 1)
+  const totalDiceCount = diceTokens.reduce((sum, tk) => sum + Math.abs(tk.count), 0);
+  const advWarning = (state.advantageMode !== 'none' && totalDiceCount > 1)
     ? '  ⚠ ' + t('advantageFirstOnly')
     : '';
 
