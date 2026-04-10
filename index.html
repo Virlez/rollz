@@ -11,6 +11,14 @@
   <title>Rollz — TTRPG Dice Roller</title>
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <script>
+    window.__ROLLZ_ASSET_VERSION__ = encodeURIComponent(document.lastModified || '1');
+
+    const faviconEl = document.querySelector('link[rel="icon"]');
+    if (faviconEl) {
+      faviconEl.href = `favicon.svg?v=${window.__ROLLZ_ASSET_VERSION__}`;
+    }
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,7 +26,12 @@
     href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="css/styles.css" />
+  <script>
+    const stylesheetEl = document.createElement('link');
+    stylesheetEl.rel = 'stylesheet';
+    stylesheetEl.href = `css/styles.css?v=${window.__ROLLZ_ASSET_VERSION__}`;
+    document.head.appendChild(stylesheetEl);
+  </script>
 </head>
 <body>
   <div class="app">
@@ -528,6 +541,10 @@
     </div>
   </div>
 
-  <script src="js/app.js"></script>
+  <script>
+    const appScriptEl = document.createElement('script');
+    appScriptEl.src = `js/app.js?v=${window.__ROLLZ_ASSET_VERSION__}`;
+    document.body.appendChild(appScriptEl);
+  </script>
 </body>
 </html>
