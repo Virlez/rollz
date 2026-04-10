@@ -51,6 +51,9 @@ const i18n = {
     successBonusRerollLabel: 'Bonus reroll',
     successBonusRerollNote:  'All dice were even: one bonus reroll',
     criticalFailure:    'Fumble',
+    offlineBadge:       'Offline mode',
+    offlineRollNote:    '⚡ Secure local draw via Web Crypto',
+    installApp:         'Install app',
   },
   fr: {
     tagline:            'Lanceur de Dés JDR',
@@ -89,6 +92,9 @@ const i18n = {
     successBonusRerollLabel: 'Relance bonus',
     successBonusRerollNote:  'Tous les dés sont pairs : une relance bonus',
     criticalFailure:    'Échec critique',
+    offlineBadge:       'Mode hors-ligne',
+    offlineRollNote:    '⚡ Tirage local sécurisé via Web Crypto',
+    installApp:         'Installer',
   },
 };
 
@@ -107,9 +113,24 @@ const state = {
   successMode: false,
   /** @type {RollResult|null} */
   lastResult: null,
+  /** @type {boolean} */
+  isOffline: navigator.onLine === false,
+  /** @type {'randomorg'|'crypto'} */
+  currentRollSource: 'randomorg',
+  /** @type {BeforeInstallPromptEvent|null} */
+  deferredInstallPrompt: null,
+  /** @type {boolean} */
+  isInstalled: false,
   /** @type {Array<{formula: string, total: number, breakdown: string, timestamp: number}>} */
   history: [],
 };
+
+/**
+ * @typedef {Event & {
+ *   prompt: () => Promise<void>,
+ *   userChoice: Promise<{ outcome: 'accepted'|'dismissed', platform?: string }>
+ * }} BeforeInstallPromptEvent
+ */
 
 /* ── i18n Functions ──────────────────────────────────────────────── */
 
@@ -189,16 +210,23 @@ const dom = {
   resultTotalLabel: document.getElementById('result-total-label'),
   resultTotal:      document.getElementById('result-total'),
   resultTotalNote:  document.getElementById('result-total-note'),
+  resultSourceNote: document.getElementById('result-source-note'),
   errorBanner:      document.getElementById('error-banner'),
   errorText:        document.getElementById('error-text'),
   historyList:      document.getElementById('history-list'),
   historyEmpty:     document.getElementById('history-empty'),
   clearHistoryBtn:  document.getElementById('clear-history-btn'),
   spinnerOverlay:   document.getElementById('spinner-overlay'),
+  offlineBadge:     document.getElementById('offline-badge'),
+  installBtn:       document.getElementById('install-btn'),
   advantageCheck:    /** @type {HTMLInputElement} */ (document.getElementById('advantage-check')),
   disadvantageCheck: /** @type {HTMLInputElement} */ (document.getElementById('disadvantage-check')),
   successCheck:      /** @type {HTMLInputElement} */ (document.getElementById('success-check')),
 };
+
+function isStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    FORMULA PARSER
@@ -299,13 +327,47 @@ async function fetchFromRandomOrg(count, min, max) {
 }
 
 /**
+ * Obtain `count` integers in [1, sides] from Web Crypto without modulo bias.
+ * @param {number} count
+ * @param {number} sides
+ * @returns {number[]}
+ */
+function getCryptoRandomNumbers(count, sides) {
+  if (!window.crypto || typeof window.crypto.getRandomValues !== 'function') {
+    throw new Error('Web Crypto is unavailable');
+  }
+
+  const values = [];
+  const maxUint32 = 0x100000000;
+  const limit = Math.floor(maxUint32 / sides) * sides;
+
+  while (values.length < count) {
+    const batch = new Uint32Array(Math.max(8, count - values.length));
+    window.crypto.getRandomValues(batch);
+
+    for (const randomValue of batch) {
+      if (randomValue >= limit) continue;
+      values.push((randomValue % sides) + 1);
+      if (values.length === count) break;
+    }
+  }
+
+  return values;
+}
+
+/**
  * Obtain `count` random integers in [1, sides] from random.org.
  * @param {number} count
  * @param {number} sides
  * @returns {Promise<number[]>}
  */
 async function getRandomNumbers(count, sides) {
-  return fetchFromRandomOrg(count, 1, sides);
+  try {
+    return await fetchFromRandomOrg(count, 1, sides);
+  } catch (error) {
+    state.currentRollSource = 'crypto';
+    return getCryptoRandomNumbers(count, sides);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -326,6 +388,7 @@ async function getRandomNumbers(count, sides) {
  *   successBonusRolls?: number[],
  *   successBonusCount?: number,
  *   criticalFailure?: boolean,
+ *   randomSource?: 'randomorg'|'crypto',
  * }} RollResult
  */
 
@@ -496,6 +559,7 @@ function renderResult(result) {
     successBonusRolls,
     successBonusCount,
     criticalFailure,
+    randomSource,
   } = result;
 
   let formulaStr = describeFormula(tokens);
@@ -510,6 +574,11 @@ function renderResult(result) {
   if (dom.resultTotalNote) {
     dom.resultTotalNote.textContent = criticalFailure ? t('criticalFailure') : '';
     dom.resultTotalNote.classList.toggle('is-critical', Boolean(criticalFailure));
+  }
+  if (dom.resultSourceNote) {
+    const usedCryptoFallback = randomSource === 'crypto';
+    dom.resultSourceNote.textContent = usedCryptoFallback ? t('offlineRollNote') : '';
+    dom.resultSourceNote.hidden = !usedCryptoFallback;
   }
   dom.resultTotal.classList.toggle('is-critical', Boolean(criticalFailure));
 
@@ -770,6 +839,63 @@ function showError(message) {
   dom.errorBanner.hidden = false;
 }
 
+function updateOfflineUI() {
+  state.isOffline = navigator.onLine === false;
+  if (dom.offlineBadge) {
+    dom.offlineBadge.hidden = !state.isOffline;
+  }
+}
+
+function updateInstallUI() {
+  state.isInstalled = isStandaloneMode();
+  if (!dom.installBtn) return;
+
+  dom.installBtn.hidden = state.isInstalled || !state.deferredInstallPrompt;
+}
+
+async function triggerInstallPrompt() {
+  if (!state.deferredInstallPrompt) return;
+
+  const installPrompt = state.deferredInstallPrompt;
+  state.deferredInstallPrompt = null;
+  updateInstallUI();
+
+  try {
+    await installPrompt.prompt();
+    await installPrompt.userChoice;
+  } catch {}
+
+  updateInstallUI();
+}
+
+function setupInstallPrompt() {
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    state.deferredInstallPrompt = /** @type {BeforeInstallPromptEvent} */ (event);
+    updateInstallUI();
+  });
+
+  window.addEventListener('appinstalled', () => {
+    state.deferredInstallPrompt = null;
+    state.isInstalled = true;
+    updateInstallUI();
+  });
+
+  if (dom.installBtn) {
+    dom.installBtn.addEventListener('click', triggerInstallPrompt);
+  }
+
+  updateInstallUI();
+}
+
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }, { once: true });
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    UI — HISTORY
    ═══════════════════════════════════════════════════════════════════ */
@@ -877,9 +1003,11 @@ async function doRoll() {
   dom.rollBtn.classList.add('is-rolling');
   dom.spinnerOverlay.hidden = false;
   dom.spinnerOverlay.removeAttribute('aria-hidden');
+  state.currentRollSource = 'randomorg';
 
   try {
     const result = await evaluateTokens(tokens);
+    result.randomSource = state.currentRollSource;
 
     state.lastResult = result;
     renderResult(result);
@@ -927,9 +1055,15 @@ function init() {
   // Load persisted language
   loadLanguage();
   applyTranslations();
+  updateOfflineUI();
+  setupInstallPrompt();
+  registerServiceWorker();
 
   // Load persisted history
   loadHistory();
+
+  window.addEventListener('online', updateOfflineUI);
+  window.addEventListener('offline', updateOfflineUI);
 
   // Language toggle
   const langToggle = document.getElementById('lang-toggle');

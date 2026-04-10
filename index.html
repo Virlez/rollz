@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Rollz — A gorgeous TTRPG dice roller using true random numbers from random.org" />
   <meta name="theme-color" content="#0f0e17" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Rollz" />
   <meta property="og:title" content="Rollz — TTRPG Dice Roller" />
   <meta property="og:description" content="Roll your TTRPG dice with true randomness from random.org" />
   <meta property="og:type" content="website" />
@@ -19,24 +22,9 @@
   <title>Rollz — TTRPG Dice Roller</title>
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <script>
-    window.__ROLLZ_ASSET_VERSION__ = encodeURIComponent(document.lastModified || '1');
-
-    const faviconEl = document.querySelector('link[rel="icon"]');
-    if (faviconEl) {
-      faviconEl.href = `favicon.svg?v=${window.__ROLLZ_ASSET_VERSION__}`;
-    }
-  </script>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
-    rel="stylesheet"
-  />
-  <script>
-    document.write(`<link rel="stylesheet" href="css/styles.css?v=${window.__ROLLZ_ASSET_VERSION__}" />`);
-  </script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <div class="app">
@@ -64,6 +52,10 @@
         </div>
 
         <div class="header-actions">
+          <span class="offline-badge" id="offline-badge" data-i18n="offlineBadge" hidden>Mode hors-ligne</span>
+          <button class="install-btn" id="install-btn" type="button" data-i18n="installApp" hidden>
+            Installer
+          </button>
           <button class="lang-toggle" id="lang-toggle" aria-label="Switch language" title="Switch language">
             <img class="lang-flag" id="lang-flag" src="https://flagcdn.com/w40/gb.png" alt="EN" width="24" height="16" />
           </button>
@@ -497,6 +489,7 @@
               <span class="result-total-label" id="result-total-label" data-i18n="totalLabel">Total</span>
               <span class="result-total" id="result-total"></span>
               <span class="result-total-note" id="result-total-note"></span>
+              <span class="result-source-note" id="result-source-note" hidden></span>
             </div>
           </div>
         </section>
@@ -546,8 +539,6 @@
     </div>
   </div>
 
-  <script>
-    document.write(`<script src="js/app.js?v=${window.__ROLLZ_ASSET_VERSION__}"><\/script>`);
-  </script>
+  <script src="js/app.js"></script>
 </body>
 </html>

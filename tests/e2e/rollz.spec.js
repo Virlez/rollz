@@ -132,6 +132,76 @@ test.describe('Language toggle', () => {
 });
 
 // ---------------------------------------------------------------------------
+// 2b. PWA shell / offline cues
+// ---------------------------------------------------------------------------
+
+test.describe('PWA shell', () => {
+  test('exposes a web manifest link', async ({ page }) => {
+    await gotoApp(page);
+    const manifest = page.locator('link[rel="manifest"]');
+    await expect(manifest).toHaveAttribute('href', 'manifest.webmanifest');
+  });
+
+  test('shows the install button after beforeinstallprompt fires', async ({ page }) => {
+    await gotoApp(page);
+
+    await page.evaluate(() => {
+      const event = new Event('beforeinstallprompt', { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'prompt', {
+        value: () => Promise.resolve(),
+      });
+      Object.defineProperty(event, 'userChoice', {
+        value: Promise.resolve({ outcome: 'dismissed', platform: 'web' }),
+      });
+      window.dispatchEvent(event);
+    });
+
+    await expect(page.locator('#install-btn')).toBeVisible();
+  });
+
+  test('hides the install button after appinstalled fires', async ({ page }) => {
+    await gotoApp(page);
+
+    await page.evaluate(() => {
+      const event = new Event('beforeinstallprompt', { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'prompt', {
+        value: () => Promise.resolve(),
+      });
+      Object.defineProperty(event, 'userChoice', {
+        value: Promise.resolve({ outcome: 'accepted', platform: 'web' }),
+      });
+      window.dispatchEvent(event);
+    });
+
+    await expect(page.locator('#install-btn')).toBeVisible();
+
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event('appinstalled'));
+    });
+
+    await expect(page.locator('#install-btn')).toBeHidden();
+  });
+
+  test('shows the offline badge when the browser goes offline', async ({ page }) => {
+    await gotoApp(page);
+    await page.context().setOffline(true);
+    await expect(page.locator('#offline-badge')).toBeVisible();
+    await page.context().setOffline(false);
+  });
+
+  test('falls back to Web Crypto when random.org is unreachable', async ({ page }) => {
+    await gotoApp(page);
+    await page.route(/random\.org\/integers/, route => route.abort());
+    await page.fill('#formula-input', '1d6');
+    await page.click('#roll-btn');
+
+    await expect(page.locator('#error-banner')).toBeHidden();
+    await expect(page.locator('#result-section')).toBeVisible();
+    await expect(page.locator('#result-source-note')).toContainText('Crypto');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // 3. Dice buttons
 // ---------------------------------------------------------------------------
 

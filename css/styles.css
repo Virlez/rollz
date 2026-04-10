@@ -3,6 +3,62 @@
    Design: dark fantasy · glassmorphism · gold accents · responsive
    ================================================================ */
 
+@font-face {
+  font-family: 'Cinzel';
+  src: url('../fonts/cinzel-400.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cinzel';
+  src: url('../fonts/cinzel-600.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cinzel';
+  src: url('../fonts/cinzel-700.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/inter-300.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/inter-400.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/inter-500.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/inter-600.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ── Custom Properties ─────────────────────────────────────────── */
 :root {
   /* Palette */
@@ -180,7 +236,61 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 .header-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--sp-3);
+}
+
+.install-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 var(--sp-4);
+  border-radius: var(--r-full);
+  background: linear-gradient(135deg, rgba(240,180,41,0.16), rgba(124,58,237,0.16));
+  border: 1px solid rgba(240,180,41,0.35);
+  color: var(--clr-gold-light);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background var(--tr), border-color var(--tr), transform var(--tr), box-shadow var(--tr);
+  box-shadow: 0 0 16px rgba(240,180,41,0.14);
+}
+
+.install-btn:hover {
+  background: linear-gradient(135deg, rgba(240,180,41,0.26), rgba(124,58,237,0.22));
+  border-color: rgba(255,209,102,0.55);
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(240,180,41,0.24);
+}
+
+.install-btn:active {
+  transform: scale(0.97);
+}
+
+.offline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 36px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-full);
+  border: 1px solid rgba(240, 180, 41, 0.28);
+  background: rgba(240, 180, 41, 0.1);
+  color: var(--clr-gold-light);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 0 16px rgba(240, 180, 41, 0.14);
+}
+
+.offline-badge::before {
+  content: '⚡';
+  font-size: 0.95rem;
+  line-height: 1;
 }
 
 /* Language toggle */
@@ -854,6 +964,12 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   color: var(--clr-text-3);
 }
 
+.result-source-note {
+  min-height: 1.2em;
+  font-size: 0.84rem;
+  color: var(--clr-gold-light);
+}
+
 .result-total-note.is-critical {
   color: #fca5a5;
   font-weight: 600;
@@ -1015,6 +1131,7 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 /* ── Responsive adjustments ─────────────────────────────────────── */
 @media (max-width: 560px) {
   .header-inner { gap: var(--sp-3); }
+  .header-actions { gap: var(--sp-2); }
   .logo-icon { width: 36px; height: 36px; }
   .logo-text h1 { font-size: 1.3rem; }
   .logo-tagline { display: none; }
@@ -1024,6 +1141,9 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 }
 
 @media (max-width: 400px) {
+  .header-inner { align-items: flex-start; }
+  .header-actions { width: min(100%, 168px); }
+  .install-btn, .offline-badge { width: 100%; }
   .die-shape { width: 42px; height: 42px; }
 }
 
