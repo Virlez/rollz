@@ -1,13 +1,8 @@
 # Rollz
 
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-222?style=for-the-badge&logo=githubpages&logoColor=white)](https://virlez.github.io/rollz/)
-[![random.org](https://img.shields.io/badge/random.org-True%20Random-0b7fab?style=for-the-badge)](https://www.random.org/)
-[![Vanilla JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-f7df1e?style=for-the-badge&logo=javascript&logoColor=111)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![HTML5](https://img.shields.io/badge/HTML5-e34f26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
-[![CSS3](https://img.shields.io/badge/CSS3-1572b6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
-[![Bilingual](https://img.shields.io/badge/Language-FR%20%7C%20EN-6b46c1?style=for-the-badge)](#français)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-222?style=for-the-badge&logo=githubpages&logoColor=white)](https://virlez.github.io/rollz/) [![random.org](https://img.shields.io/badge/random.org-True%20Random-0b7fab?style=for-the-badge)](https://www.random.org/) [![Vanilla JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-f7df1e?style=for-the-badge&logo=javascript&logoColor=111)](https://developer.mozilla.org/en-US/docs/Web/JavaScript) [![Language](https://img.shields.io/badge/Language-4a4a4a?style=for-the-badge)](#francais)[![FR](https://img.shields.io/badge/FR-6b46c1?style=for-the-badge)](#francais)[![EN](https://img.shields.io/badge/EN-6b46c1?style=for-the-badge)](#english)
 
-FR | [EN](#english)
+<a id="francais"></a>
 
 ## Français
 
@@ -94,6 +89,8 @@ rollz/
 
 ---
 
+<a id="english"></a>
+
 ## English
 
 Rollz is a dark-fantasy styled TTRPG dice roller built with plain HTML, CSS, and JavaScript, using `random.org` for number generation.
@@ -140,15 +137,6 @@ Examples:
 ### Run locally
 
 This is a static project, so no build step is required.
-
-Simple option:
-
-```powershell
-cd "c:\Users\pauli\Repo\rollz\rollz"
-python -m http.server 8080
-```
-
-Then open `http://localhost:8080`.
 
 ### GitHub Pages deployment
 
