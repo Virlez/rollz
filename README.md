@@ -51,15 +51,6 @@ Exemples :
 
 Le projet est statique : aucun build n'est nécessaire.
 
-Options simples :
-
-```powershell
-cd "c:\Users\pauli\Repo\rollz\rollz"
-python -m http.server 8080
-```
-
-Puis ouvrir `http://localhost:8080`.
-
 ### Déploiement GitHub Pages
 
 Rollz peut être publié tel quel sur GitHub Pages, car il ne dépend d'aucun backend applicatif.
