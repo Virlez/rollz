@@ -1,6 +1,8 @@
 // @ts-check
 const { defineConfig, devices } = require('@playwright/test');
 
+const baseURL = process.env.BASE_URL || 'http://localhost:8080';
+
 module.exports = defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
@@ -9,7 +11,7 @@ module.exports = defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'list',
   use: {
-    baseURL: 'http://localhost:8080',
+    baseURL,
     trace: 'on-first-retry',
   },
   projects: [
@@ -18,10 +20,12 @@ module.exports = defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'npx http-server . -p 8080 --silent',
-    url: 'http://localhost:8080',
-    reuseExistingServer: !process.env.CI,
-    timeout: 10000,
-  },
+  webServer: process.env.BASE_URL
+    ? undefined
+    : {
+        command: 'npx http-server . -p 8080 --silent',
+        url: 'http://localhost:8080',
+        reuseExistingServer: !process.env.CI,
+        timeout: 10000,
+      },
 });
