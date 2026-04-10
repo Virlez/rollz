@@ -35,10 +35,7 @@
     rel="stylesheet"
   />
   <script>
-    const stylesheetEl = document.createElement('link');
-    stylesheetEl.rel = 'stylesheet';
-    stylesheetEl.href = `css/styles.css?v=${window.__ROLLZ_ASSET_VERSION__}`;
-    document.head.appendChild(stylesheetEl);
+    document.write(`<link rel="stylesheet" href="css/styles.css?v=${window.__ROLLZ_ASSET_VERSION__}" />`);
   </script>
 </head>
 <body>
@@ -550,9 +547,7 @@
   </div>
 
   <script>
-    const appScriptEl = document.createElement('script');
-    appScriptEl.src = `js/app.js?v=${window.__ROLLZ_ASSET_VERSION__}`;
-    document.body.appendChild(appScriptEl);
+    document.write(`<script src="js/app.js?v=${window.__ROLLZ_ASSET_VERSION__}"><\/script>`);
   </script>
 </body>
 </html>
