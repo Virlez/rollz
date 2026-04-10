@@ -50,6 +50,7 @@ const i18n = {
     successesSuffix:    'successes',
     successBonusRerollLabel: 'Bonus reroll',
     successBonusRerollNote:  'All dice were even: one bonus reroll',
+    criticalFailure:    'Fumble',
   },
   fr: {
     tagline:            'Lanceur de Dés JDR',
@@ -87,6 +88,7 @@ const i18n = {
     successesSuffix:    'réussites',
     successBonusRerollLabel: 'Relance bonus',
     successBonusRerollNote:  'Tous les dés sont pairs : une relance bonus',
+    criticalFailure:    'Échec critique',
   },
 };
 
@@ -103,6 +105,8 @@ const state = {
   advantageMode: 'none',
   /** @type {boolean} */
   successMode: false,
+  /** @type {RollResult|null} */
+  lastResult: null,
   /** @type {Array<{formula: string, total: number, breakdown: string, timestamp: number}>} */
   history: [],
 };
@@ -154,6 +158,10 @@ function toggleLanguage() {
   applyTranslations();
   // Re-run formula preview to translate its dynamic text
   updateFormulaPreview();
+  // Re-render current result card to translate dynamic result texts
+  if (state.lastResult && !dom.resultSection.hidden) {
+    renderResult(state.lastResult);
+  }
   // Re-render history to update time labels
   renderHistory();
 }
@@ -180,6 +188,7 @@ const dom = {
   resultBreakdown:  document.getElementById('result-breakdown'),
   resultTotalLabel: document.getElementById('result-total-label'),
   resultTotal:      document.getElementById('result-total'),
+  resultTotalNote:  document.getElementById('result-total-note'),
   errorBanner:      document.getElementById('error-banner'),
   errorText:        document.getElementById('error-text'),
   historyList:      document.getElementById('history-list'),
@@ -316,6 +325,7 @@ async function getRandomNumbers(count, sides) {
  *   ignoredDiceIndices?: number[],
  *   successBonusRolls?: number[],
  *   successBonusCount?: number,
+ *   criticalFailure?: boolean,
  * }} RollResult
  */
 
@@ -349,8 +359,9 @@ async function evaluateTokens(tokens) {
     const diceCount = Math.abs(firstDiceToken.count);
     const drawn = await getRandomNumbers(diceCount, firstDiceToken.sides);
     const successCount = drawn.reduce((sum, value) => sum + (value % 2 === 0 ? 1 : 0), 0);
+    const criticalFailure = drawn.length > 0 && drawn.every(value => value % 2 !== 0);
     const allEven = drawn.length > 0 && drawn.every(value => value % 2 === 0);
-    const successBonusRolls = allEven ? await getRandomNumbers(diceCount, firstDiceToken.sides) : [];
+    const successBonusRolls = (!criticalFailure && allEven) ? await getRandomNumbers(diceCount, firstDiceToken.sides) : [];
     const successBonusCount = successBonusRolls.reduce((sum, value) => sum + (value % 2 === 0 ? 1 : 0), 0);
     const modifierTotal = tokens.reduce((sum, tk) => tk.type === 'modifier' ? sum + tk.value : sum, 0);
     const ignoredDiceIndices = tokens
@@ -359,7 +370,7 @@ async function evaluateTokens(tokens) {
       .map(({ idx }) => idx);
 
     return {
-      total: successCount + successBonusCount + modifierTotal,
+      total: criticalFailure ? 0 : successCount + successBonusCount + modifierTotal,
       tokens,
       rolls: { [firstDiceToken.raw]: drawn },
       rollPairs: {},
@@ -370,6 +381,7 @@ async function evaluateTokens(tokens) {
       ignoredDiceIndices,
       successBonusRolls,
       successBonusCount,
+      criticalFailure,
     };
   }
 
@@ -483,6 +495,7 @@ function renderResult(result) {
     ignoredDiceIndices,
     successBonusRolls,
     successBonusCount,
+    criticalFailure,
   } = result;
 
   let formulaStr = describeFormula(tokens);
@@ -494,6 +507,11 @@ function renderResult(result) {
   if (dom.resultTotalLabel) {
     dom.resultTotalLabel.textContent = successMode ? t('successTotalLabel') : t('totalLabel');
   }
+  if (dom.resultTotalNote) {
+    dom.resultTotalNote.textContent = criticalFailure ? t('criticalFailure') : '';
+    dom.resultTotalNote.classList.toggle('is-critical', Boolean(criticalFailure));
+  }
+  dom.resultTotal.classList.toggle('is-critical', Boolean(criticalFailure));
 
   dom.resultBreakdown.innerHTML = '';
 
@@ -562,6 +580,8 @@ function renderResult(result) {
         note.className = 'breakdown-note';
         if (isIgnoredInSuccess) {
           note.textContent = t('ignoredLabel');
+        } else if (criticalFailure) {
+          note.textContent = `= 0 ${t('successesSuffix')}`;
         } else {
           const successCount = successesByToken && successesByToken[token.raw] ? successesByToken[token.raw] : 0;
           const totalSuccessCount = successCount + (successBonusCount || 0);
@@ -861,12 +881,14 @@ async function doRoll() {
   try {
     const result = await evaluateTokens(tokens);
 
+    state.lastResult = result;
     renderResult(result);
 
     // Build compact breakdown summary for history
     const advTag = result.advantageMode === 'advantage'    ? ` ${t('advantageTag')}` :
                    result.advantageMode === 'disadvantage' ? ` ${t('disadvantageTag')}` : '';
     const successTag = result.successMode ? ` ${t('successTag')}` : '';
+    const criticalTag = result.criticalFailure ? ` • ${t('criticalFailure')}` : '';
     const breakdownSummary = tokens.map((token, index) => {
       if (token.type === 'dice') {
         if (result.successMode && result.ignoredDiceIndices && result.ignoredDiceIndices.includes(index)) {
@@ -879,7 +901,7 @@ async function doRoll() {
         return `[${drawn.join(', ')}]`;
       }
       return String(token.value);
-    }).join(' ') + advTag + successTag;
+    }).join(' ') + advTag + successTag + criticalTag;
 
     pushHistory({
       formula:   raw,

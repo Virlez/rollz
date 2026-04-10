@@ -840,6 +840,27 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   filter: drop-shadow(0 0 12px rgba(240,180,41,0.5));
 }
 
+.result-total.is-critical {
+  background: linear-gradient(135deg, #fca5a5, #ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 12px rgba(239,68,68,0.45));
+}
+
+.result-total-note {
+  min-height: 1.2em;
+  font-size: 0.88rem;
+  color: var(--clr-text-3);
+}
+
+.result-total-note.is-critical {
+  color: #fca5a5;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 /* ── History ────────────────────────────────────────────────────── */
 .history-card { padding-bottom: var(--sp-4); }
 
