@@ -1,0 +1,26 @@
+{
+  "name": "rollz",
+  "version": "1.0.0",
+  "description": "[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-222?style=for-the-badge&logo=githubpages&logoColor=white)](https://virlez.github.io/rollz/) [![random.org](https://img.shields.io/badge/random.org-True%20Random-0b7fab?style=for-the-badge)](https://www.random.org/) [![Vanilla JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-f7df1e?style=for-the-badge&logo=javascript&logoColor=111)](https://developer.mozilla.org/en-US/docs/Web/JavaScript) [![Language](https://img.shields.io/badge/Language-4a4a4a?style=for-the-badge)](#francais)[![FR](https://img.shields.io/badge/FR-6b46c1?style=for-the-badge)](#francais)[![EN](https://img.shields.io/badge/EN-6b46c1?style=for-the-badge)](#english)",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Virlez/rollz.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Virlez/rollz/issues"
+  },
+  "homepage": "https://github.com/Virlez/rollz#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "http-server": "^14.1.1"
+  }
+}
