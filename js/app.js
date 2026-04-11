@@ -1218,7 +1218,6 @@ function renderHistory() {
       resetFormulaBuilderState();
       dom.formulaInput.value = entry.formula;
       updateFormulaPreview();
-      dom.formulaInput.focus();
       await doRoll();
     });
 
