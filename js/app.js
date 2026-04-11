@@ -1219,7 +1219,8 @@ function init() {
     updateFormulaPreview();
     dom.resultSection.hidden = true;
     showError(null);
-    dom.formulaInput.focus();
+    dom.formulaInput.blur();
+    dom.clearBtn.blur();
   });
 
   // Roll button
