@@ -773,25 +773,32 @@ test.describe('Roll history', () => {
     expect(firstTotal).toBe('6');
   });
 
-  test('clicking a history entry repopulates the formula input', async ({ page }) => {
-    await mockRandomOrg(page, [4, 5]);
+  test('clicking a history entry rerolls the same formula automatically', async ({ page }) => {
+    await mockRandomOrg(page, [4, 6]);
     await gotoApp(page);
-    await page.fill('#formula-input', '2d8 + 3');
+    await page.fill('#formula-input', '1d6');
     await page.click('#roll-btn');
-    // Clear input then click history entry
+
+    await expect(page.locator('#result-total')).toHaveText('4');
     await page.click('#clear-btn');
     await page.locator('.history-entry').first().click();
-    await expect(page.locator('#formula-input')).toHaveValue('2d8 + 3');
+
+    await expect(page.locator('#formula-input')).toHaveValue('1d6');
+    await expect(page.locator('#result-total')).toHaveText('6');
+    await expect(page.locator('.history-entry')).toHaveCount(2);
   });
 
-  test('clicking history entry enables roll button', async ({ page }) => {
-    await mockRandomOrg(page, [4]);
+  test('clicking history entry records a new roll with the same formula', async ({ page }) => {
+    await mockRandomOrg(page, [4, 2]);
     await gotoApp(page);
     await page.fill('#formula-input', '1d6');
     await page.click('#roll-btn');
     await page.click('#clear-btn');
     await page.locator('.history-entry').first().click();
-    await expect(page.locator('#roll-btn')).toBeEnabled();
+
+    const latestEntry = page.locator('.history-entry').first();
+    await expect(latestEntry.locator('.history-formula')).toHaveText('1d6');
+    await expect(latestEntry.locator('.history-total')).toHaveText('2');
   });
 
   test('clear all button removes all history entries', async ({ page }) => {

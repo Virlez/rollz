@@ -1186,11 +1186,13 @@ function renderHistory() {
     el.appendChild(left);
     el.appendChild(right);
 
-    // Re-use formula on click
-    el.addEventListener('click', () => {
+    // Re-roll the saved formula on click
+    el.addEventListener('click', async () => {
+      resetFormulaBuilderState();
       dom.formulaInput.value = entry.formula;
       updateFormulaPreview();
       dom.formulaInput.focus();
+      await doRoll();
     });
 
     dom.historyList.appendChild(el);
