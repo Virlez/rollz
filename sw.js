@@ -1,12 +1,13 @@
-const CACHE_NAME = 'rollz-shell-v1';
+const APP_VERSION = '2026-04-11-2';
+const CACHE_NAME = `rollz-shell-${APP_VERSION}`;
 const APP_SHELL = [
   './',
   './index.html',
-  './manifest.webmanifest',
+  './manifest.webmanifest?v=2026-04-11-2',
   './favicon.svg',
   './og-image.svg',
-  './css/styles.css',
-  './js/app.js',
+  './css/styles.css?v=2026-04-11-2',
+  './js/app.js?v=2026-04-11-2',
   './icons/apple-touch-icon.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -55,9 +56,18 @@ self.addEventListener('fetch', event => {
   }
 
   if (url.origin === self.location.origin) {
+    if (isAppShellAsset(url)) {
+      event.respondWith(networkFirst(request));
+      return;
+    }
+
     event.respondWith(cacheFirst(request));
   }
 });
+
+function isAppShellAsset(url) {
+  return /\.(css|js|html|webmanifest)$/.test(url.pathname);
+}
 
 async function cacheFirst(request) {
   const cachedResponse = await caches.match(request);

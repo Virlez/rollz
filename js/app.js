@@ -11,6 +11,7 @@ const LANG_KEY     = 'rollz_lang';
 const MAX_HISTORY  = 30;
 const RANDOM_ORG   = 'https://www.random.org/integers/';
 const DICE_SIDES   = [4, 6, 8, 10, 12, 20, 100];
+const APP_VERSION  = '2026-04-11-2';
 
 /* ── i18n Dictionaries ──────────────────────────────────────────── */
 const i18n = {
@@ -944,7 +945,7 @@ function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
 
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.register(`./sw.js?v=${APP_VERSION}`).catch(() => {});
   }, { once: true });
 }
 
