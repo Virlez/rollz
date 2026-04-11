@@ -318,6 +318,13 @@ test.describe('Formula input and preview', () => {
     await expect(page.locator('#formula-preview')).toHaveClass(/is-valid/);
   });
 
+  test('semicolon-separated formulas are valid when each segment is valid', async ({ page }) => {
+    await gotoApp(page);
+    await page.fill('#formula-input', '1d20 + 4;1d8 + 2');
+    await expect(page.locator('#roll-btn')).toBeEnabled();
+    await expect(page.locator('#formula-preview')).toHaveClass(/is-valid/);
+  });
+
   test('formula with subtraction is valid', async ({ page }) => {
     await gotoApp(page);
     await page.fill('#formula-input', '1d20 - 2');
@@ -433,6 +440,13 @@ test.describe('Mode toggles', () => {
     await expect(page.locator('#formula-preview')).toContainText('⚠');
   });
 
+  test('multi-roll preview warns that special modes apply only to the first formula', async ({ page }) => {
+    await gotoApp(page);
+    await page.fill('#formula-input', '1d20;1d8');
+    await page.click('#advantage-label');
+    await expect(page.locator('#formula-preview')).toContainText('premiere formule');
+  });
+
   test('unchecking advantage resets mode and removes warning', async ({ page }) => {
     await gotoApp(page);
     await page.fill('#formula-input', '2d6');
@@ -530,6 +544,18 @@ test.describe('Roll action — normal mode', () => {
     await page.click('#roll-btn');
     await expect(page.locator('#result-total')).toHaveText('1');
   });
+
+  test('semicolon-separated formulas render one result block per formula', async ({ page }) => {
+    await mockRandomOrg(page, [10, 3]);
+    await gotoApp(page);
+    await page.fill('#formula-input', '1d20 + 4;1d8 + 2');
+    await page.click('#roll-btn');
+
+    await expect(page.locator('#result-multi')).toBeVisible();
+    await expect(page.locator('#result-multi .result-sub-block')).toHaveCount(2);
+    await expect(page.locator('#result-multi .result-total').nth(0)).toHaveText('14');
+    await expect(page.locator('#result-multi .result-total').nth(1)).toHaveText('5');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -585,6 +611,19 @@ test.describe('Roll action — advantage/disadvantage', () => {
     await page.click('#advantage-label');
     await page.click('#roll-btn');
     await expect(page.locator('.is-discarded')).toHaveCount(0);
+  });
+
+  test('advantage applies only to the first formula in a semicolon-separated roll', async ({ page }) => {
+    await mockRandomOrg(page, [4, 17, 6]);
+    await gotoApp(page);
+    await page.fill('#formula-input', '1d20;1d8');
+    await page.click('#advantage-label');
+    await page.click('#roll-btn');
+
+    await expect(page.locator('#result-multi .result-total').nth(0)).toHaveText('17');
+    await expect(page.locator('#result-multi .result-total').nth(1)).toHaveText('6');
+    await expect(page.locator('#result-multi .is-kept')).toHaveCount(1);
+    await expect(page.locator('#result-multi .is-discarded')).toHaveCount(1);
   });
 });
 
@@ -699,6 +738,17 @@ test.describe('Roll history', () => {
     const entry = page.locator('.history-entry').first();
     await expect(entry.locator('.history-formula')).toHaveText('1d6');
     await expect(entry.locator('.history-total')).toHaveText('4');
+  });
+
+  test('multi-roll history entry keeps the full formula and both totals', async ({ page }) => {
+    await mockRandomOrg(page, [10, 3]);
+    await gotoApp(page);
+    await page.fill('#formula-input', '1d20 + 4;1d8 + 2');
+    await page.click('#roll-btn');
+
+    const entry = page.locator('.history-entry').first();
+    await expect(entry.locator('.history-formula')).toHaveText('1d20 + 4;1d8 + 2');
+    await expect(entry.locator('.history-total')).toHaveText('14 ; 5');
   });
 
   test('multiple rolls add multiple history entries', async ({ page }) => {

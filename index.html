@@ -22,9 +22,9 @@
   <title>Rollz — TTRPG Dice Roller</title>
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="manifest" href="manifest.webmanifest?v=2026-04-11-2" />
+  <link rel="manifest" href="manifest.webmanifest?v=2026-04-12-1" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="css/styles.css?v=2026-04-11-2" />
+  <link rel="stylesheet" href="css/styles.css?v=2026-04-12-1" />
 </head>
 <body>
   <div class="app">
@@ -442,7 +442,7 @@
                 type="text"
                 id="formula-input"
                 class="formula-input"
-                placeholder="ex. 2d6 + 4  ·  1d20 - 2  ·  3d8 + 1d4 + 5"
+                placeholder="ex. 2d6 + 4  ·  1d20 - 2  ·  1d20 + 4 ; 1d8 + 2"
                 data-i18n-placeholder="formulaPlaceholder"
                 aria-label="Dice roll formula"
                 autocomplete="off"
@@ -508,12 +508,13 @@
           <div class="result-card" id="result-card">
             <div class="result-formula" id="result-formula"></div>
             <div class="result-breakdown" id="result-breakdown"></div>
-            <div class="result-total-row">
+            <div class="result-total-row" id="result-total-row">
               <span class="result-total-label" id="result-total-label" data-i18n="totalLabel">Total</span>
               <span class="result-total" id="result-total"></span>
               <span class="result-total-note" id="result-total-note"></span>
               <span class="result-source-note" id="result-source-note" hidden></span>
             </div>
+            <div class="result-multi" id="result-multi" hidden></div>
           </div>
         </section>
 
@@ -562,6 +563,6 @@
     </div>
   </div>
 
-  <script src="js/app.js?v=2026-04-11-2"></script>
+  <script src="js/app.js?v=2026-04-12-1"></script>
 </body>
 </html>

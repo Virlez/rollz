@@ -11,7 +11,7 @@ const LANG_KEY     = 'rollz_lang';
 const MAX_HISTORY  = 30;
 const RANDOM_ORG   = 'https://www.random.org/integers/';
 const DICE_SIDES   = [4, 6, 8, 10, 12, 20, 100];
-const APP_VERSION  = '2026-04-11-2';
+const APP_VERSION  = '2026-04-12-1';
 
 /* ── i18n Dictionaries ──────────────────────────────────────────── */
 const i18n = {
@@ -23,7 +23,7 @@ const i18n = {
     modifierDecrease:   'Decrease modifier',
     modifierValue:      'Modifier value',
     formulaTitle:       'Roll Formula',
-    formulaPlaceholder: 'e.g. 2d6 + 4  ·  1d20 - 2  ·  3d8 + 1d4 + 5',
+    formulaPlaceholder: 'e.g. 2d6 + 4  ·  1d20 - 2  ·  1d20 + 4 ; 1d8 + 2',
     formulaPreviewEmpty:'Enter a formula or click dice above',
     formulaInvalid:     'Formula not recognised — try e.g. 2d6 + 4',
     rollBtn:            'Roll!',
@@ -49,6 +49,7 @@ const i18n = {
     advantageFirstOnly: 'Advantage/Disadvantage applies to the first die only',
     successFirstGroupOnly: 'In success mode, only the first dice group is used',
     successBonusAdded:  'Fixed modifiers are added to successes',
+    multiRollModeFirstOnly: 'Advantage, disadvantage, and success mode apply to the first formula only',
     successTotalLabel:  'Successes',
     ignoredLabel:       'ignored',
     successesSuffix:    'successes',
@@ -67,7 +68,7 @@ const i18n = {
     modifierDecrease:   'Diminuer le modificateur',
     modifierValue:      'Valeur du modificateur',
     formulaTitle:       'Formule de Lancer',
-    formulaPlaceholder: 'ex. 2d6 + 4  ·  1d20 - 2  ·  3d8 + 1d4 + 5',
+    formulaPlaceholder: 'ex. 2d6 + 4  ·  1d20 - 2  ·  1d20 + 4 ; 1d8 + 2',
     formulaPreviewEmpty:'Entrez une formule ou cliquez sur les dés',
     formulaInvalid:     'Formule non reconnue — essayez ex. 2d6 + 4',
     rollBtn:            'Lancer !',
@@ -93,6 +94,7 @@ const i18n = {
     advantageFirstOnly: 'L\'avantage/désavantage ne s\'applique qu\'au premier dé',
     successFirstGroupOnly: 'En mode réussites, seul le premier groupe de dés est pris en compte',
     successBonusAdded:  'Les bonus fixes sont ajoutés aux réussites',
+    multiRollModeFirstOnly: 'L\'avantage, le désavantage et le mode réussites s\'appliquent uniquement a la premiere formule',
     successTotalLabel:  'Réussites',
     ignoredLabel:       'ignoré',
     successesSuffix:    'réussites',
@@ -120,7 +122,7 @@ const state = {
   advantageMode: 'none',
   /** @type {boolean} */
   successMode: false,
-  /** @type {RollResult|null} */
+  /** @type {RenderedRoll[]|null} */
   lastResult: null,
   /** @type {boolean} */
   isOffline: navigator.onLine === false,
@@ -221,10 +223,12 @@ const dom = {
   resultCard:       document.getElementById('result-card'),
   resultFormula:    document.getElementById('result-formula'),
   resultBreakdown:  document.getElementById('result-breakdown'),
+  resultTotalRow:   document.getElementById('result-total-row'),
   resultTotalLabel: document.getElementById('result-total-label'),
   resultTotal:      document.getElementById('result-total'),
   resultTotalNote:  document.getElementById('result-total-note'),
   resultSourceNote: document.getElementById('result-source-note'),
+  resultMulti:      document.getElementById('result-multi'),
   errorBanner:      document.getElementById('error-banner'),
   errorText:        document.getElementById('error-text'),
   historyList:      document.getElementById('history-list'),
@@ -279,7 +283,11 @@ function setModifier(value) {
 /**
  * @typedef {{ type: 'dice', count: number, sides: number, raw: string }
  *          |{ type: 'modifier', value: number, raw: string }} Token
+ *
+ * @typedef {{ formula: string, tokens: Token[] }} ParsedFormula
  */
+
+/** @typedef {{ formula: string, result: RollResult }} RenderedRoll */
 
 /**
  * Parse a dice formula string into an array of tokens.
@@ -296,8 +304,11 @@ function parseFormula(formula) {
   // Tokenise: each segment starts with an optional +/- then either NdM or a plain integer
   const re = /([+-]?)(\d*)d(\d+)|([+-]?\d+)/gi;
   let match;
+  let cursor = 0;
 
   while ((match = re.exec(str)) !== null) {
+    if (match.index !== cursor) return [];
+
     if (match[3] !== undefined) {
       // Dice token: (sign)(count)d(sides)
       const sign  = match[1] === '-' ? -1 : 1;
@@ -312,11 +323,34 @@ function parseFormula(formula) {
       if (isNaN(value)) return []; // malformed
       tokens.push({ type: 'modifier', value, raw: match[0] });
     }
+
+    cursor = re.lastIndex;
   }
+
+  if (cursor !== str.length) return [];
 
   // Sanity: at least one dice token required
   if (!tokens.some(t => t.type === 'dice')) return [];
   return tokens;
+}
+
+/**
+ * Parse one or more formulas separated by ';'.
+ * Returns an empty array when any segment is invalid.
+ * @param {string} formulaInput
+ * @returns {ParsedFormula[]}
+ */
+function parseFormulaInput(formulaInput) {
+  const parts = formulaInput
+    .split(';')
+    .map(part => part.trim());
+
+  if (parts.length === 0 || parts.some(part => !part)) return [];
+
+  const parsed = parts.map(formula => ({ formula, tokens: parseFormula(formula) }));
+  if (parsed.some(entry => entry.tokens.length === 0)) return [];
+
+  return parsed;
 }
 
 /**
@@ -334,6 +368,14 @@ function describeFormula(tokens) {
     const sign = t.value < 0 ? '−' : '+';
     return `${sign} ${Math.abs(t.value)}`;
   }).join('  ').replace(/^\+\s*/, '');
+}
+
+/**
+ * @param {ParsedFormula[]} formulas
+ * @returns {string}
+ */
+function describeFormulaInput(formulas) {
+  return formulas.map(entry => describeFormula(entry.tokens)).join('  ;  ');
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -440,10 +482,14 @@ async function getRandomNumbers(count, sides) {
  * and the best (advantage) or worst (disadvantage) is kept.
  * Modifiers are simply added on top.
  * @param {Token[]} tokens
+ * @param {{ advantageMode?: 'none'|'advantage'|'disadvantage', successMode?: boolean }} [options]
  * @returns {Promise<RollResult>}
  */
-async function evaluateTokens(tokens) {
-  if (state.successMode) {
+async function evaluateTokens(tokens, options = {}) {
+  const successMode = options.successMode ?? state.successMode;
+  const mode = options.advantageMode ?? state.advantageMode;
+
+  if (successMode) {
     const firstDiceIndex = tokens.findIndex(tk => tk.type === 'dice');
     const firstDiceToken = firstDiceIndex >= 0 ? tokens[firstDiceIndex] : null;
 
@@ -490,7 +536,6 @@ async function evaluateTokens(tokens) {
     };
   }
 
-  const mode = state.advantageMode; // 'none' | 'advantage' | 'disadvantage'
   const hasAdvantage = mode !== 'none';
 
   // Identify the first dice token index (advantage applies only to its FIRST die)
@@ -584,10 +629,18 @@ async function evaluateTokens(tokens) {
    ═══════════════════════════════════════════════════════════════════ */
 
 /**
- * Build the breakdown DOM for a roll result.
+ * Render a roll result into a target node set.
  * @param {RollResult} result
+ * @param {{
+ *   formula: HTMLElement,
+ *   breakdown: HTMLElement,
+ *   totalLabel: HTMLElement,
+ *   total: HTMLElement,
+ *   totalNote: HTMLElement,
+ *   sourceNote: HTMLElement,
+ * }} target
  */
-function renderResult(result) {
+function renderSingleResult(result, target) {
   const {
     total,
     tokens,
@@ -608,23 +661,20 @@ function renderResult(result) {
   if (advantageMode === 'advantage')    formulaStr += '  ' + t('advantageTag');
   if (advantageMode === 'disadvantage') formulaStr += '  ' + t('disadvantageTag');
   if (successMode)                      formulaStr += '  ' + t('successTag');
-  dom.resultFormula.textContent = formulaStr;
+  target.formula.textContent = formulaStr;
 
-  if (dom.resultTotalLabel) {
-    dom.resultTotalLabel.textContent = successMode ? t('successTotalLabel') : t('totalLabel');
-  }
-  if (dom.resultTotalNote) {
-    dom.resultTotalNote.textContent = criticalFailure ? t('criticalFailure') : '';
-    dom.resultTotalNote.classList.toggle('is-critical', Boolean(criticalFailure));
-  }
-  if (dom.resultSourceNote) {
+  target.totalLabel.textContent = successMode ? t('successTotalLabel') : t('totalLabel');
+  target.totalNote.textContent = criticalFailure ? t('criticalFailure') : '';
+  target.totalNote.classList.toggle('is-critical', Boolean(criticalFailure));
+
+  if (target.sourceNote) {
     const usedCryptoFallback = randomSource === 'crypto';
-    dom.resultSourceNote.textContent = usedCryptoFallback ? t('offlineRollNote') : '';
-    dom.resultSourceNote.hidden = !usedCryptoFallback;
+    target.sourceNote.textContent = usedCryptoFallback ? t('offlineRollNote') : '';
+    target.sourceNote.hidden = !usedCryptoFallback;
   }
-  dom.resultTotal.classList.toggle('is-critical', Boolean(criticalFailure));
+  target.total.classList.toggle('is-critical', Boolean(criticalFailure));
 
-  dom.resultBreakdown.innerHTML = '';
+  target.breakdown.innerHTML = '';
 
   let rollIndex = 0;
   for (const [tokenIndex, token] of tokens.entries()) {
@@ -773,10 +823,104 @@ function renderResult(result) {
       group.appendChild(chip);
     }
 
-    dom.resultBreakdown.appendChild(group);
+    target.breakdown.appendChild(group);
   }
 
-  dom.resultTotal.textContent = String(total);
+  target.total.textContent = String(total);
+}
+
+/**
+ * @param {RollResult} result
+ * @returns {HTMLElement}
+ */
+function createResultSubBlock(result) {
+  const block = document.createElement('div');
+  block.className = 'result-sub-block';
+
+  const formula = document.createElement('div');
+  formula.className = 'result-formula';
+
+  const breakdown = document.createElement('div');
+  breakdown.className = 'result-breakdown';
+
+  const totalRow = document.createElement('div');
+  totalRow.className = 'result-total-row';
+
+  const totalLabel = document.createElement('span');
+  totalLabel.className = 'result-total-label';
+
+  const total = document.createElement('span');
+  total.className = 'result-total';
+
+  const totalNote = document.createElement('span');
+  totalNote.className = 'result-total-note';
+
+  const sourceNote = document.createElement('span');
+  sourceNote.className = 'result-source-note';
+  sourceNote.hidden = true;
+
+  totalRow.appendChild(totalLabel);
+  totalRow.appendChild(total);
+  totalRow.appendChild(totalNote);
+  totalRow.appendChild(sourceNote);
+
+  block.appendChild(formula);
+  block.appendChild(breakdown);
+  block.appendChild(totalRow);
+
+  renderSingleResult(result, {
+    formula,
+    breakdown,
+    totalLabel,
+    total,
+    totalNote,
+    sourceNote,
+  });
+
+  return block;
+}
+
+/**
+ * Build the breakdown DOM for one or more roll results.
+ * @param {RenderedRoll[]} renderedRolls
+ */
+function renderResult(renderedRolls) {
+  const rolls = Array.isArray(renderedRolls) ? renderedRolls : [];
+  dom.resultMulti.classList.toggle('is-two-up', rolls.length === 2);
+
+  if (rolls.length === 1) {
+    dom.resultFormula.hidden = false;
+    dom.resultBreakdown.hidden = false;
+    dom.resultTotalRow.hidden = false;
+    dom.resultMulti.hidden = true;
+    dom.resultMulti.innerHTML = '';
+
+    renderSingleResult(rolls[0].result, {
+      formula: dom.resultFormula,
+      breakdown: dom.resultBreakdown,
+      totalLabel: dom.resultTotalLabel,
+      total: dom.resultTotal,
+      totalNote: dom.resultTotalNote,
+      sourceNote: dom.resultSourceNote,
+    });
+  } else {
+    dom.resultFormula.hidden = true;
+    dom.resultBreakdown.hidden = true;
+    dom.resultTotalRow.hidden = true;
+    dom.resultMulti.hidden = false;
+    dom.resultMulti.innerHTML = '';
+
+    rolls.forEach((entry, index) => {
+      if (index > 0) {
+        const separator = document.createElement('div');
+        separator.className = 'result-separator';
+        dom.resultMulti.appendChild(separator);
+      }
+
+      dom.resultMulti.appendChild(createResultSubBlock(entry.result));
+    });
+  }
+
   dom.resultSection.hidden = false;
   dom.resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -787,7 +931,7 @@ function renderResult(result) {
 
 function updateFormulaPreview() {
   const raw    = dom.formulaInput.value.trim();
-  const tokens = parseFormula(raw);
+  const formulas = parseFormulaInput(raw);
 
   if (!raw) {
     dom.formulaPreview.textContent = t('formulaPreviewEmpty');
@@ -796,16 +940,17 @@ function updateFormulaPreview() {
     return;
   }
 
-  if (tokens.length === 0) {
+  if (formulas.length === 0) {
     dom.formulaPreview.textContent = t('formulaInvalid');
     dom.formulaPreview.className   = 'formula-preview is-invalid';
     dom.rollBtn.disabled           = true;
     return;
   }
 
-  const diceTokens = tokens.filter(tk => tk.type === 'dice');
+  const firstTokens = formulas[0].tokens;
+  const diceTokens = firstTokens.filter(tk => tk.type === 'dice');
   const totalDiceCount = diceTokens.reduce((sum, tk) => sum + Math.abs(tk.count), 0);
-  const hasModifiers = tokens.some(tk => tk.type === 'modifier');
+  const hasModifiers = firstTokens.some(tk => tk.type === 'modifier');
   const advWarning = (state.advantageMode !== 'none' && totalDiceCount > 1)
     ? '  ⚠ ' + t('advantageFirstOnly')
     : '';
@@ -816,11 +961,43 @@ function updateFormulaPreview() {
   if (state.successMode && hasModifiers) {
     successWarnings.push(`➕ ${t('successBonusAdded')}`);
   }
+  if (formulas.length > 1 && (state.advantageMode !== 'none' || state.successMode)) {
+    successWarnings.push(`⚠ ${t('multiRollModeFirstOnly')}`);
+  }
   const successWarning = successWarnings.length > 0 ? `  ${successWarnings.join('  ')}` : '';
 
-  dom.formulaPreview.textContent = '✓  ' + describeFormula(tokens) + advWarning + successWarning;
+  dom.formulaPreview.textContent = '✓  ' + describeFormulaInput(formulas) + advWarning + successWarning;
   dom.formulaPreview.className   = 'formula-preview is-valid';
   dom.rollBtn.disabled           = false;
+}
+
+/**
+ * @param {Token[]} tokens
+ * @param {RollResult} result
+ * @returns {string}
+ */
+function buildHistoryBreakdownSummary(tokens, result) {
+  const advTag = result.advantageMode === 'advantage'    ? ` ${t('advantageTag')}` :
+                 result.advantageMode === 'disadvantage' ? ` ${t('disadvantageTag')}` : '';
+  const successTag = result.successMode ? ` ${t('successTag')}` : '';
+  const criticalTag = result.criticalFailure ? ` • ${t('criticalFailure')}` : '';
+
+  return tokens.map((token, index) => {
+    if (token.type === 'dice') {
+      if (result.successMode && result.ignoredDiceIndices && result.ignoredDiceIndices.includes(index)) {
+        return `[${t('ignoredLabel')}]`;
+      }
+
+      const drawn = result.rolls[token.raw] || [];
+      if (result.successMode && result.countedDiceIndex === index && result.successBonusRolls && result.successBonusRolls.length > 0) {
+        return `[${drawn.join(', ')}] → [${result.successBonusRolls.join(', ')}]`;
+      }
+
+      return `[${drawn.join(', ')}]`;
+    }
+
+    return String(token.value);
+  }).join(' ') + advTag + successTag + criticalTag;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -969,7 +1146,7 @@ function saveHistory() {
 }
 
 /**
- * @param {{formula:string, total:number, breakdown:string, timestamp:number}} entry
+ * @param {{formula:string, total:string|number, breakdown:string, timestamp:number}} entry
  */
 function pushHistory(entry) {
   state.history.unshift(entry);
@@ -1043,10 +1220,10 @@ function formatTime(ts) {
    ═══════════════════════════════════════════════════════════════════ */
 
 async function doRoll() {
-  const raw    = dom.formulaInput.value.trim();
-  const tokens = parseFormula(raw);
+  const raw = dom.formulaInput.value.trim();
+  const formulas = parseFormulaInput(raw);
 
-  if (tokens.length === 0) {
+  if (formulas.length === 0) {
     showError(t('errorInvalid'));
     return;
   }
@@ -1056,37 +1233,31 @@ async function doRoll() {
   dom.rollBtn.classList.add('is-rolling');
   dom.spinnerOverlay.hidden = false;
   dom.spinnerOverlay.removeAttribute('aria-hidden');
-  state.currentRollSource = 'randomorg';
 
   try {
-    const result = await evaluateTokens(tokens);
-    result.randomSource = state.currentRollSource;
+    const renderedRolls = [];
 
-    state.lastResult = result;
-    renderResult(result);
+    for (const [index, entry] of formulas.entries()) {
+      state.currentRollSource = 'randomorg';
+      const result = await evaluateTokens(entry.tokens, {
+        advantageMode: index === 0 ? state.advantageMode : 'none',
+        successMode: index === 0 ? state.successMode : false,
+      });
+      result.randomSource = state.currentRollSource;
+      renderedRolls.push({ formula: entry.formula, result });
+    }
 
-    // Build compact breakdown summary for history
-    const advTag = result.advantageMode === 'advantage'    ? ` ${t('advantageTag')}` :
-                   result.advantageMode === 'disadvantage' ? ` ${t('disadvantageTag')}` : '';
-    const successTag = result.successMode ? ` ${t('successTag')}` : '';
-    const criticalTag = result.criticalFailure ? ` • ${t('criticalFailure')}` : '';
-    const breakdownSummary = tokens.map((token, index) => {
-      if (token.type === 'dice') {
-        if (result.successMode && result.ignoredDiceIndices && result.ignoredDiceIndices.includes(index)) {
-          return `[${t('ignoredLabel')}]`;
-        }
-        const drawn = result.rolls[token.raw] || [];
-        if (result.successMode && result.countedDiceIndex === index && result.successBonusRolls && result.successBonusRolls.length > 0) {
-          return `[${drawn.join(', ')}] → [${result.successBonusRolls.join(', ')}]`;
-        }
-        return `[${drawn.join(', ')}]`;
-      }
-      return String(token.value);
-    }).join(' ') + advTag + successTag + criticalTag;
+    state.lastResult = renderedRolls;
+    renderResult(renderedRolls);
+
+    const breakdownSummary = renderedRolls
+      .map((entry, index) => buildHistoryBreakdownSummary(formulas[index].tokens, entry.result))
+      .join(' ; ');
+    const totalSummary = renderedRolls.map(entry => String(entry.result.total)).join(' ; ');
 
     pushHistory({
       formula:   raw,
-      total:     result.total,
+      total:     totalSummary,
       breakdown: breakdownSummary,
       timestamp: Date.now(),
     });
