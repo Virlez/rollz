@@ -1,13 +1,13 @@
-const APP_VERSION = '2026-04-11-2';
+const APP_VERSION = '2026-04-12-2';
 const CACHE_NAME = `rollz-shell-${APP_VERSION}`;
 const APP_SHELL = [
   './',
   './index.html',
-  './manifest.webmanifest?v=2026-04-11-2',
+  './manifest.webmanifest?v=2026-04-12-2',
   './favicon.svg',
   './og-image.svg',
-  './css/styles.css?v=2026-04-11-2',
-  './js/app.js?v=2026-04-11-2',
+  './css/styles.css?v=2026-04-12-2',
+  './js/app.js?v=2026-04-12-2',
   './icons/apple-touch-icon.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -27,6 +27,12 @@ self.addEventListener('install', event => {
       .then(cache => cache.addAll(APP_SHELL))
       .then(() => self.skipWaiting())
   );
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', event => {

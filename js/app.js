@@ -11,7 +11,7 @@ const LANG_KEY     = 'rollz_lang';
 const MAX_HISTORY  = 30;
 const RANDOM_ORG   = 'https://www.random.org/integers/';
 const DICE_SIDES   = [4, 6, 8, 10, 12, 20, 100];
-const APP_VERSION  = '2026-04-12-1';
+const APP_VERSION  = '2026-04-12-2';
 
 /* ── i18n Dictionaries ──────────────────────────────────────────── */
 const i18n = {
@@ -1122,7 +1122,34 @@ function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
 
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`./sw.js?v=${APP_VERSION}`).catch(() => {});
+    let hasRefreshedForNewWorker = false;
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (hasRefreshedForNewWorker) return;
+      hasRefreshedForNewWorker = true;
+      window.location.reload();
+    });
+
+    navigator.serviceWorker.register(`./sw.js?v=${APP_VERSION}`, { updateViaCache: 'none' })
+      .then(registration => {
+        registration.update().catch(() => {});
+
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+
+        registration.addEventListener('updatefound', () => {
+          const installing = registration.installing;
+          if (!installing) return;
+
+          installing.addEventListener('statechange', () => {
+            if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+              installing.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
+      })
+      .catch(() => {});
   }, { once: true });
 }
 
