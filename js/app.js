@@ -18,6 +18,9 @@ const i18n = {
     tagline:            'TTRPG Dice Roller',
     diceTitle:          'Choose Your Dice',
     diceHint:           'Click a die to add it to your formula',
+    modifierIncrease:   'Increase modifier',
+    modifierDecrease:   'Decrease modifier',
+    modifierValue:      'Modifier value',
     formulaTitle:       'Roll Formula',
     formulaPlaceholder: 'e.g. 2d6 + 4  ·  1d20 - 2  ·  3d8 + 1d4 + 5',
     formulaPreviewEmpty:'Enter a formula or click dice above',
@@ -59,6 +62,9 @@ const i18n = {
     tagline:            'Lanceur de Dés JDR',
     diceTitle:          'Choisissez Vos Dés',
     diceHint:           'Cliquez sur un dé pour l\'ajouter à votre formule',
+    modifierIncrease:   'Augmenter le modificateur',
+    modifierDecrease:   'Diminuer le modificateur',
+    modifierValue:      'Valeur du modificateur',
     formulaTitle:       'Formule de Lancer',
     formulaPlaceholder: 'ex. 2d6 + 4  ·  1d20 - 2  ·  3d8 + 1d4 + 5',
     formulaPreviewEmpty:'Entrez une formule ou cliquez sur les dés',
@@ -107,6 +113,8 @@ const state = {
   selectedDice: {},
   /** @type {number[]} Ordered list of die sides as clicked */
   diceOrder: [],
+  /** @type {number} */
+  modifier: 0,
   /** @type {'none'|'advantage'|'disadvantage'} */
   advantageMode: 'none',
   /** @type {boolean} */
@@ -168,6 +176,8 @@ function applyTranslations() {
       : 'https://flagcdn.com/w40/gb.png';
     flagEl.alt = currentLang === 'en' ? 'FR' : 'EN';
   }
+
+  updateModifierUI();
 }
 
 /**
@@ -202,6 +212,9 @@ const dom = {
   formulaInput:     /** @type {HTMLInputElement} */ (document.getElementById('formula-input')),
   formulaPreview:   document.getElementById('formula-preview'),
   clearBtn:         document.getElementById('clear-btn'),
+  modifierInput:    /** @type {HTMLInputElement|null} */ (document.getElementById('modifier-input')),
+  modifierIncBtn:   document.getElementById('modifier-inc'),
+  modifierDecBtn:   document.getElementById('modifier-dec'),
   rollBtn:          document.getElementById('roll-btn'),
   resultSection:    document.getElementById('result-section'),
   resultCard:       document.getElementById('result-card'),
@@ -226,6 +239,34 @@ const dom = {
 
 function isStandaloneMode() {
   return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function clampModifier(value) {
+  return Math.max(-99, Math.min(99, value));
+}
+
+function updateModifierUI() {
+  if (!dom.modifierInput) return;
+
+  dom.modifierInput.value = String(state.modifier);
+  dom.modifierInput.setAttribute('aria-label', t('modifierValue'));
+
+  if (dom.modifierIncBtn) dom.modifierIncBtn.setAttribute('aria-label', t('modifierIncrease'));
+  if (dom.modifierDecBtn) dom.modifierDecBtn.setAttribute('aria-label', t('modifierDecrease'));
+}
+
+function resetFormulaBuilderState() {
+  state.selectedDice = {};
+  state.diceOrder = [];
+  state.modifier = 0;
+  updateDiceButtons();
+  updateModifierUI();
+}
+
+function setModifier(value) {
+  state.modifier = clampModifier(Number.isFinite(value) ? value : 0);
+  updateModifierUI();
+  rebuildFormulaFromDice();
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -809,7 +850,18 @@ function rebuildFormulaFromDice() {
     .filter(s => (state.selectedDice[s] || 0) > 0)
     .map(s => `${state.selectedDice[s]}d${s}`);
 
-  dom.formulaInput.value = diceParts.join(' + ');
+  let formula = diceParts.join(' + ');
+
+  if (state.modifier !== 0) {
+    const modifierValue = String(Math.abs(state.modifier));
+    if (formula) {
+      formula += state.modifier > 0 ? ` + ${modifierValue}` : ` - ${modifierValue}`;
+    } else {
+      formula = state.modifier > 0 ? modifierValue : `-${modifierValue}`;
+    }
+  }
+
+  dom.formulaInput.value = formula;
   updateFormulaPreview();
 }
 
@@ -1119,12 +1171,38 @@ function init() {
     });
   });
 
+  if (dom.modifierIncBtn) {
+    dom.modifierIncBtn.addEventListener('click', () => {
+      setModifier(state.modifier + 1);
+    });
+  }
+
+  if (dom.modifierDecBtn) {
+    dom.modifierDecBtn.addEventListener('click', () => {
+      setModifier(state.modifier - 1);
+    });
+  }
+
+  if (dom.modifierInput) {
+    dom.modifierInput.addEventListener('input', () => {
+      const rawValue = dom.modifierInput.value.trim();
+      if (rawValue === '' || rawValue === '-') return;
+
+      const nextValue = parseInt(rawValue, 10);
+      if (!Number.isNaN(nextValue)) setModifier(nextValue);
+    });
+
+    dom.modifierInput.addEventListener('blur', () => {
+      const rawValue = dom.modifierInput.value.trim();
+      const nextValue = parseInt(rawValue, 10);
+      setModifier(Number.isNaN(nextValue) ? 0 : nextValue);
+    });
+  }
+
   // Formula input changes
   dom.formulaInput.addEventListener('input', () => {
     // Reset selected-dice state when user types manually
-    state.selectedDice = {};
-    state.diceOrder = [];
-    updateDiceButtons();
+    resetFormulaBuilderState();
     updateFormulaPreview();
   });
 
@@ -1136,9 +1214,7 @@ function init() {
   // Clear formula button
   dom.clearBtn.addEventListener('click', () => {
     dom.formulaInput.value = '';
-    state.selectedDice = {};
-    state.diceOrder = [];
-    updateDiceButtons();
+    resetFormulaBuilderState();
     updateFormulaPreview();
     dom.resultSection.hidden = true;
     showError(null);
@@ -1156,6 +1232,7 @@ function init() {
   });
 
   // Initial preview state
+  updateModifierUI();
   updateFormulaPreview();
 }
 

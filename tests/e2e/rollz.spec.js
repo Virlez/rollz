@@ -239,6 +239,35 @@ test.describe('Dice buttons', () => {
     await page.click('[data-sides="12"]');
     await expect(page.locator('#roll-btn')).toBeEnabled();
   });
+
+  test('modifier buttons update the built formula', async ({ page }) => {
+    await gotoApp(page);
+    await page.click('[data-sides="6"]');
+    await page.click('#modifier-inc');
+    await expect(page.locator('#formula-input')).toHaveValue('1d6 + 1');
+
+    await page.click('#modifier-dec');
+    await page.click('#modifier-dec');
+    await expect(page.locator('#formula-input')).toHaveValue('1d6 - 1');
+  });
+
+  test('typing in the modifier input updates the formula', async ({ page }) => {
+    await gotoApp(page);
+    await page.click('[data-sides="20"]');
+    await page.fill('#modifier-input', '-3');
+    await page.locator('#modifier-input').blur();
+    await expect(page.locator('#formula-input')).toHaveValue('1d20 - 3');
+  });
+
+  test('manual formula typing resets the modifier widget', async ({ page }) => {
+    await gotoApp(page);
+    await page.click('[data-sides="8"]');
+    await page.click('#modifier-inc');
+    await expect(page.locator('#modifier-input')).toHaveValue('1');
+
+    await page.fill('#formula-input', '2d6 + 4');
+    await expect(page.locator('#modifier-input')).toHaveValue('0');
+  });
 });
 
 // ---------------------------------------------------------------------------

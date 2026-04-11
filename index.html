@@ -75,6 +75,7 @@
 
             <!-- ─── D4 · Green Triangle ─── -->
             <button class="die-btn" data-sides="4" aria-label="Add d4 to formula">
+              <span class="die-num">D4</span>
               <div class="die-shape die-d4">
                 <svg viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <defs>
@@ -117,6 +118,7 @@
 
             <!-- ─── D6 · Cyan Cube ─── -->
             <button class="die-btn" data-sides="6" aria-label="Add d6 to formula">
+              <span class="die-num">D6</span>
               <div class="die-shape die-d6">
                 <svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <defs>
@@ -158,6 +160,7 @@
 
             <!-- ─── D8 · Purple Octahedron ─── -->
             <button class="die-btn" data-sides="8" aria-label="Add d8 to formula">
+              <span class="die-num">D8</span>
               <div class="die-shape die-d8">
                 <svg viewBox="0 0 110 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <defs>
@@ -211,6 +214,7 @@
 
             <!-- ─── D10 · Magenta/Pink Gem ─── -->
             <button class="die-btn" data-sides="10" aria-label="Add d10 to formula">
+              <span class="die-num">D10</span>
               <div class="die-shape die-d10">
                 <svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <defs>
@@ -260,6 +264,7 @@
 
             <!-- ─── D12 · Red Dodecahedron ─── -->
             <button class="die-btn" data-sides="12" aria-label="Add d12 to formula">
+              <span class="die-num">D12</span>
               <div class="die-shape die-d12">
                 <svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <defs>
@@ -311,6 +316,7 @@
 
             <!-- ─── D20 · Orange Icosahedron ─── -->
             <button class="die-btn" data-sides="20" aria-label="Add d20 to formula">
+              <span class="die-num">D20</span>
               <div class="die-shape die-d20">
                 <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <defs>
@@ -370,6 +376,7 @@
 
             <!-- ─── D100 · Violet Sphere ─── -->
             <button class="die-btn" data-sides="100" aria-label="Add d100 to formula">
+              <span class="die-num">D100</span>
               <div class="die-shape die-d100">
                 <svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <defs>
@@ -405,6 +412,22 @@
               </div>
               <span class="die-counter" data-count="0" aria-live="polite">0</span>
             </button>
+
+            <div class="modifier-widget" aria-label="Modifier controls">
+              <span class="modifier-label">MOD</span>
+              <button type="button" class="modifier-step" id="modifier-inc" aria-label="Increase modifier">+</button>
+              <input
+                type="number"
+                id="modifier-input"
+                class="modifier-input"
+                value="0"
+                min="-99"
+                max="99"
+                inputmode="numeric"
+                aria-label="Modifier value"
+              />
+              <button type="button" class="modifier-step" id="modifier-dec" aria-label="Decrease modifier">-</button>
+            </div>
 
           </div><!-- /.dice-grid -->
         </section>
