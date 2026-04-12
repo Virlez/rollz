@@ -1,6 +1,5 @@
-import { expect, test } from '@playwright/test';
-
 import { RollzApp } from './support/rollz-app';
+import { expect, test } from './support/test';
 import { clearLocalStorageOnInit } from './support/test-helpers';
 
 test.describe('Page load', () => {
