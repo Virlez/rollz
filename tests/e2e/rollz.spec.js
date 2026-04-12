@@ -851,7 +851,7 @@ test.describe('Roll history', () => {
   });
 
   test('history reroll preserves saved success mode instead of current toggles', async ({ page }) => {
-    await mockRandomOrg(page, [2, 3, 6]);
+    await mockRandomOrg(page, [2, 3, 6, 1]);
     await gotoApp(page);
     await page.fill('#formula-input', '2d6');
     await page.click('#success-label');
@@ -866,7 +866,8 @@ test.describe('Roll history', () => {
 
     await expect(page.locator('#result-total')).toHaveText('1');
     await expect(page.locator('#result-total-label')).toHaveText('Réussites');
-    await expect(page.locator('.die-result.is-success')).toHaveCount(1);
+    await expect(page.locator('#result-breakdown .die-result.is-success')).toHaveCount(1);
+    await expect(page.locator('#result-breakdown .die-result.is-failure')).toHaveCount(1);
   });
 
   test('clear all button removes all history entries', async ({ page }) => {
@@ -885,6 +886,7 @@ test.describe('Roll history', () => {
     await gotoApp(page);
     await page.fill('#formula-input', '1d6');
     await page.click('#roll-btn');
+    await expect(page.locator('.history-entry')).toHaveCount(1);
     await page.reload();
     await page.waitForSelector('#roll-btn');
     await expect(page.locator('.history-entry')).toHaveCount(1);
