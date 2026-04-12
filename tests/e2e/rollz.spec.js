@@ -801,6 +801,59 @@ test.describe('Roll history', () => {
     await expect(latestEntry.locator('.history-total')).toHaveText('2');
   });
 
+  test('history reroll preserves saved advantage instead of current toggles', async ({ page }) => {
+    await mockRandomOrg(page, [3, 18, 4]);
+    await gotoApp(page);
+    await page.fill('#formula-input', '1d20');
+    await page.click('#advantage-label');
+    await page.click('#roll-btn');
+
+    await expect(page.locator('#result-total')).toHaveText('18');
+
+    await page.click('#advantage-label');
+    await page.click('#clear-btn');
+    await page.locator('.history-entry').first().click();
+
+    await expect(page.locator('#result-total')).toHaveText('4');
+    await expect(page.locator('.is-kept')).toHaveCount(1);
+  });
+
+  test('history reroll preserves saved normal mode instead of current toggles', async ({ page }) => {
+    await mockRandomOrg(page, [5, 2, 6]);
+    await gotoApp(page);
+    await page.fill('#formula-input', '1d6');
+    await page.click('#roll-btn');
+
+    await expect(page.locator('#result-total')).toHaveText('5');
+
+    await page.click('#advantage-label');
+    await page.click('#clear-btn');
+    await page.locator('.history-entry').first().click();
+
+    await expect(page.locator('#result-total')).toHaveText('2');
+    await expect(page.locator('.is-kept')).toHaveCount(0);
+    await expect(page.locator('.is-discarded')).toHaveCount(0);
+  });
+
+  test('history reroll preserves saved success mode instead of current toggles', async ({ page }) => {
+    await mockRandomOrg(page, [2, 3, 6]);
+    await gotoApp(page);
+    await page.fill('#formula-input', '2d6');
+    await page.click('#success-label');
+    await page.click('#roll-btn');
+
+    await expect(page.locator('#result-total')).toHaveText('1');
+    await expect(page.locator('#result-total-label')).toHaveText('Réussites');
+
+    await page.click('#advantage-label');
+    await page.click('#clear-btn');
+    await page.locator('.history-entry').first().click();
+
+    await expect(page.locator('#result-total')).toHaveText('1');
+    await expect(page.locator('#result-total-label')).toHaveText('Réussites');
+    await expect(page.locator('.die-result.is-success')).toHaveCount(1);
+  });
+
   test('clear all button removes all history entries', async ({ page }) => {
     await mockRandomOrg(page, [4, 5]);
     await gotoApp(page);

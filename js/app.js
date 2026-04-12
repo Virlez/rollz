@@ -290,6 +290,23 @@ function setModifier(value) {
 /** @typedef {{ formula: string, result: RollResult }} RenderedRoll */
 
 /**
+ * @typedef {{
+ *   advantageMode: 'none'|'advantage'|'disadvantage',
+ *   successMode: boolean,
+ * }} RollMode
+ */
+
+/**
+ * @typedef {{
+ *   formula: string,
+ *   total: string|number,
+ *   breakdown: string,
+ *   timestamp: number,
+ *   mode?: RollMode,
+ * }} HistoryEntry
+ */
+
+/**
  * Parse a dice formula string into an array of tokens.
  * Returns an empty array when the formula cannot be parsed.
  * @param {string} formula
@@ -376,6 +393,47 @@ function describeFormula(tokens) {
  */
 function describeFormulaInput(formulas) {
   return formulas.map(entry => describeFormula(entry.tokens)).join('  ;  ');
+}
+
+/**
+ * @returns {RollMode}
+ */
+function getCurrentRollMode() {
+  return {
+    advantageMode: state.advantageMode,
+    successMode: state.successMode,
+  };
+}
+
+/**
+ * @param {Partial<RollMode>|undefined} mode
+ * @returns {RollMode}
+ */
+function normalizeRollMode(mode) {
+  const advantageMode = mode && (mode.advantageMode === 'advantage' || mode.advantageMode === 'disadvantage')
+    ? mode.advantageMode
+    : 'none';
+  const successMode = Boolean(mode && mode.successMode);
+
+  if (successMode) {
+    return { advantageMode: 'none', successMode: true };
+  }
+
+  return { advantageMode, successMode: false };
+}
+
+/**
+ * @param {Partial<HistoryEntry>} entry
+ * @returns {HistoryEntry}
+ */
+function normalizeHistoryEntry(entry) {
+  return {
+    formula: typeof entry.formula === 'string' ? entry.formula : '',
+    total: typeof entry.total === 'string' || typeof entry.total === 'number' ? entry.total : '',
+    breakdown: typeof entry.breakdown === 'string' ? entry.breakdown : '',
+    timestamp: typeof entry.timestamp === 'number' ? entry.timestamp : Date.now(),
+    mode: normalizeRollMode(entry.mode),
+  };
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1159,7 +1217,7 @@ function registerServiceWorker() {
 
 function loadHistory() {
   try {
-    state.history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    state.history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]').map(normalizeHistoryEntry);
   } catch {
     state.history = [];
   }
@@ -1173,7 +1231,7 @@ function saveHistory() {
 }
 
 /**
- * @param {{formula:string, total:string|number, breakdown:string, timestamp:number}} entry
+ * @param {HistoryEntry} entry
  */
 function pushHistory(entry) {
   state.history.unshift(entry);
@@ -1218,7 +1276,7 @@ function renderHistory() {
       resetFormulaBuilderState();
       dom.formulaInput.value = entry.formula;
       updateFormulaPreview();
-      await doRoll();
+      await doRoll({ mode: normalizeRollMode(entry.mode) });
     });
 
     dom.historyList.appendChild(el);
@@ -1247,9 +1305,13 @@ function formatTime(ts) {
    MAIN ROLL ACTION
    ═══════════════════════════════════════════════════════════════════ */
 
-async function doRoll() {
+/**
+ * @param {{ mode?: RollMode }} [options]
+ */
+async function doRoll(options = {}) {
   const raw = dom.formulaInput.value.trim();
   const formulas = parseFormulaInput(raw);
+  const rollMode = normalizeRollMode(options.mode ?? getCurrentRollMode());
 
   if (formulas.length === 0) {
     showError(t('errorInvalid'));
@@ -1268,8 +1330,8 @@ async function doRoll() {
     for (const [index, entry] of formulas.entries()) {
       state.currentRollSource = 'randomorg';
       const result = await evaluateTokens(entry.tokens, {
-        advantageMode: index === 0 ? state.advantageMode : 'none',
-        successMode: index === 0 ? state.successMode : false,
+        advantageMode: index === 0 ? rollMode.advantageMode : 'none',
+        successMode: index === 0 ? rollMode.successMode : false,
       });
       result.randomSource = state.currentRollSource;
       renderedRolls.push({ formula: entry.formula, result });
@@ -1288,6 +1350,7 @@ async function doRoll() {
       total:     totalSummary,
       breakdown: breakdownSummary,
       timestamp: Date.now(),
+      mode:      rollMode,
     });
   } catch (err) {
     showError(`${t('errorRoll')}${err.message}`);
