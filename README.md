@@ -70,6 +70,31 @@ Le projet inclut un mécanisme simple de cache-busting pour limiter les problèm
 - `JavaScript` vanilla
 - `random.org` pour les tirages aléatoires
 
+### Stack de tests E2E
+
+- `Playwright` pour les tests end-to-end
+- `TypeScript` pour la suite de tests et la configuration Playwright
+- `http-server` pour servir localement le dossier `app/` pendant les tests
+- Exécution multi-navigateurs sur `Chromium`, `Firefox` et `WebKit`
+
+Couverture fonctionnelle :
+
+- chargement initial de l'application et état par défaut de l'interface
+- bascule de langue et persistance de la préférence utilisateur
+- shell PWA : manifeste, installation, badge hors-ligne et fallback réseau
+- construction de formule via les dés visuels et les modificateurs
+- saisie manuelle, validation et aperçu de formule
+- exécution des lancers, affichage des résultats et gestion des erreurs
+- modes spéciaux comme avantage, désavantage et réussites
+- historique des lancers, persistance locale et restauration après rechargement
+
+Commandes utiles :
+
+- `npm test`
+- `npm run test:ui`
+- `npm run typecheck:e2e`
+- `npm run ci:e2e`
+
 ### Structure du projet
 
 ```text
@@ -159,6 +184,31 @@ The project includes a lightweight cache-busting mechanism to reduce browser cac
 - `CSS3`
 - Vanilla `JavaScript`
 - `random.org` for random rolls
+
+### E2E testing stack
+
+- `Playwright` for end-to-end testing
+- `TypeScript` for the test suite and Playwright configuration
+- `http-server` to serve the `app/` directory locally during tests
+- Cross-browser execution on `Chromium`, `Firefox`, and `WebKit`
+
+Functional coverage:
+
+- initial application load and default UI state
+- language switching and persisted user preference
+- PWA shell behavior: manifest, install flow, offline badge, and network fallback
+- formula building through visual dice controls and modifiers
+- manual input, validation, and formula preview
+- roll execution, result rendering, and error handling
+- special modes such as advantage, disadvantage, and success mode
+- roll history, local persistence, and restoration after reload
+
+Useful commands:
+
+- `npm test`
+- `npm run test:ui`
+- `npm run typecheck:e2e`
+- `npm run ci:e2e`
 
 ### Project structure
 
