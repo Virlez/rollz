@@ -1,4 +1,4 @@
-const APP_VERSION = '2026-04-12-5';
+const APP_VERSION = '2026-04-12-6';
 const CACHE_NAME = `rollz-shell-${APP_VERSION}`;
 const APP_SHELL = [
   './',
@@ -8,6 +8,7 @@ const APP_SHELL = [
   './og-image.svg',
   './css/styles.css?v=2026-04-12-5',
   './js/constants.js',
+  './js/dice-palette.js',
   './js/dom.js',
   './js/engine.js',
   './js/history.js',

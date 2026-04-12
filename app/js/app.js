@@ -1,4 +1,5 @@
 import { DICE_SIDES } from './constants.js';
+import { renderDicePalette } from './dice-palette.js';
 import { dom } from './dom.js';
 import { evaluateTokens } from './engine.js';
 import { buildHistoryBreakdownSummary, loadHistory, pushHistory, renderHistory, saveHistory } from './history.js';
@@ -93,6 +94,7 @@ async function doRoll(options = {}) {
 }
 
 function init() {
+  renderDicePalette();
   loadLanguage();
   applyTranslations();
   updateModifierUI();
