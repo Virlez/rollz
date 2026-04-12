@@ -5,8 +5,11 @@
   "main": "index.js",
   "scripts": {
     "assets:pwa": "powershell -ExecutionPolicy Bypass -File .\\scripts\\generate-pwa-assets.ps1",
-    "test": "playwright test",
-    "test:ui": "playwright test --ui"
+    "test": "npm run test:e2e:all",
+    "test:e2e:all": "playwright test",
+    "test:ui": "playwright test --ui",
+    "typecheck:e2e": "tsc --noEmit -p tsconfig.e2e.json",
+    "ci:e2e": "npm run typecheck:e2e && npm run test:e2e:all"
   },
   "repository": {
     "type": "git",
@@ -22,6 +25,8 @@
   "homepage": "https://github.com/Virlez/rollz#readme",
   "devDependencies": {
     "@playwright/test": "^1.59.1",
-    "http-server": "^14.1.1"
+    "@types/node": "^25.6.0",
+    "http-server": "^14.1.1",
+    "typescript": "^6.0.2"
   }
 }
