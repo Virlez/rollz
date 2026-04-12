@@ -51,9 +51,15 @@ Exemples :
 
 Le projet est statique : aucun build n'est nécessaire.
 
+Les fichiers de l'application se trouvent dans le dossier `app/`. Pour un serveur local, il faut donc servir ce dossier comme racine web.
+
+Exemple : `npx http-server app`
+
 ### Déploiement GitHub Pages
 
-Rollz peut être publié tel quel sur GitHub Pages, car il ne dépend d'aucun backend applicatif.
+Rollz peut être publié sur GitHub Pages sans backend applicatif.
+
+Le dépôt est organisé en séparant l'application et les tests : GitHub Pages doit publier le contenu du dossier `app/`, qui contient `index.html`, le manifeste, le service worker et les assets statiques.
 
 Le projet inclut un mécanisme simple de cache-busting pour limiter les problèmes de cache navigateur après déploiement.
 
@@ -135,9 +141,15 @@ Examples:
 
 This is a static project, so no build step is required.
 
+The application files live under the `app/` directory, so your local static server should use that folder as its web root.
+
+Example: `npx http-server app`
+
 ### GitHub Pages deployment
 
-Rollz can be deployed directly to GitHub Pages because it does not require an application backend.
+Rollz can be deployed to GitHub Pages without any application backend.
+
+The repository separates the application from the test suite, so GitHub Pages must publish the `app/` directory, which contains `index.html`, the web manifest, the service worker, and the static assets.
 
 The project includes a lightweight cache-busting mechanism to reduce browser cache issues after deployment.
 
