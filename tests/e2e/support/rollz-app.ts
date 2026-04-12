@@ -1,0 +1,222 @@
+import type { Locator, Page } from '@playwright/test';
+
+export type RollMode = 'advantage' | 'disadvantage' | 'success';
+export type InstallOutcome = 'accepted' | 'dismissed';
+
+export class RollzApp {
+  constructor(private readonly page: Page) {}
+
+  get rollButton(): Locator {
+    return this.page.locator('#roll-btn');
+  }
+
+  get formulaInput(): Locator {
+    return this.page.locator('#formula-input');
+  }
+
+  get modifierInput(): Locator {
+    return this.page.locator('#modifier-input');
+  }
+
+  get formulaPreview(): Locator {
+    return this.page.locator('#formula-preview');
+  }
+
+  get resultSection(): Locator {
+    return this.page.locator('#result-section');
+  }
+
+  get resultTotal(): Locator {
+    return this.page.locator('#result-total');
+  }
+
+  get resultTotalLabel(): Locator {
+    return this.page.locator('#result-total-label');
+  }
+
+  get resultTotalNote(): Locator {
+    return this.page.locator('#result-total-note');
+  }
+
+  get resultSourceNote(): Locator {
+    return this.page.locator('#result-source-note');
+  }
+
+  get resultBreakdown(): Locator {
+    return this.page.locator('#result-breakdown');
+  }
+
+  get resultMulti(): Locator {
+    return this.page.locator('#result-multi');
+  }
+
+  get errorBanner(): Locator {
+    return this.page.locator('#error-banner');
+  }
+
+  get installButton(): Locator {
+    return this.page.locator('#install-btn');
+  }
+
+  get offlineBadge(): Locator {
+    return this.page.locator('#offline-badge');
+  }
+
+  get langToggle(): Locator {
+    return this.page.locator('#lang-toggle');
+  }
+
+  get langFlag(): Locator {
+    return this.page.locator('#lang-flag');
+  }
+
+  get historyEntries(): Locator {
+    return this.page.locator('.history-entry');
+  }
+
+  get historyEmpty(): Locator {
+    return this.page.locator('#history-empty');
+  }
+
+  async goto(): Promise<void> {
+    await this.page.goto('/');
+    await this.rollButton.waitFor();
+  }
+
+  async reload(): Promise<void> {
+    await this.page.reload();
+    await this.rollButton.waitFor();
+  }
+
+  async fillFormula(formula: string): Promise<void> {
+    await this.formulaInput.fill(formula);
+  }
+
+  async roll(): Promise<void> {
+    await this.rollButton.click();
+  }
+
+  async rollFormula(formula: string): Promise<void> {
+    await this.fillFormula(formula);
+    await this.roll();
+  }
+
+  async pressEnterOnFormula(): Promise<void> {
+    await this.formulaInput.press('Enter');
+  }
+
+  async clickDie(sides: number): Promise<void> {
+    await this.page.locator(`[data-sides="${sides}"]`).click();
+  }
+
+  async buildFormulaFromDice(...sidesList: number[]): Promise<void> {
+    for (const sides of sidesList) {
+      await this.clickDie(sides);
+    }
+  }
+
+  async setModifier(value: string): Promise<void> {
+    await this.modifierInput.fill(value);
+    await this.modifierInput.blur();
+  }
+
+  async incrementModifier(): Promise<void> {
+    await this.page.locator('#modifier-inc').click();
+  }
+
+  async decrementModifier(): Promise<void> {
+    await this.page.locator('#modifier-dec').click();
+  }
+
+  async clearFormula(): Promise<void> {
+    await this.page.locator('#clear-btn').click();
+  }
+
+  async clearHistory(): Promise<void> {
+    await this.page.locator('#clear-history-btn').click();
+  }
+
+  async toggleLanguage(): Promise<void> {
+    await this.langToggle.click();
+  }
+
+  async toggleMode(mode: RollMode): Promise<void> {
+    await this.page.locator(`#${mode}-label`).click();
+  }
+
+  modeCheckbox(mode: RollMode): Locator {
+    return this.page.locator(`#${mode}-check`);
+  }
+
+  dieButton(sides: number): Locator {
+    return this.page.locator(`[data-sides="${sides}"]`);
+  }
+
+  dieCounter(sides: number): Locator {
+    return this.page.locator(`[data-sides="${sides}"] .die-counter`);
+  }
+
+  historyEntry(index = 0): Locator {
+    return this.historyEntries.nth(index);
+  }
+
+  historyFormula(index = 0): Locator {
+    return this.historyEntry(index).locator('.history-formula');
+  }
+
+  historyTotal(index = 0): Locator {
+    return this.historyEntry(index).locator('.history-total');
+  }
+
+  multiResultTotal(index: number): Locator {
+    return this.resultMulti.locator('.result-total').nth(index);
+  }
+
+  resultBlock(index: number): Locator {
+    return this.resultMulti.locator('.result-sub-block').nth(index);
+  }
+
+  dieResults(selector = '.die-result'): Locator {
+    return this.page.locator(selector);
+  }
+
+  async clickHistoryEntry(index = 0): Promise<void> {
+    await this.historyEntry(index).click();
+  }
+
+  async setOffline(offline: boolean): Promise<void> {
+    await this.page.context().setOffline(offline);
+  }
+
+  async triggerBeforeInstallPrompt(outcome: InstallOutcome): Promise<void> {
+    await this.page.evaluate(selectedOutcome => {
+      const event = new Event('beforeinstallprompt', { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'prompt', {
+        value: () => Promise.resolve(),
+      });
+      Object.defineProperty(event, 'userChoice', {
+        value: Promise.resolve({ outcome: selectedOutcome, platform: 'web' }),
+      });
+      window.dispatchEvent(event);
+    }, outcome);
+  }
+
+  async triggerAppInstalled(): Promise<void> {
+    await this.page.evaluate(() => {
+      window.dispatchEvent(new Event('appinstalled'));
+    });
+  }
+
+  async primeInvalidFormulaState(): Promise<void> {
+    await this.page.evaluate(() => {
+      const formulaInput = document.getElementById('formula-input') as HTMLInputElement | null;
+      const rollButton = document.getElementById('roll-btn') as HTMLButtonElement | null;
+      if (!formulaInput || !rollButton) {
+        return;
+      }
+
+      formulaInput.value = '???';
+      rollButton.disabled = false;
+    });
+  }
+}
