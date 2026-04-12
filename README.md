@@ -68,14 +68,20 @@ Le projet inclut un mécanisme simple de cache-busting pour limiter les problèm
 
 ```text
 rollz/
-├── index.html
 ├── README.md
-├── favicon.svg
-├── og-image.svg
-├── css/
-│   └── styles.css
-└── js/
-		└── app.js
+├── app/
+│   ├── index.html
+│   ├── manifest.webmanifest
+│   ├── sw.js
+│   ├── css/
+│   ├── fonts/
+│   ├── icons/
+│   └── js/
+├── scripts/
+└── tests/
+	├── e2e/
+	├── playwright.config.ts
+	└── tsconfig.e2e.json
 ```
 
 ---
@@ -146,12 +152,18 @@ The project includes a lightweight cache-busting mechanism to reduce browser cac
 
 ```text
 rollz/
-├── index.html
 ├── README.md
-├── favicon.svg
-├── og-image.svg
-├── css/
-│   └── styles.css
-└── js/
-		└── app.js
+├── app/
+│   ├── index.html
+│   ├── manifest.webmanifest
+│   ├── sw.js
+│   ├── css/
+│   ├── fonts/
+│   ├── icons/
+│   └── js/
+├── scripts/
+└── tests/
+	├── e2e/
+	├── playwright.config.ts
+	└── tsconfig.e2e.json
 ```

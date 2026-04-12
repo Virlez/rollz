@@ -2,8 +2,9 @@ $ErrorActionPreference = 'Stop'
 
 Set-Location (Split-Path -Parent $PSScriptRoot)
 
-$fontsDir = Join-Path $PWD 'fonts'
-$iconsDir = Join-Path $PWD 'icons'
+$appDir = Join-Path $PWD 'app'
+$fontsDir = Join-Path $appDir 'fonts'
+$iconsDir = Join-Path $appDir 'icons'
 
 New-Item -ItemType Directory -Force -Path $fontsDir, $iconsDir | Out-Null
 

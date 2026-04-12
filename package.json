@@ -6,9 +6,9 @@
   "scripts": {
     "assets:pwa": "powershell -ExecutionPolicy Bypass -File .\\scripts\\generate-pwa-assets.ps1",
     "test": "npm run test:e2e:all",
-    "test:e2e:all": "playwright test",
-    "test:ui": "playwright test --ui",
-    "typecheck:e2e": "tsc --noEmit -p tsconfig.e2e.json",
+    "test:e2e:all": "playwright test -c tests/playwright.config.ts",
+    "test:ui": "playwright test -c tests/playwright.config.ts --ui",
+    "typecheck:e2e": "tsc --noEmit -p tests/tsconfig.e2e.json",
     "ci:e2e": "npm run typecheck:e2e && npm run test:e2e:all"
   },
   "repository": {

@@ -1,9 +1,15 @@
+import { resolve } from 'node:path';
+import { execPath } from 'node:process';
+
 import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = process.env.BASE_URL || 'http://localhost:8080';
+const appDir = resolve(__dirname, '..', 'app');
+const httpServerCli = require.resolve('http-server/bin/http-server');
+const webServerCommand = `"${execPath}" "${httpServerCli}" "${appDir}" -p 8080 --silent`;
 
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: './e2e',
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
@@ -30,9 +36,9 @@ export default defineConfig({
   webServer: process.env.BASE_URL
     ? undefined
     : {
-        command: 'npx http-server . -p 8080 --silent',
+        command: webServerCommand,
         url: 'http://localhost:8080',
         reuseExistingServer: !process.env.CI,
-        timeout: 10000,
+        timeout: 20000,
       },
 });
