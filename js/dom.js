@@ -1,0 +1,34 @@
+export const dom = {
+  formulaInput: /** @type {HTMLInputElement} */ (document.getElementById('formula-input')),
+  formulaPreview: document.getElementById('formula-preview'),
+  clearBtn: document.getElementById('clear-btn'),
+  modifierInput: /** @type {HTMLInputElement|null} */ (document.getElementById('modifier-input')),
+  modifierIncBtn: document.getElementById('modifier-inc'),
+  modifierDecBtn: document.getElementById('modifier-dec'),
+  rollBtn: document.getElementById('roll-btn'),
+  resultSection: document.getElementById('result-section'),
+  resultCard: document.getElementById('result-card'),
+  resultFormula: document.getElementById('result-formula'),
+  resultBreakdown: document.getElementById('result-breakdown'),
+  resultTotalRow: document.getElementById('result-total-row'),
+  resultTotalLabel: document.getElementById('result-total-label'),
+  resultTotal: document.getElementById('result-total'),
+  resultTotalNote: document.getElementById('result-total-note'),
+  resultSourceNote: document.getElementById('result-source-note'),
+  resultMulti: document.getElementById('result-multi'),
+  errorBanner: document.getElementById('error-banner'),
+  errorText: document.getElementById('error-text'),
+  historyList: document.getElementById('history-list'),
+  historyEmpty: document.getElementById('history-empty'),
+  clearHistoryBtn: document.getElementById('clear-history-btn'),
+  spinnerOverlay: document.getElementById('spinner-overlay'),
+  offlineBadge: document.getElementById('offline-badge'),
+  installBtn: document.getElementById('install-btn'),
+  advantageCheck: /** @type {HTMLInputElement} */ (document.getElementById('advantage-check')),
+  disadvantageCheck: /** @type {HTMLInputElement} */ (document.getElementById('disadvantage-check')),
+  successCheck: /** @type {HTMLInputElement} */ (document.getElementById('success-check')),
+};
+
+export function isStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}

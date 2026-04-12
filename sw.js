@@ -1,13 +1,23 @@
-const APP_VERSION = '2026-04-12-2';
+const APP_VERSION = '2026-04-12-5';
 const CACHE_NAME = `rollz-shell-${APP_VERSION}`;
 const APP_SHELL = [
   './',
   './index.html',
-  './manifest.webmanifest?v=2026-04-12-2',
+  './manifest.webmanifest',
   './favicon.svg',
   './og-image.svg',
-  './css/styles.css?v=2026-04-12-2',
-  './js/app.js?v=2026-04-12-2',
+  './css/styles.css?v=2026-04-12-5',
+  './js/constants.js',
+  './js/dom.js',
+  './js/engine.js',
+  './js/history.js',
+  './js/i18n.js',
+  './js/parser.js',
+  './js/random.js',
+  './js/render.js',
+  './js/state.js',
+  './js/ui.js',
+  './js/app.js',
   './icons/apple-touch-icon.png',
   './icons/icon-192.png',
   './icons/icon-512.png',

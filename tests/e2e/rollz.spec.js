@@ -30,6 +30,21 @@ async function mockRandomOrg(page, values) {
   });
 }
 
+async function disableCryptoFallback(page) {
+  await page.addInitScript(() => {
+    try {
+      Object.defineProperty(window.crypto, 'getRandomValues', {
+        configurable: true,
+        value: undefined,
+      });
+    } catch {
+      try {
+        window.crypto.getRandomValues = undefined;
+      } catch {}
+    }
+  });
+}
+
 /** Navigate to the app and wait until it is fully initialised. */
 async function gotoApp(page) {
   await page.goto('/');
@@ -802,7 +817,7 @@ test.describe('Roll history', () => {
   });
 
   test('history reroll preserves saved advantage instead of current toggles', async ({ page }) => {
-    await mockRandomOrg(page, [3, 18, 4]);
+    await mockRandomOrg(page, [3, 18, 4, 2]);
     await gotoApp(page);
     await page.fill('#formula-input', '1d20');
     await page.click('#advantage-label');
@@ -882,6 +897,7 @@ test.describe('Roll history', () => {
 
 test.describe('Error handling', () => {
   test('network error shows error banner', async ({ page }) => {
+    await disableCryptoFallback(page);
     await page.route(/random\.org\/integers/, route => route.abort());
     await gotoApp(page);
     await page.fill('#formula-input', '1d6');
@@ -890,6 +906,7 @@ test.describe('Error handling', () => {
   });
 
   test('error banner is hidden after a successful retry', async ({ page }) => {
+    await disableCryptoFallback(page);
     let callCount = 0;
     await page.route(/random\.org\/integers/, route => {
       callCount++;
@@ -910,6 +927,7 @@ test.describe('Error handling', () => {
   });
 
   test('non-ok HTTP response from random.org shows error banner', async ({ page }) => {
+    await disableCryptoFallback(page);
     await page.route(/random\.org\/integers/, route =>
       route.fulfill({ status: 503, body: 'Service Unavailable' })
     );
