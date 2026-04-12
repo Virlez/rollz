@@ -1343,7 +1343,7 @@ async function doRoll(options = {}) {
     const breakdownSummary = renderedRolls
       .map((entry, index) => buildHistoryBreakdownSummary(formulas[index].tokens, entry.result))
       .join(' ; ');
-    const totalSummary = renderedRolls.map(entry => String(entry.result.total)).join(' ; ');
+      const totalSummary = renderedRolls.map(entry => String(entry.result.total)).join(' | ');
 
     pushHistory({
       formula:   raw,

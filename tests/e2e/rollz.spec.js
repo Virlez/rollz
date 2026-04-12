@@ -748,7 +748,7 @@ test.describe('Roll history', () => {
 
     const entry = page.locator('.history-entry').first();
     await expect(entry.locator('.history-formula')).toHaveText('1d20 + 4;1d8 + 2');
-    await expect(entry.locator('.history-total')).toHaveText('14 ; 5');
+     await expect(entry.locator('.history-total')).toHaveText('14 | 5');
   });
 
   test('multiple rolls add multiple history entries', async ({ page }) => {
