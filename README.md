@@ -77,6 +77,12 @@ The project includes a lightweight cache-busting mechanism to reduce browser cac
 - `http-server` to serve the `app/` directory locally during tests
 - Cross-browser execution on `Chromium`, `Firefox`, and `WebKit`
 
+Test architecture:
+
+- domain-based specs split into app shell, builder, rolling, history, and resilience scenarios
+- shared page-object helpers for common UI actions and selectors
+- shared network and browser-state helpers for random.org mocking, local storage setup, and failure simulation
+
 Functional coverage:
 
 - initial application load and default UI state
@@ -111,6 +117,14 @@ rollz/
 ├── scripts/
 └── tests/
 	├── e2e/
+	│   ├── app-shell.spec.ts
+	│   ├── builder.spec.ts
+	│   ├── history.spec.ts
+	│   ├── resilience.spec.ts
+	│   ├── rolling.spec.ts
+	│   └── support/
+	│       ├── rollz-app.ts
+	│       └── test-helpers.ts
 	├── playwright.config.ts
 	└── tsconfig.e2e.json
 ```
@@ -192,6 +206,12 @@ Le projet inclut un mécanisme simple de cache-busting pour limiter les problèm
 - `http-server` pour servir localement le dossier `app/` pendant les tests
 - Exécution multi-navigateurs sur `Chromium`, `Firefox` et `WebKit`
 
+Architecture des tests :
+
+- specs séparées par domaine fonctionnel : shell applicatif, construction de formule, lancers, historique et résilience
+- helpers de type page object partagés pour les actions UI et les sélecteurs communs
+- helpers partagés pour le mock de `random.org`, la préparation du stockage local et la simulation de pannes
+
 Couverture fonctionnelle :
 
 - chargement initial de l'application et état par défaut de l'interface
@@ -226,6 +246,14 @@ rollz/
 ├── scripts/
 └── tests/
 	├── e2e/
+	│   ├── app-shell.spec.ts
+	│   ├── builder.spec.ts
+	│   ├── history.spec.ts
+	│   ├── resilience.spec.ts
+	│   ├── rolling.spec.ts
+	│   └── support/
+	│       ├── rollz-app.ts
+	│       └── test-helpers.ts
 	├── playwright.config.ts
 	└── tsconfig.e2e.json
 ```
