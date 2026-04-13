@@ -1,4 +1,5 @@
 export const dom = {
+  formulaInputWrap: /** @type {HTMLDivElement} */ (document.getElementById('formula-input-wrap')),
   formulaInput: /** @type {HTMLInputElement} */ (document.getElementById('formula-input')),
   formulaPreview: document.getElementById('formula-preview'),
   clearBtn: document.getElementById('clear-btn'),

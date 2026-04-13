@@ -276,7 +276,7 @@ function init() {
       resetFormulaBuilderState();
       dom.formulaInput.value = formula;
       updateFormulaPreview();
-      dom.formulaInput.focus();
+      dom.formulaInputWrap?.focus({ preventScroll: true });
     });
   }
 

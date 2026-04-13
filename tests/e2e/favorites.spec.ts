@@ -52,6 +52,8 @@ test.describe('Favorite formulas', () => {
     await expect(app.formulaInput).toHaveValue('2d6R2');
     await expect(app.resultTotal).toHaveText('11');
     await expect(app.rollButton).toBeEnabled();
+    await expect(app.formulaInputWrap).toBeFocused();
+    await expect(app.formulaInput).not.toBeFocused();
   });
 
   test('removing a favorite updates the list and the history button state', async ({ page }) => {

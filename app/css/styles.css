@@ -621,6 +621,7 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   transition: border-color var(--tr), box-shadow var(--tr);
 }
 
+.formula-input-wrap:focus,
 .formula-input-wrap:focus-within {
   border-color: rgba(240,180,41,0.5);
   box-shadow: 0 0 0 3px rgba(240,180,41,0.12);

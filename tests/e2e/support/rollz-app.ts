@@ -14,6 +14,10 @@ export class RollzApp {
     return this.page.locator('#formula-input');
   }
 
+  get formulaInputWrap(): Locator {
+    return this.page.locator('#formula-input-wrap');
+  }
+
   get modifierInput(): Locator {
     return this.page.locator('#modifier-input');
   }
