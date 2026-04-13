@@ -8,6 +8,8 @@
 
 Rollz is a dark-fantasy styled TTRPG dice roller built with plain HTML, CSS, and JavaScript, using `random.org` for number generation.
 
+User guide in English: [docs/WIKI_USER_GUIDE.md](docs/WIKI_USER_GUIDE.md)
+
 User guide in French: [docs/WIKI_UTILISATEUR.md](docs/WIKI_UTILISATEUR.md)
 
 ### Features
