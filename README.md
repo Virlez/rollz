@@ -11,6 +11,7 @@ Rollz is a dark-fantasy styled TTRPG dice roller built with plain HTML, CSS, and
 ### Features
 
 - Classic dice formulas such as `2d6 + 4`, `1d20 - 2`, `3d8 + 1d4 + 5`
+- Advanced inline formulas such as `8d6>=5`, `2d6R2`, `4d6R2>=5`
 - Interactive visual dice: `d4`, `d6`, `d8`, `d10`, `d12`, `d20`, `d100`
 - `Advantage` / `Disadvantage` mode
 - `Success Mode`:
@@ -33,6 +34,40 @@ Rollz is a dark-fantasy styled TTRPG dice roller built with plain HTML, CSS, and
 - If every die in the first roll is even, the group is rerolled once and the extra successes are added
 - If every die in the first roll is odd, the final result is `0` with the message `Fumble`
 
+### Advanced Formula Rules
+
+Rollz supports two advanced inline operators that can be written directly after a dice group.
+
+#### Success threshold: `NdX>=T`
+
+- Example: `8d6>=5`
+- Rolls `8` dice with `6` sides
+- Counts `1` success for each final die result greater than or equal to `5`
+- The displayed total becomes the number of successes
+- Flat modifiers still apply: `8d6>=5 + 2`
+- If a threshold formula is combined with multiple dice groups, each threshold group counts its own successes and contributes them to the total
+
+#### Single reroll: `NdXRn`
+
+- Example: `2d6R2`
+- Rolls `2` dice with `6` sides
+- Any die showing a value less than or equal to `2` is rerolled once
+- Only the rerolled value is kept for the final total
+- The UI shows both the original value and the kept reroll result
+
+#### Combined syntax: `NdXRn>=T`
+
+- Example: `4d6R2>=5`
+- Rerolls happen first
+- Successes are counted on the final kept values
+
+#### Limits and compatibility
+
+- `R` means one reroll per eligible die, not an infinite reroll loop
+- The current advanced syntax scope is limited to `>=` and `R`
+- Advanced inline syntax cannot be combined with the global `Advantage`, `Disadvantage`, or `Success Mode` toggles on the first formula
+- Semicolon-separated formulas are supported, for example: `8d6>=5; 2d6R2`
+
 ### Usage
 
 You can use the app in two ways:
@@ -46,6 +81,9 @@ Examples:
 - `1d20 + 5`
 - `4d8 + 2`
 - `6d10 + 1`
+- `8d6>=5`
+- `2d6R2`
+- `4d6R2>=5`
 
 ### Run locally
 
@@ -140,6 +178,7 @@ Rollz est un lanceur de dés JDR/TTRPG au style dark fantasy, conçu en HTML, CS
 ### Fonctionnalités
 
 - Lancers classiques avec formules comme `2d6 + 4`, `1d20 - 2`, `3d8 + 1d4 + 5`
+- Formules avancées inline comme `8d6>=5`, `2d6R2`, `4d6R2>=5`
 - Dés visuels interactifs : `d4`, `d6`, `d8`, `d10`, `d12`, `d20`, `d100`
 - Mode `Avantage` / `Désavantage`
 - Mode `Réussites` :
@@ -162,6 +201,40 @@ Rollz est un lanceur de dés JDR/TTRPG au style dark fantasy, conçu en HTML, CS
 - Si tous les dés du premier lancer sont pairs, le groupe est relancé une seule fois et les nouvelles réussites sont ajoutées
 - Si tous les dés du premier lancer sont impairs, le résultat final est `0` avec le message `Échec critique`
 
+### Règles des formules avancées
+
+Rollz prend en charge deux opérateurs inline avancés qui s'écrivent directement après un groupe de dés.
+
+#### Seuil de réussite : `NdX>=T`
+
+- Exemple : `8d6>=5`
+- Lance `8` dés à `6` faces
+- Compte `1` réussite pour chaque résultat final supérieur ou égal à `5`
+- Le total affiché devient le nombre de réussites
+- Les modificateurs fixes s'appliquent toujours : `8d6>=5 + 2`
+- Si une formule contient plusieurs groupes de dés avec seuil, chaque groupe compte ses propres réussites et les ajoute au total
+
+#### Relance simple : `NdXRn`
+
+- Exemple : `2d6R2`
+- Lance `2` dés à `6` faces
+- Tout dé dont la valeur est inférieure ou égale à `2` est relancé une seule fois
+- Seule la valeur relancée est conservée pour le total final
+- L'interface affiche à la fois la valeur d'origine et la valeur conservée après relance
+
+#### Syntaxe combinée : `NdXRn>=T`
+
+- Exemple : `4d6R2>=5`
+- Les relances sont appliquées en premier
+- Les réussites sont comptées sur les valeurs finales conservées
+
+#### Limites et compatibilité
+
+- `R` signifie une seule relance par dé éligible, pas une boucle infinie
+- Le périmètre actuel de la syntaxe avancée est limité à `>=` et `R`
+- La syntaxe inline avancée ne peut pas être combinée avec les bascules globales `Avantage`, `Désavantage` ou `Mode réussites` sur la première formule
+- Les formules séparées par `;` sont prises en charge, par exemple : `8d6>=5; 2d6R2`
+
 ### Utilisation
 
 Tu peux utiliser l'application de deux façons :
@@ -175,6 +248,9 @@ Exemples :
 - `1d20 + 5`
 - `4d8 + 2`
 - `6d10 + 1`
+- `8d6>=5`
+- `2d6R2`
+- `4d6R2>=5`
 
 ### Lancer le projet en local
 
