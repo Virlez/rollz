@@ -17,7 +17,7 @@
  *   deferredInstallPrompt: BeforeInstallPromptEvent|null,
  *   isInstalled: boolean,
  *   history: Array<{formula: string, total: string|number, breakdown: string, timestamp: number, mode?: { advantageMode: 'none'|'advantage'|'disadvantage', successMode: boolean }}>,
- *   favorites: Array<{ formula: string, timestamp: number }>,
+ *   favorites: Array<{ formula: string, timestamp: number, successMode: boolean }>,
  * }} */
 export const state = {
   selectedDice: {},

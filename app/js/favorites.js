@@ -5,11 +5,11 @@ import { state } from './state.js';
 
 /**
  * @param {unknown} entry
- * @returns {{ formula: string, timestamp: number }|null}
+ * @returns {{ formula: string, timestamp: number, successMode: boolean }|null}
  */
 function normalizeFavoriteEntry(entry) {
   if (typeof entry === 'string') {
-    return entry.trim() ? { formula: entry.trim(), timestamp: Date.now() } : null;
+    return entry.trim() ? { formula: entry.trim(), timestamp: Date.now(), successMode: false } : null;
   }
 
   if (!entry || typeof entry !== 'object') return null;
@@ -20,7 +20,17 @@ function normalizeFavoriteEntry(entry) {
   return {
     formula,
     timestamp: typeof entry.timestamp === 'number' ? entry.timestamp : Date.now(),
+    successMode: entry.successMode === true,
   };
+}
+
+/**
+ * @param {string} formula
+ * @param {{ successMode?: boolean }} [options]
+ * @returns {boolean}
+ */
+function favoriteMatches(entry, formula, options = {}) {
+  return entry.formula === formula.trim() && entry.successMode === (options.successMode === true);
 }
 
 export function loadFavorites() {
@@ -44,21 +54,27 @@ export function saveFavorites() {
 
 /**
  * @param {string} formula
+ * @param {{ successMode?: boolean }} [options]
  * @returns {boolean}
  */
-export function isFavoriteFormula(formula) {
-  return state.favorites.some(entry => entry.formula === formula);
+export function isFavoriteFormula(formula, options = {}) {
+  return state.favorites.some(entry => favoriteMatches(entry, formula, options));
 }
 
 /**
  * @param {string} formula
+ * @param {{ successMode?: boolean }} [options]
  * @returns {boolean}
  */
-export function addFavoriteFormula(formula) {
+export function addFavoriteFormula(formula, options = {}) {
   const normalized = formula.trim();
-  if (!normalized || isFavoriteFormula(normalized)) return false;
+  if (!normalized || isFavoriteFormula(normalized, options)) return false;
 
-  state.favorites.unshift({ formula: normalized, timestamp: Date.now() });
+  state.favorites.unshift({
+    formula: normalized,
+    timestamp: Date.now(),
+    successMode: options.successMode === true,
+  });
   if (state.favorites.length > MAX_FAVORITES) state.favorites.length = MAX_FAVORITES;
   saveFavorites();
   return true;
@@ -66,10 +82,11 @@ export function addFavoriteFormula(formula) {
 
 /**
  * @param {string} formula
+ * @param {{ successMode?: boolean }} [options]
  * @returns {boolean}
  */
-export function removeFavoriteFormula(formula) {
-  const index = state.favorites.findIndex(entry => entry.formula === formula.trim());
+export function removeFavoriteFormula(formula, options = {}) {
+  const index = state.favorites.findIndex(entry => favoriteMatches(entry, formula, options));
   if (index < 0) return false;
 
   state.favorites.splice(index, 1);
@@ -79,10 +96,32 @@ export function removeFavoriteFormula(formula) {
 
 /**
  * @param {string} formula
+ * @param {number} insertIndex
+ * @param {{ successMode?: boolean }} [options]
  * @returns {boolean}
  */
-export function toggleFavoriteFormula(formula) {
-  return isFavoriteFormula(formula) ? !removeFavoriteFormula(formula) : addFavoriteFormula(formula);
+export function moveFavoriteFormula(formula, insertIndex, options = {}) {
+  const sourceIndex = state.favorites.findIndex(entry => favoriteMatches(entry, formula, options));
+  if (sourceIndex < 0) return false;
+
+  const boundedIndex = Math.max(0, Math.min(insertIndex, state.favorites.length));
+  let nextIndex = boundedIndex;
+  if (sourceIndex < nextIndex) nextIndex -= 1;
+  if (nextIndex === sourceIndex) return false;
+
+  const [entry] = state.favorites.splice(sourceIndex, 1);
+  state.favorites.splice(nextIndex, 0, entry);
+  saveFavorites();
+  return true;
+}
+
+/**
+ * @param {string} formula
+ * @param {{ successMode?: boolean }} [options]
+ * @returns {boolean}
+ */
+export function toggleFavoriteFormula(formula, options = {}) {
+  return isFavoriteFormula(formula, options) ? !removeFavoriteFormula(formula, options) : addFavoriteFormula(formula, options);
 }
 
 export function renderFavorites() {
@@ -98,11 +137,13 @@ export function renderFavorites() {
 
   dom.favoritesEmpty.hidden = true;
 
-  state.favorites.forEach(entry => {
+  state.favorites.forEach((entry, index) => {
     const el = document.createElement('div');
     el.className = 'favorite-entry';
     el.role = 'listitem';
     el.dataset.formula = entry.formula;
+    el.dataset.successMode = entry.successMode ? 'true' : 'false';
+    el.dataset.index = String(index);
 
     const loadButton = document.createElement('button');
     loadButton.type = 'button';
@@ -116,6 +157,13 @@ export function renderFavorites() {
     formula.textContent = entry.formula;
     loadButton.appendChild(formula);
 
+    if (entry.successMode) {
+      const modeBadge = document.createElement('span');
+      modeBadge.className = 'favorite-mode-badge';
+      modeBadge.textContent = t('successLabel');
+      loadButton.appendChild(modeBadge);
+    }
+
     const removeButton = document.createElement('button');
     removeButton.type = 'button';
     removeButton.className = 'favorite-remove-btn';
@@ -124,8 +172,22 @@ export function renderFavorites() {
     removeButton.title = t('favoriteDelete');
     removeButton.textContent = 'x';
 
+    const actions = document.createElement('div');
+    actions.className = 'favorite-actions';
+
+    const dragHandle = document.createElement('button');
+    dragHandle.type = 'button';
+    dragHandle.className = 'favorite-drag-handle';
+    dragHandle.draggable = true;
+    dragHandle.dataset.action = 'drag';
+    dragHandle.setAttribute('aria-label', t('favoriteReorder'));
+    dragHandle.title = t('favoriteReorder');
+    dragHandle.textContent = '::';
+
     el.appendChild(loadButton);
-    el.appendChild(removeButton);
+    actions.appendChild(dragHandle);
+    actions.appendChild(removeButton);
+    el.appendChild(actions);
     dom.favoritesList.appendChild(el);
   });
 }

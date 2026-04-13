@@ -200,6 +200,10 @@ export class RollzApp {
     return this.favoriteEntry(index).locator('.favorite-remove-btn');
   }
 
+  favoriteDragHandle(index = 0): Locator {
+    return this.favoriteEntry(index).locator('[data-action="drag"]');
+  }
+
   multiResultTotal(index: number): Locator {
     return this.resultMulti.locator('.result-total').nth(index);
   }
@@ -226,6 +230,10 @@ export class RollzApp {
 
   async removeFavorite(index = 0): Promise<void> {
     await this.favoriteRemoveButton(index).click();
+  }
+
+  async dragFavoriteTo(sourceIndex: number, targetIndex: number): Promise<void> {
+    await this.favoriteDragHandle(sourceIndex).dragTo(this.favoriteEntry(targetIndex));
   }
 
   async setOffline(offline: boolean): Promise<void> {

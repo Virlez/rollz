@@ -68,7 +68,8 @@ export function renderHistory() {
   dom.historyEmpty.hidden = true;
 
   state.history.forEach((entry, index) => {
-    const isFavorite = isFavoriteFormula(entry.formula);
+    const successMode = entry.mode && entry.mode.successMode === true;
+    const isFavorite = isFavoriteFormula(entry.formula, { successMode });
     const el = document.createElement('div');
     el.className = 'history-entry';
     el.role = 'listitem';
@@ -94,6 +95,7 @@ export function renderHistory() {
     favoriteBtn.classList.toggle('is-favorited', isFavorite);
     favoriteBtn.dataset.action = 'toggle-favorite';
     favoriteBtn.dataset.formula = entry.formula;
+    favoriteBtn.dataset.successMode = successMode ? 'true' : 'false';
     favoriteBtn.setAttribute('aria-pressed', isFavorite ? 'true' : 'false');
     favoriteBtn.setAttribute('aria-label', isFavorite ? t('favoriteRemove') : t('favoriteAdd'));
     favoriteBtn.title = isFavorite ? t('favoriteRemove') : t('favoriteAdd');
