@@ -2,6 +2,8 @@
 
 Ce guide explique comment utiliser Rollz au quotidien, depuis les lancers simples jusqu'aux formules avancées.
 
+![Vue d'ensemble de Rollz](images/guide-accueil.png)
+
 ## 1. A quoi sert Rollz
 
 Rollz est un lanceur de des pour les jeux de role. Il permet de :
@@ -36,6 +38,8 @@ Signification :
 Exemple :
 
 - `2d6 + 3` lance 2 des a 6 faces puis ajoute 3 au resultat final
+
+![Exemple de lancer classique](images/guide-lancer-classique.png)
 
 ## 3. Des pris en charge
 
@@ -184,6 +188,8 @@ Exemple detaille :
 - serie finale : `5, 3, 4, 6`
 - reussites avec `>=5` : `2`
 
+![Exemple de formule avancee](images/guide-formule-avancee.png)
+
 ## 7. Compatibilites et limites
 
 ### Ce qui est autorise
@@ -248,6 +254,8 @@ Quand tu charges un favori :
 - la formule revient dans la barre de formule
 - le mode `Pair/Impair` est reactive automatiquement si besoin
 - le focus revient sur le conteneur de formule sans ouvrir le clavier virtuel mobile
+
+![Historique et favoris](images/guide-historique-favoris.png)
 
 ## 10. Conseils pratiques
 
