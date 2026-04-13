@@ -8,6 +8,8 @@
 
 Rollz is a dark-fantasy styled TTRPG dice roller built with plain HTML, CSS, and JavaScript, using `random.org` for number generation.
 
+User guide in French: [docs/WIKI_UTILISATEUR.md](docs/WIKI_UTILISATEUR.md)
+
 ### Features
 
 - Classic dice formulas such as `2d6 + 4`, `1d20 - 2`, `3d8 + 1d4 + 5`
@@ -174,6 +176,8 @@ rollz/
 ## Français
 
 Rollz est un lanceur de dés JDR/TTRPG au style dark fantasy, conçu en HTML, CSS et JavaScript vanilla, avec génération de nombres via `random.org`.
+
+Guide utilisateur complet : [docs/WIKI_UTILISATEUR.md](docs/WIKI_UTILISATEUR.md)
 
 ### Fonctionnalités
 
