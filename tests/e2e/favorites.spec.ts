@@ -37,9 +37,9 @@ test.describe('Favorite formulas', () => {
     await expect(app.favoritesEntries).toHaveCount(1);
   });
 
-  test('clicking a favorite rerolls its formula immediately', async ({ page }) => {
+  test('clicking a favorite loads its formula without rolling', async ({ page }) => {
     await clearLocalStorageOnInit(page);
-    await mockRandomOrg(page, [6, 2, 5, 4, 5]);
+    await mockRandomOrg(page, [6, 2, 5]);
 
     const app = new RollzApp(page);
     await app.goto();
@@ -50,7 +50,8 @@ test.describe('Favorite formulas', () => {
     await app.clickFavoriteFormula(0);
 
     await expect(app.formulaInput).toHaveValue('2d6R2');
-    await expect(app.resultTotal).toHaveText('9');
+    await expect(app.resultTotal).toHaveText('11');
+    await expect(app.rollButton).toBeEnabled();
   });
 
   test('removing a favorite updates the list and the history button state', async ({ page }) => {

@@ -257,7 +257,7 @@ function init() {
   });
 
   if (dom.favoritesList) {
-    dom.favoritesList.addEventListener('click', async event => {
+    dom.favoritesList.addEventListener('click', event => {
       const target = event.target instanceof HTMLElement ? event.target : null;
       const favoriteEntry = target ? target.closest('.favorite-entry') : null;
       if (!(favoriteEntry instanceof HTMLElement)) return;
@@ -276,7 +276,7 @@ function init() {
       resetFormulaBuilderState();
       dom.formulaInput.value = formula;
       updateFormulaPreview();
-      await doRoll();
+      dom.formulaInput.focus();
     });
   }
 
