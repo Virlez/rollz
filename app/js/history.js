@@ -1,8 +1,35 @@
 import { HISTORY_KEY, MAX_HISTORY } from './constants.js';
 import { dom } from './dom.js';
+import { isFavoriteFormula } from './favorites.js';
 import { getLang, t } from './i18n.js';
 import { normalizeHistoryEntry } from './parser.js';
 import { state } from './state.js';
+
+/**
+ * @param {any} result
+ * @param {number} index
+ * @returns {any}
+ */
+function getTokenResult(result, index) {
+  return result && result.tokenResults && result.tokenResults[index] ? result.tokenResults[index] : null;
+}
+
+/**
+ * @param {any} detail
+ * @returns {string}
+ */
+function formatDieValues(detail) {
+  const finalRolls = detail && Array.isArray(detail.finalRolls) ? detail.finalRolls : [];
+  const originalRolls = detail && Array.isArray(detail.originalRolls) ? detail.originalRolls : [];
+  const rerollMask = detail && Array.isArray(detail.rerollMask) ? detail.rerollMask : [];
+
+  return finalRolls.map((value, index) => {
+    if (rerollMask[index]) {
+      return `${originalRolls[index]}→${value}`;
+    }
+    return String(value);
+  }).join(', ');
+}
 
 export function loadHistory() {
   try {
@@ -41,10 +68,11 @@ export function renderHistory() {
   dom.historyEmpty.hidden = true;
 
   state.history.forEach((entry, index) => {
+    const isFavorite = isFavoriteFormula(entry.formula);
     const el = document.createElement('div');
     el.className = 'history-entry';
     el.role = 'listitem';
-    el.title = 'Click to re-use this formula';
+    el.title = t('historyReuseTitle');
     el.dataset.index = String(index);
 
     const left = document.createElement('div');
@@ -54,9 +82,25 @@ export function renderHistory() {
     `;
 
     const right = document.createElement('div');
-    right.className = 'history-total';
-    right.textContent = String(entry.total);
+    right.className = 'history-actions';
 
+    const total = document.createElement('div');
+    total.className = 'history-total';
+    total.textContent = String(entry.total);
+
+    const favoriteBtn = document.createElement('button');
+    favoriteBtn.type = 'button';
+    favoriteBtn.className = 'favorite-btn';
+    favoriteBtn.classList.toggle('is-favorited', isFavorite);
+    favoriteBtn.dataset.action = 'toggle-favorite';
+    favoriteBtn.dataset.formula = entry.formula;
+    favoriteBtn.setAttribute('aria-pressed', isFavorite ? 'true' : 'false');
+    favoriteBtn.setAttribute('aria-label', isFavorite ? t('favoriteRemove') : t('favoriteAdd'));
+    favoriteBtn.title = isFavorite ? t('favoriteRemove') : t('favoriteAdd');
+    favoriteBtn.textContent = isFavorite ? '★' : '☆';
+
+    right.appendChild(total);
+    right.appendChild(favoriteBtn);
     el.appendChild(left);
     el.appendChild(right);
     dom.historyList.appendChild(el);
@@ -79,16 +123,21 @@ export function buildHistoryBreakdownSummary(tokens, result) {
 
   return tokens.map((token, index) => {
     if (token.type === 'dice') {
-      if (result.successMode && result.ignoredDiceIndices && result.ignoredDiceIndices.includes(index)) {
+      const detail = getTokenResult(result, index);
+      if (result.successMode && detail && detail.ignored) {
         return `[${t('ignoredLabel')}]`;
       }
 
-      const drawn = result.rolls[token.raw] || [];
-      if (result.successMode && result.countedDiceIndex === index && result.successBonusRolls && result.successBonusRolls.length > 0) {
-        return `[${drawn.join(', ')}] → [${result.successBonusRolls.join(', ')}]`;
+      const drawnSummary = formatDieValues(detail);
+      if (result.successMode && detail && detail.bonusRolls && detail.bonusRolls.length > 0) {
+        return `[${drawnSummary}] → [${detail.bonusRolls.join(', ')}]`;
       }
 
-      return `[${drawn.join(', ')}]`;
+      if (token.successThreshold !== undefined && detail) {
+        return `[${drawnSummary}] = ${Math.abs(detail.successCount || 0)} ${t('successesSuffix')}`;
+      }
+
+      return `[${drawnSummary}]`;
     }
 
     return String(token.value);

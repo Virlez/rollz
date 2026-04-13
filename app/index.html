@@ -22,9 +22,9 @@
   <title>Rollz — TTRPG Dice Roller</title>
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="manifest" href="manifest.webmanifest?v=2026-04-13-3" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="css/styles.css?v=2026-04-12-5" />
+  <link rel="stylesheet" href="css/styles.css?v=2026-04-13-3" />
 </head>
 <body>
   <div class="app">
@@ -175,6 +175,20 @@
               <span class="result-source-note" id="result-source-note" hidden></span>
             </div>
             <div class="result-multi" id="result-multi" hidden></div>
+          </div>
+        </section>
+
+        <section class="card favorites-card" aria-labelledby="favorites-heading">
+          <div class="history-header">
+            <h2 id="favorites-heading" class="card-title" data-i18n="favoritesTitle">Formules Favorites</h2>
+          </div>
+          <div class="favorites-list" id="favorites-list" role="list">
+            <div class="history-empty" id="favorites-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M12 3l2.8 5.68 6.27.91-4.54 4.42 1.07 6.24L12 17.27 6.4 20.25l1.07-6.24L2.93 9.59l6.27-.91L12 3z"/>
+              </svg>
+              <p data-i18n="favoritesEmpty">Aucun favori pour le moment — sauvegardez une formule depuis l'historique.</p>
+            </div>
           </div>
         </section>
 

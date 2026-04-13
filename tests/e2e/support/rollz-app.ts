@@ -78,6 +78,14 @@ export class RollzApp {
     return this.page.locator('#history-empty');
   }
 
+  get favoritesEntries(): Locator {
+    return this.page.locator('.favorite-entry');
+  }
+
+  get favoritesEmpty(): Locator {
+    return this.page.locator('#favorites-empty');
+  }
+
   async goto(): Promise<void> {
     await this.page.goto('/');
     await this.rollButton.waitFor();
@@ -168,6 +176,26 @@ export class RollzApp {
     return this.historyEntry(index).locator('.history-total');
   }
 
+  historyFavoriteButton(index = 0): Locator {
+    return this.historyEntry(index).locator('.favorite-btn');
+  }
+
+  favoriteEntry(index = 0): Locator {
+    return this.favoritesEntries.nth(index);
+  }
+
+  favoriteFormula(index = 0): Locator {
+    return this.favoriteEntry(index).locator('.favorite-formula');
+  }
+
+  favoriteLoadButton(index = 0): Locator {
+    return this.favoriteEntry(index).locator('.favorite-load-btn');
+  }
+
+  favoriteRemoveButton(index = 0): Locator {
+    return this.favoriteEntry(index).locator('.favorite-remove-btn');
+  }
+
   multiResultTotal(index: number): Locator {
     return this.resultMulti.locator('.result-total').nth(index);
   }
@@ -182,6 +210,18 @@ export class RollzApp {
 
   async clickHistoryEntry(index = 0): Promise<void> {
     await this.historyEntry(index).click();
+  }
+
+  async toggleHistoryFavorite(index = 0): Promise<void> {
+    await this.historyFavoriteButton(index).click();
+  }
+
+  async clickFavoriteFormula(index = 0): Promise<void> {
+    await this.favoriteLoadButton(index).click();
+  }
+
+  async removeFavorite(index = 0): Promise<void> {
+    await this.favoriteRemoveButton(index).click();
   }
 
   async setOffline(offline: boolean): Promise<void> {

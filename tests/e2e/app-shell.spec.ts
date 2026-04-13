@@ -113,7 +113,7 @@ test.describe('PWA shell', () => {
     const app = new RollzApp(page);
     await app.goto();
 
-    await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest');
+    await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', /manifest\.webmanifest\?v=/);
   });
 
   test('shows the install button after beforeinstallprompt fires', async ({ page }) => {

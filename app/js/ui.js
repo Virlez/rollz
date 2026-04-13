@@ -1,8 +1,26 @@
 import { APP_VERSION } from './constants.js';
 import { dom, isStandaloneMode } from './dom.js';
 import { t } from './i18n.js';
-import { describeFormulaInput, parseFormulaInput } from './parser.js';
+import { analyzeFormulas, describeFormulaInput, parseFormulaInput } from './parser.js';
 import { state } from './state.js';
+
+/**
+ * @param {Array<any>} formulas
+ * @param {{ advantageMode?: 'none'|'advantage'|'disadvantage', successMode?: boolean }} [mode]
+ * @returns {string[]}
+ */
+export function getFormulaCompatibilityIssues(formulas, mode = {}) {
+  const analysis = analyzeFormulas(formulas);
+  const advantageMode = mode.advantageMode ?? state.advantageMode;
+  const successMode = mode.successMode ?? state.successMode;
+  const issues = [];
+
+  if (analysis.firstHasInlineAdvanced && (advantageMode !== 'none' || successMode)) {
+    issues.push(t('inlineAdvancedToggleConflict'));
+  }
+
+  return issues;
+}
 
 export function clampModifier(value) {
   return Math.max(-99, Math.min(99, value));
@@ -89,10 +107,18 @@ export function updateFormulaPreview() {
     return;
   }
 
-  const firstTokens = formulas[0].tokens;
-  const diceTokens = firstTokens.filter(token => token.type === 'dice');
-  const totalDiceCount = diceTokens.reduce((sum, token) => sum + Math.abs(token.count), 0);
-  const hasModifiers = firstTokens.some(token => token.type === 'modifier');
+  const analysis = analyzeFormulas(formulas);
+  const compatibilityIssues = getFormulaCompatibilityIssues(formulas);
+
+  if (compatibilityIssues.length > 0) {
+    dom.formulaPreview.textContent = '⚠  ' + describeFormulaInput(formulas) + '  ' + compatibilityIssues.join('  ');
+    dom.formulaPreview.className = 'formula-preview is-invalid';
+    dom.rollBtn.disabled = true;
+    return;
+  }
+
+  const totalDiceCount = analysis.totalDiceCount;
+  const hasModifiers = analysis.hasModifiers;
   const advWarning = (state.advantageMode !== 'none' && totalDiceCount > 1)
     ? '  ⚠ ' + t('advantageFirstOnly')
     : '';

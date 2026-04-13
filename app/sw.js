@@ -1,16 +1,20 @@
-const APP_VERSION = '2026-04-12-6';
-const CACHE_NAME = `rollz-shell-${APP_VERSION}`;
-const APP_SHELL = [
+const SERVICE_WORKER_VERSION = new URL(self.location.href).searchParams.get('v') || 'dev';
+const CACHE_NAME = `rollz-shell-${SERVICE_WORKER_VERSION}`;
+const REQUIRED_APP_SHELL = [
   './',
   './index.html',
+];
+
+const OPTIONAL_APP_SHELL = [
   './manifest.webmanifest',
   './favicon.svg',
   './og-image.svg',
-  './css/styles.css?v=2026-04-12-5',
+  './css/styles.css',
   './js/constants.js',
   './js/dice-palette.js',
   './js/dom.js',
   './js/engine.js',
+  './js/favorites.js',
   './js/history.js',
   './js/i18n.js',
   './js/parser.js',
@@ -32,10 +36,30 @@ const APP_SHELL = [
   './fonts/inter-600.ttf'
 ];
 
+function versionedAsset(path) {
+  return /\.(css|js|webmanifest)$/.test(path)
+    ? `${path}?v=${SERVICE_WORKER_VERSION}`
+    : path;
+}
+
+async function precacheAsset(cache, path) {
+  const request = new Request(versionedAsset(path), { cache: 'reload' });
+  const response = await fetch(request);
+
+  if (!response.ok) {
+    throw new Error(`Failed to precache ${path}: ${response.status}`);
+  }
+
+  await cache.put(request, response.clone());
+}
+
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
+      .then(async cache => {
+        await Promise.all(REQUIRED_APP_SHELL.map(path => precacheAsset(cache, path)));
+        await Promise.allSettled(OPTIONAL_APP_SHELL.map(path => precacheAsset(cache, path)));
+      })
       .then(() => self.skipWaiting())
   );
 });
@@ -87,7 +111,7 @@ function isAppShellAsset(url) {
 }
 
 async function cacheFirst(request) {
-  const cachedResponse = await caches.match(request);
+  const cachedResponse = await caches.match(request, { ignoreSearch: true });
   if (cachedResponse) return cachedResponse;
 
   const networkResponse = await fetch(request);
@@ -103,6 +127,6 @@ async function networkFirst(request) {
     cache.put(request, networkResponse.clone());
     return networkResponse;
   } catch {
-    return caches.match(request).then(response => response || caches.match('./index.html'));
+    return caches.match(request, { ignoreSearch: true }).then(response => response || caches.match('./index.html', { ignoreSearch: true }));
   }
 }

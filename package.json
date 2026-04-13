@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "assets:pwa": "powershell -ExecutionPolicy Bypass -File .\\scripts\\generate-pwa-assets.ps1",
+    "version:app": "node scripts/bump-app-version.mjs",
     "test": "npm run test:e2e:all",
     "test:e2e:all": "playwright test -c tests/playwright.config.ts",
     "test:e2e:coverage": "node scripts/run-e2e-coverage.mjs",

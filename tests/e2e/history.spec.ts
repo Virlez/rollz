@@ -42,7 +42,9 @@ test.describe('Roll history', () => {
     await app.goto();
     await app.fillFormula('1d6');
     await app.roll();
+    await expect(app.historyEntries).toHaveCount(1);
     await app.roll();
+    await expect(app.historyEntries).toHaveCount(2);
     await app.roll();
 
     await expect(app.historyEntries).toHaveCount(3);
@@ -171,5 +173,21 @@ test.describe('Roll history', () => {
     await app.reload();
 
     await expect(app.historyEntries).toHaveCount(1);
+  });
+
+  test('history reroll preserves advanced inline syntax', async ({ page }) => {
+    await mockRandomOrg(page, [1, 2, 5, 6, 5, 4, 2, 3, 4, 6, 5]);
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.rollFormula('4d6R2>=5');
+    await expect(app.resultTotal).toHaveText('3');
+
+    await app.clearFormula();
+    await app.clickHistoryEntry(0);
+
+    await expect(app.formulaInput).toHaveValue('4d6R2>=5');
+    await expect(app.resultTotal).toHaveText('2');
+    await expect(app.resultBreakdown.locator('.die-result.is-rerolled-new')).toHaveCount(1);
   });
 });

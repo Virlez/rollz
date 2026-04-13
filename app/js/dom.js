@@ -21,6 +21,8 @@ export const dom = {
   historyList: document.getElementById('history-list'),
   historyEmpty: document.getElementById('history-empty'),
   clearHistoryBtn: document.getElementById('clear-history-btn'),
+  favoritesList: document.getElementById('favorites-list'),
+  favoritesEmpty: document.getElementById('favorites-empty'),
   spinnerOverlay: document.getElementById('spinner-overlay'),
   offlineBadge: document.getElementById('offline-badge'),
   installBtn: document.getElementById('install-btn'),

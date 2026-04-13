@@ -2,6 +2,7 @@ import { DICE_SIDES } from './constants.js';
 import { renderDicePalette } from './dice-palette.js';
 import { dom } from './dom.js';
 import { evaluateTokens } from './engine.js';
+import { addFavoriteFormula, loadFavorites, removeFavoriteFormula, renderFavorites } from './favorites.js';
 import { buildHistoryBreakdownSummary, loadHistory, pushHistory, renderHistory, saveHistory } from './history.js';
 import { applyTranslations, getLang, loadLanguage, setLang, t } from './i18n.js';
 import { normalizeRollMode, parseFormulaInput } from './parser.js';
@@ -9,6 +10,7 @@ import { renderResult } from './render.js';
 import { state } from './state.js';
 import {
   addDieToFormula,
+  getFormulaCompatibilityIssues,
   registerServiceWorker,
   resetFormulaBuilderState,
   setModifier,
@@ -37,6 +39,7 @@ function toggleLanguage() {
   }
 
   renderHistory();
+  renderFavorites();
 }
 
 async function doRoll(options = {}) {
@@ -46,6 +49,12 @@ async function doRoll(options = {}) {
 
   if (formulas.length === 0) {
     showError(t('errorInvalid'));
+    return;
+  }
+
+  const compatibilityIssues = getFormulaCompatibilityIssues(formulas, rollMode);
+  if (compatibilityIssues.length > 0) {
+    showError(compatibilityIssues[0]);
     return;
   }
 
@@ -102,6 +111,7 @@ function init() {
   setupInstallPrompt();
   registerServiceWorker();
   loadHistory();
+  loadFavorites();
 
   window.addEventListener('online', updateOfflineUI);
   window.addEventListener('offline', updateOfflineUI);
@@ -216,6 +226,23 @@ function init() {
 
   dom.historyList.addEventListener('click', async event => {
     const target = event.target instanceof HTMLElement ? event.target : null;
+    const favoriteBtn = target ? target.closest('.favorite-btn') : null;
+    if (favoriteBtn instanceof HTMLButtonElement) {
+      event.stopPropagation();
+      const formula = favoriteBtn.dataset.formula || '';
+      if (!formula) return;
+
+      if (favoriteBtn.getAttribute('aria-pressed') === 'true') {
+        removeFavoriteFormula(formula);
+      } else {
+        addFavoriteFormula(formula);
+      }
+
+      renderFavorites();
+      renderHistory();
+      return;
+    }
+
     const entryEl = target ? target.closest('.history-entry') : null;
     if (!(entryEl instanceof HTMLElement)) return;
 
@@ -228,6 +255,30 @@ function init() {
     updateFormulaPreview();
     await doRoll({ mode: normalizeRollMode(entry.mode) });
   });
+
+  if (dom.favoritesList) {
+    dom.favoritesList.addEventListener('click', async event => {
+      const target = event.target instanceof HTMLElement ? event.target : null;
+      const favoriteEntry = target ? target.closest('.favorite-entry') : null;
+      if (!(favoriteEntry instanceof HTMLElement)) return;
+
+      const formula = favoriteEntry.dataset.formula || '';
+      if (!formula) return;
+
+      const action = target && target.closest('button') ? target.closest('button').dataset.action : 'load';
+      if (action === 'remove') {
+        removeFavoriteFormula(formula);
+        renderFavorites();
+        renderHistory();
+        return;
+      }
+
+      resetFormulaBuilderState();
+      dom.formulaInput.value = formula;
+      updateFormulaPreview();
+      await doRoll();
+    });
+  }
 
   updateFormulaPreview();
 }

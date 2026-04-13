@@ -794,6 +794,10 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   gap: 3px;
 }
 
+.die-pair.is-reroll {
+  gap: var(--sp-1);
+}
+
 .die-result.is-kept {
   border-width: 2px;
 }
@@ -806,6 +810,11 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   height: 28px;
   background: rgba(255,255,255,0.02);
   border-color: rgba(255,255,255,0.05);
+}
+
+.die-result.is-rerolled-new {
+  border-color: rgba(240,180,41,0.4);
+  box-shadow: 0 0 10px rgba(240,180,41,0.18);
 }
 
 .breakdown-group.is-ignored {
@@ -1107,6 +1116,7 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 
 /* ── History ────────────────────────────────────────────────────── */
 .history-card { padding-bottom: var(--sp-4); }
+.favorites-card { padding-bottom: var(--sp-4); }
 
 .history-header {
   display: flex;
@@ -1137,6 +1147,7 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 .history-empty svg { width: 36px; height: 36px; opacity: 0.4; }
 
 .history-list { display: flex; flex-direction: column; gap: var(--sp-2); }
+.favorites-list { display: flex; flex-direction: column; gap: var(--sp-2); }
 
 .history-entry {
   display: grid;
@@ -1166,6 +1177,12 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   text-overflow: ellipsis;
 }
 
+.history-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
 .history-meta {
   font-size: 0.7rem;
   color: var(--clr-text-3);
@@ -1179,6 +1196,80 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   color: var(--clr-gold);
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.favorite-btn,
+.favorite-remove-btn {
+  min-height: 32px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-full);
+  border: 1px solid rgba(240,180,41,0.22);
+  background: rgba(240,180,41,0.08);
+  color: var(--clr-gold-light);
+  font-size: 0.72rem;
+  font-weight: 600;
+  transition: var(--tr);
+}
+
+.favorite-btn {
+  min-width: 32px;
+  padding: 0;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.favorite-btn:hover,
+.favorite-remove-btn:hover,
+.favorite-load-btn:hover {
+  background: rgba(240,180,41,0.14);
+  border-color: rgba(240,180,41,0.36);
+}
+
+.favorite-btn[aria-pressed='true'] {
+  background: rgba(240,180,41,0.16);
+  color: var(--clr-gold);
+}
+
+.favorite-btn.is-favorited {
+  text-shadow: 0 0 12px rgba(240,180,41,0.28);
+}
+
+.favorite-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-2);
+  border-radius: var(--r-md);
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--clr-border);
+}
+
+.favorite-load-btn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 var(--sp-4);
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--clr-text-2);
+  text-align: left;
+  transition: var(--tr);
+}
+
+.favorite-formula {
+  font-family: 'Courier New', monospace;
+  font-size: 0.84rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.favorite-remove-btn {
+  min-width: 32px;
+  padding: 0;
 }
 
 /* ── Footer ─────────────────────────────────────────────────────── */

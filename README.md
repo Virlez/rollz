@@ -192,6 +192,14 @@ Le dépôt est organisé en séparant l'application et les tests : GitHub Pages 
 
 Le projet inclut un mécanisme simple de cache-busting pour limiter les problèmes de cache navigateur après déploiement.
 
+Avant une mise en production, exécute `npm run version:app` pour incrémenter automatiquement la version utilisée par le service worker et les assets versionnés de `index.html`.
+
+Exemples :
+
+- `npm run version:app`
+- `npm run version:app -- --dry-run`
+- `npm run version:app -- 2026-04-13-3`
+
 ### Stack technique
 
 - `HTML5`

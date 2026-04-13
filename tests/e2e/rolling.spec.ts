@@ -116,6 +116,55 @@ test.describe('Roll action — normal mode', () => {
     await expect(app.multiResultTotal(0)).toHaveText('14');
     await expect(app.multiResultTotal(1)).toHaveText('5');
   });
+
+  test('threshold syntax counts dice at or above the threshold', async ({ page }) => {
+    await mockRandomOrg(page, [6, 5, 4, 1]);
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.rollFormula('4d6>=5');
+
+    await expect(app.resultTotalLabel).toHaveText('Réussites');
+    await expect(app.resultTotal).toHaveText('2');
+    await expect(app.resultBreakdown.locator('.die-result.is-success')).toHaveCount(2);
+    await expect(app.resultBreakdown.locator('.die-result.is-failure')).toHaveCount(2);
+  });
+
+  test('reroll syntax rerolls each eligible die once and totals final values', async ({ page }) => {
+    await mockRandomOrg(page, [2, 1, 6, 5]);
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.rollFormula('2d6R2');
+
+    await expect(app.resultTotal).toHaveText('11');
+    await expect(app.resultBreakdown.locator('.die-result.is-rerolled-original')).toHaveCount(2);
+    await expect(app.resultBreakdown.locator('.die-result.is-rerolled-new')).toHaveCount(2);
+  });
+
+  test('combined reroll and threshold syntax rerolls first, then counts successes', async ({ page }) => {
+    await mockRandomOrg(page, [1, 2, 4, 6, 5, 3]);
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.rollFormula('4d6R2>=5');
+
+    await expect(app.resultTotalLabel).toHaveText('Réussites');
+    await expect(app.resultTotal).toHaveText('2');
+    await expect(app.resultBreakdown.locator('.die-result.is-rerolled-new')).toHaveCount(2);
+    await expect(app.resultBreakdown.locator('.die-result.is-success')).toHaveCount(2);
+    await expect(app.resultBreakdown.locator('.die-result.is-failure')).toHaveCount(2);
+  });
+
+  test('advanced syntax is blocked when advantage mode is active on the first formula', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.fillFormula('4d6>=5');
+    await app.toggleMode('advantage');
+
+    await expect(app.rollButton).toBeDisabled();
+    await expect(app.formulaPreview).toContainText('avancée');
+  });
 });
 
 test.describe('Roll action — advantage/disadvantage', () => {
