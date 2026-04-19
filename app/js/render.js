@@ -2,13 +2,36 @@ import { dom } from './dom.js';
 import { t } from './i18n.js';
 import { describeFormula } from './parser.js';
 
+/** @typedef {import('./engine.js').RollResult} RollResult */
+/** @typedef {import('./engine.js').TokenResult} TokenResult */
+/** @typedef {import('./parser.js').Token} Token */
+/** @typedef {import('./parser.js').RenderedRoll} RenderedRoll */
+
 /**
- * @param {any} result
+ * @typedef {{
+ *   formula: HTMLElement,
+ *   breakdown: HTMLElement,
+ *   totalLabel: HTMLElement,
+ *   total: HTMLElement,
+ *   totalNote: HTMLElement,
+ *   sourceNote: HTMLElement,
+ * }} RenderTarget
+ */
+
+/**
+ * @param {RollResult} result
  * @param {number} index
- * @returns {any}
+ * @returns {TokenResult|null}
  */
 function getTokenResult(result, index) {
   return result && result.tokenResults && result.tokenResults[index] ? result.tokenResults[index] : null;
+}
+
+/**
+ * @param {Element} element
+ */
+function clearElement(element) {
+  element.replaceChildren();
 }
 
 /**
@@ -31,8 +54,8 @@ function createDieChip(value, sides, animationIndex, extraClasses = []) {
 
 /**
  * @param {HTMLDivElement} diceRow
- * @param {any} token
- * @param {any} detail
+ * @param {Token} token
+ * @param {TokenResult|null} detail
  * @param {number} startIndex
  * @param {(value: number, index: number) => string[]} classify
  * @returns {number}
@@ -63,15 +86,8 @@ function appendDiceResults(diceRow, token, detail, startIndex, classify) {
 }
 
 /**
- * @param {any} result
- * @param {{
- *   formula: HTMLElement,
- *   breakdown: HTMLElement,
- *   totalLabel: HTMLElement,
- *   total: HTMLElement,
- *   totalNote: HTMLElement,
- *   sourceNote: HTMLElement,
- * }} target
+ * @param {RollResult} result
+ * @param {RenderTarget} target
  */
 export function renderSingleResult(result, target) {
   const {
@@ -101,7 +117,7 @@ export function renderSingleResult(result, target) {
   }
   target.total.classList.toggle('is-critical', Boolean(criticalFailure));
 
-  target.breakdown.innerHTML = '';
+  clearElement(target.breakdown);
 
   let rollIndex = 0;
   for (const [tokenIndex, token] of tokens.entries()) {
@@ -254,8 +270,8 @@ export function renderSingleResult(result, target) {
 }
 
 /**
- * @param {any} result
- * @returns {HTMLElement}
+ * @param {RollResult} result
+ * @returns {HTMLDivElement}
  */
 export function createResultSubBlock(result) {
   const block = document.createElement('div');
@@ -305,7 +321,7 @@ export function createResultSubBlock(result) {
 }
 
 /**
- * @param {Array<{ formula: string, result: any }>} renderedRolls
+ * @param {RenderedRoll[]} renderedRolls
  */
 export function renderResult(renderedRolls) {
   const rolls = Array.isArray(renderedRolls) ? renderedRolls : [];
@@ -316,7 +332,7 @@ export function renderResult(renderedRolls) {
     dom.resultBreakdown.hidden = false;
     dom.resultTotalRow.hidden = false;
     dom.resultMulti.hidden = true;
-    dom.resultMulti.innerHTML = '';
+    clearElement(dom.resultMulti);
 
     renderSingleResult(rolls[0].result, {
       formula: dom.resultFormula,
@@ -331,7 +347,7 @@ export function renderResult(renderedRolls) {
     dom.resultBreakdown.hidden = true;
     dom.resultTotalRow.hidden = true;
     dom.resultMulti.hidden = false;
-    dom.resultMulti.innerHTML = '';
+    clearElement(dom.resultMulti);
 
     rolls.forEach((entry, index) => {
       if (index > 0) {

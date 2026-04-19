@@ -17,7 +17,7 @@
  * @typedef {{ formula: string, tokens: Token[] }} ParsedFormula
  */
 
-/** @typedef {{ formula: string, result: any }} RenderedRoll */
+/** @typedef {{ formula: string, result: import('./engine.js').RollResult }} RenderedRoll */
 
 const TOKEN_RE = /([+-]?)(\d*)d(\d+)((?:(?:>=\d+)|(?:R\d+))*)|([+-]?\d+)/gi;
 const DICE_SUFFIX_RE = /(>=)(\d+)|(R)(\d+)/gi;

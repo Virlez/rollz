@@ -330,7 +330,8 @@ test.describe('Expert mode', () => {
     await expect(app.modifierInput).toBeHidden();
     await expect(page.locator('.advantage-row')).toBeVisible();
     await expect(page.locator('#advantage-label')).toBeVisible();
-    await expect(page.locator('.expert-dice .expert-btn')).toHaveCount(7);
+    await expect(page.locator('.expert-dice [data-insert-die]')).toHaveCount(7);
+    await expect(page.locator('.expert-dice [data-insert="d"]')).toBeVisible();
   });
 
   test('expert mode keeps special toggles usable', async ({ page }) => {

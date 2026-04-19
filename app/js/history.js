@@ -5,17 +5,22 @@ import { getLang, t } from './i18n.js';
 import { normalizeHistoryEntry } from './parser.js';
 import { state } from './state.js';
 
+/** @typedef {import('./engine.js').RollResult} RollResult */
+/** @typedef {import('./engine.js').TokenResult} TokenResult */
+/** @typedef {import('./parser.js').Token} Token */
+/** @typedef {import('./parser.js').HistoryEntry} HistoryEntry */
+
 /**
- * @param {any} result
+ * @param {RollResult} result
  * @param {number} index
- * @returns {any}
+ * @returns {TokenResult|null}
  */
 function getTokenResult(result, index) {
   return result && result.tokenResults && result.tokenResults[index] ? result.tokenResults[index] : null;
 }
 
 /**
- * @param {any} detail
+ * @param {TokenResult|null} detail
  * @returns {string}
  */
 function formatDieValues(detail) {
@@ -47,7 +52,7 @@ export function saveHistory() {
 }
 
 /**
- * @param {{ formula: string, total: string|number, breakdown: string, timestamp: number, mode?: { advantageMode: 'none'|'advantage'|'disadvantage', successMode: boolean } }} entry
+ * @param {HistoryEntry} entry
  */
 export function pushHistory(entry) {
   state.history.unshift(entry);
@@ -78,10 +83,17 @@ export function renderHistory() {
 
     const left = document.createElement('div');
     left.className = 'history-content';
-    left.innerHTML = `
-      <div class="history-formula">${escapeHtml(entry.formula)}</div>
-      <div class="history-meta">${entry.breakdown}  ·  ${formatTime(entry.timestamp)}</div>
-    `;
+
+    const formula = document.createElement('div');
+    formula.className = 'history-formula';
+    formula.textContent = entry.formula;
+
+    const meta = document.createElement('div');
+    meta.className = 'history-meta';
+    meta.textContent = `${entry.breakdown}  ·  ${formatTime(entry.timestamp)}`;
+
+    left.appendChild(formula);
+    left.appendChild(meta);
 
     const right = document.createElement('div');
     right.className = 'history-actions';
@@ -111,8 +123,8 @@ export function renderHistory() {
 }
 
 /**
- * @param {Array<any>} tokens
- * @param {any} result
+ * @param {Token[]} tokens
+ * @param {RollResult} result
  * @returns {string}
  */
 export function buildHistoryBreakdownSummary(tokens, result) {
@@ -145,18 +157,6 @@ export function buildHistoryBreakdownSummary(tokens, result) {
 
     return String(token.value);
   }).join(' ') + advTag + successTag + criticalTag;
-}
-
-/**
- * @param {string} str
- * @returns {string}
- */
-export function escapeHtml(str) {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 /**

@@ -1,3 +1,36 @@
+/** @typedef {import('./parser.js').Token} Token */
+
+/**
+ * @typedef {{
+ *   finalRolls: number[],
+ *   originalRolls: number[],
+ *   rerollMask: boolean[],
+ *   successMatches: boolean[],
+ *   successCount: number,
+ *   bonusRolls: number[],
+ *   ignored: boolean,
+ *   subtotal: number,
+ *   advantagePair?: [number, number],
+ *   keptFirst?: number,
+ *   discardedFirst?: number,
+ *   restDrawn?: number[],
+ * }} TokenResult
+ */
+
+/**
+ * @typedef {{
+ *   total: number,
+ *   tokens: Token[],
+ *   tokenResults: Array<TokenResult|null>,
+ *   advantageMode: 'none'|'advantage'|'disadvantage',
+ *   successMode: boolean,
+ *   totalKind: 'total'|'successes',
+ *   criticalFailure?: boolean,
+ *   successBonusCount?: number,
+ *   randomSource?: 'randomorg'|'crypto',
+ * }} RollResult
+ */
+
 /**
  * @param {number[]} values
  * @returns {number}
@@ -16,8 +49,8 @@ function mapSuccesses(values, predicate) {
 }
 
 /**
- * @param {Array<any>} tokens
- * @returns {Array<any>}
+ * @param {Token[]} tokens
+ * @returns {Array<TokenResult|null>}
  */
 function createTokenResults(tokens) {
   return tokens.map(token => token.type === 'dice'
@@ -35,7 +68,7 @@ function createTokenResults(tokens) {
 }
 
 /**
- * @param {Array<any>} tokens
+ * @param {Token[]} tokens
  * @returns {boolean}
  */
 function hasInlineAdvancedTokens(tokens) {
@@ -43,7 +76,7 @@ function hasInlineAdvancedTokens(tokens) {
 }
 
 /**
- * @param {Array<any>} tokens
+ * @param {Token[]} tokens
  * @returns {boolean}
  */
 function allDiceUseThreshold(tokens) {
@@ -52,9 +85,9 @@ function allDiceUseThreshold(tokens) {
 }
 
 /**
- * @param {Array<any>} tokens
+ * @param {Token[]} tokens
  * @param {(count: number, sides: number) => Promise<number[]>} drawNumbers
- * @returns {Promise<any>}
+ * @returns {Promise<RollResult>}
  */
 async function evaluateInlineAdvancedTokens(tokens, drawNumbers) {
   let total = 0;
@@ -114,13 +147,13 @@ async function evaluateInlineAdvancedTokens(tokens, drawNumbers) {
 }
 
 /**
- * @param {Array<any>} tokens
+ * @param {Token[]} tokens
  * @param {{
  *   advantageMode?: 'none'|'advantage'|'disadvantage',
  *   successMode?: boolean,
  *   drawNumbers: (count: number, sides: number) => Promise<number[]>,
  * }} options
- * @returns {Promise<any>}
+ * @returns {Promise<RollResult>}
  */
 export async function evaluateTokens(tokens, options) {
   const successMode = options.successMode === true;
