@@ -237,6 +237,17 @@ test.describe('Mode toggles', () => {
     await expect(app.formulaInput).toHaveValue('d20>=');
   });
 
+  test('expert mode can insert a standalone d after d100', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+
+    await app.toggleExpertMode();
+    await app.clickExpertDie('d100');
+    await page.locator('.expert-dice .expert-btn[data-insert="d"]').click();
+
+    await expect(app.formulaInput).toHaveValue('d100d');
+  });
+
   test('advantage and disadvantage are mutually exclusive', async ({ page }) => {
     const app = new RollzApp(page);
     await app.goto();
