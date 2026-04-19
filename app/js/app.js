@@ -214,7 +214,6 @@ function init() {
   if (dom.expertCheck) {
     dom.expertCheck.addEventListener('change', () => {
       toggleExpertMode(dom.expertCheck.checked);
-      dom.formulaInput.focus({ preventScroll: true });
     });
   }
 
