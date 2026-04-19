@@ -3,6 +3,27 @@ import { expect, test } from './support/test';
 import { mockRandomOrg } from './support/test-helpers';
 
 test.describe('Roll history', () => {
+  test('history layout stays within the card on narrow screens', async ({ page }) => {
+    await mockRandomOrg(page, [13, 2, 4, 6, 4]);
+
+    await page.setViewportSize({ width: 360, height: 800 });
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.rollFormula('1d20+10;2d4r2+2d6r2+1d8+5');
+
+    const entryBox = await app.historyEntry(0).boundingBox();
+    const totalBox = await app.historyTotal(0).boundingBox();
+    const favoriteBox = await app.historyFavoriteButton(0).boundingBox();
+
+    expect(entryBox).not.toBeNull();
+    expect(totalBox).not.toBeNull();
+    expect(favoriteBox).not.toBeNull();
+
+    expect(totalBox!.x + totalBox!.width).toBeLessThanOrEqual(entryBox!.x + entryBox!.width + 1);
+    expect(favoriteBox!.x + favoriteBox!.width).toBeLessThanOrEqual(entryBox!.x + entryBox!.width + 1);
+  });
+
   test('history shows entry after a roll', async ({ page }) => {
     await mockRandomOrg(page, [4]);
 

@@ -1152,7 +1152,7 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 
 .history-entry {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--sp-4);
   padding: var(--sp-3) var(--sp-4);
@@ -1167,6 +1167,10 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 .history-entry:hover {
   background: rgba(255,255,255,0.05);
   border-color: rgba(240,180,41,0.2);
+}
+
+.history-content {
+  min-width: 0;
 }
 
 .history-formula {
@@ -1188,6 +1192,7 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   font-size: 0.7rem;
   color: var(--clr-text-3);
   margin-top: var(--sp-1);
+  overflow-wrap: anywhere;
 }
 
 .history-total {
@@ -1417,6 +1422,11 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   .card { padding: var(--sp-4); }
   .roll-btn { padding: var(--sp-4) var(--sp-8); font-size: 1rem; }
   .result-card { padding: var(--sp-6) var(--sp-4); }
+  .history-header { flex-wrap: wrap; gap: var(--sp-2); }
+  .history-header .card-title { flex: 1 1 100%; }
+  .history-entry { gap: var(--sp-3); padding-inline: var(--sp-3); }
+  .history-actions { gap: var(--sp-1); }
+  .history-total { font-size: clamp(1.15rem, 6vw, 1.35rem); }
 }
 
 @media (max-width: 400px) {
@@ -1424,6 +1434,13 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   .header-actions { width: min(100%, 168px); }
   .install-btn, .offline-badge { width: 100%; }
   .die-shape { width: 42px; height: 42px; }
+  .history-entry {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+  .history-actions {
+    justify-content: space-between;
+  }
 }
 
 /* ── Large screen: bigger text ──────────────────────────────────── */

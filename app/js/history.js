@@ -77,6 +77,7 @@ export function renderHistory() {
     el.dataset.index = String(index);
 
     const left = document.createElement('div');
+    left.className = 'history-content';
     left.innerHTML = `
       <div class="history-formula">${escapeHtml(entry.formula)}</div>
       <div class="history-meta">${entry.breakdown}  ·  ${formatTime(entry.timestamp)}</div>
