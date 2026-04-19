@@ -18,6 +18,7 @@ import {
   setModifier,
   setupInstallPrompt,
   showError,
+  syncFormulaSelection,
   toggleExpertMode,
   updateFormulaPreview,
   updateModifierUI,
@@ -296,8 +297,13 @@ function init() {
   }
 
   dom.formulaInput.addEventListener('input', () => {
+    syncFormulaSelection();
     resetFormulaBuilderState();
     updateFormulaPreview();
+  });
+
+  ['click', 'keyup', 'select', 'focus', 'blur'].forEach(eventName => {
+    dom.formulaInput.addEventListener(eventName, syncFormulaSelection);
   });
 
   dom.formulaInput.addEventListener('keydown', event => {

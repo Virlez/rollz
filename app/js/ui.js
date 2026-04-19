@@ -4,6 +4,34 @@ import { t } from './i18n.js';
 import { analyzeFormulas, describeFormulaInput, parseFormulaInput } from './parser.js';
 import { state } from './state.js';
 
+let formulaSelectionStart = null;
+let formulaSelectionEnd = null;
+
+function getStoredFormulaSelection() {
+  const input = dom.formulaInput;
+
+  if (document.activeElement === input) {
+    syncFormulaSelection();
+  }
+
+  const maxIndex = input.value.length;
+  const start = Math.min(formulaSelectionStart ?? maxIndex, maxIndex);
+  const end = Math.min(formulaSelectionEnd ?? start, maxIndex);
+  return {
+    start,
+    end: Math.max(start, end),
+  };
+}
+
+function updateStoredFormulaSelection(start, end = start) {
+  formulaSelectionStart = start;
+  formulaSelectionEnd = end;
+
+  if (document.activeElement === dom.formulaInput) {
+    dom.formulaInput.setSelectionRange(start, end);
+  }
+}
+
 /**
  * @param {Array<any>} formulas
  * @param {{ advantageMode?: 'none'|'advantage'|'disadvantage', successMode?: boolean }} [mode]
@@ -72,28 +100,30 @@ export function toggleExpertMode(enabled) {
   updateFormulaPreview();
 }
 
+export function syncFormulaSelection() {
+  const input = dom.formulaInput;
+  formulaSelectionStart = input.selectionStart ?? input.value.length;
+  formulaSelectionEnd = input.selectionEnd ?? formulaSelectionStart;
+}
+
 export function insertAtCursor(text) {
   const input = dom.formulaInput;
-  const start = input.selectionStart ?? input.value.length;
-  const end = input.selectionEnd ?? start;
+  const { start, end } = getStoredFormulaSelection();
   const nextValue = input.value.slice(0, start) + text + input.value.slice(end);
 
   input.value = nextValue;
-  input.focus({ preventScroll: true });
   const nextCursor = start + text.length;
-  input.setSelectionRange(nextCursor, nextCursor);
+  updateStoredFormulaSelection(nextCursor, nextCursor);
   updateFormulaPreview();
 }
 
 export function deleteAtCursor() {
   const input = dom.formulaInput;
-  const start = input.selectionStart ?? input.value.length;
-  const end = input.selectionEnd ?? start;
+  const { start, end } = getStoredFormulaSelection();
 
   if (start !== end) {
     input.value = input.value.slice(0, start) + input.value.slice(end);
-    input.focus({ preventScroll: true });
-    input.setSelectionRange(start, start);
+    updateStoredFormulaSelection(start, start);
     updateFormulaPreview();
     return;
   }
@@ -101,8 +131,7 @@ export function deleteAtCursor() {
   if (start === 0) return;
 
   input.value = input.value.slice(0, start - 1) + input.value.slice(start);
-  input.focus({ preventScroll: true });
-  input.setSelectionRange(start - 1, start - 1);
+  updateStoredFormulaSelection(start - 1, start - 1);
   updateFormulaPreview();
 }
 

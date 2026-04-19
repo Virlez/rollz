@@ -221,6 +221,22 @@ test.describe('Clear button', () => {
 });
 
 test.describe('Mode toggles', () => {
+  test('expert mode actions do not focus the formula input', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+
+    await app.toggleExpertMode();
+    await expect(app.formulaInput).not.toBeFocused();
+
+    await app.clickExpertDie('d20');
+    await expect(app.formulaInput).not.toBeFocused();
+    await expect(app.formulaInput).toHaveValue('d20');
+
+    await app.clickExpertOperator('≥');
+    await expect(app.formulaInput).not.toBeFocused();
+    await expect(app.formulaInput).toHaveValue('d20>=');
+  });
+
   test('advantage and disadvantage are mutually exclusive', async ({ page }) => {
     const app = new RollzApp(page);
     await app.goto();
