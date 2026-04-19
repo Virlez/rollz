@@ -23,6 +23,12 @@ import {
 
 /** @type {{ formula: string, successMode: boolean, mode: 'native'|'pointer', pointerId?: number }|null} */
 let draggedFavorite = null;
+let completedRollSequence = 0;
+
+function markRollCompleted() {
+  completedRollSequence += 1;
+  document.body.dataset.rollSequence = String(completedRollSequence);
+}
 
 function getCurrentRollMode() {
   return {
@@ -177,10 +183,12 @@ async function doRoll(options = {}) {
     dom.rollBtn.classList.remove('is-rolling');
     dom.spinnerOverlay.hidden = true;
     dom.spinnerOverlay.setAttribute('aria-hidden', 'true');
+    markRollCompleted();
   }
 }
 
 function init() {
+  document.body.dataset.rollSequence = String(completedRollSequence);
   renderDicePalette();
   loadLanguage();
   applyTranslations();

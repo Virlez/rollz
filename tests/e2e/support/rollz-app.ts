@@ -1,10 +1,47 @@
-import type { Locator, Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 export type RollMode = 'advantage' | 'disadvantage' | 'success';
 export type InstallOutcome = 'accepted' | 'dismissed';
 
 export class RollzApp {
   constructor(private readonly page: Page) {}
+
+  private async getRollSequence(): Promise<string> {
+    return (await this.page.locator('body').getAttribute('data-roll-sequence')) || '0';
+  }
+
+  private async getRollOutcomeState(): Promise<string> {
+    return JSON.stringify({
+      sequence: await this.getRollSequence(),
+      errorVisible: await this.errorBanner.isVisible(),
+    });
+  }
+
+  private async waitForRollCompletion(previousOutcomeState: string): Promise<void> {
+    await expect.poll(async () => this.getRollOutcomeState()).not.toBe(previousOutcomeState);
+    await expect(this.rollButton).toBeEnabled();
+  }
+
+  private async runAndWaitForRoll(action: () => Promise<void>): Promise<void> {
+    const previousOutcomeState = await this.getRollOutcomeState();
+    await action();
+    await this.waitForRollCompletion(previousOutcomeState);
+  }
+
+  private async clickButtonViaDom(locator: Locator, errorMessage: string): Promise<void> {
+    await locator.evaluate((button, message) => {
+      if (!(button instanceof HTMLButtonElement)) {
+        throw new Error(message);
+      }
+
+      button.click();
+    }, errorMessage);
+  }
+
+  private async clickAndExpectCount(locator: Locator, collection: Locator, expectedCount: number): Promise<void> {
+    await locator.click({ force: true });
+    await expect(collection).toHaveCount(expectedCount);
+  }
 
   get rollButton(): Locator {
     return this.page.locator('#roll-btn');
@@ -105,7 +142,7 @@ export class RollzApp {
   }
 
   async roll(): Promise<void> {
-    await this.rollButton.click();
+    await this.runAndWaitForRoll(() => this.clickButtonViaDom(this.rollButton, 'Roll button is unavailable.'));
   }
 
   async rollFormula(formula: string): Promise<void> {
@@ -114,7 +151,7 @@ export class RollzApp {
   }
 
   async pressEnterOnFormula(): Promise<void> {
-    await this.formulaInput.press('Enter');
+    await this.runAndWaitForRoll(() => this.formulaInput.press('Enter'));
   }
 
   async clickDie(sides: number): Promise<void> {
@@ -141,11 +178,14 @@ export class RollzApp {
   }
 
   async clearFormula(): Promise<void> {
-    await this.page.locator('#clear-btn').click();
+    await this.clickButtonViaDom(this.page.locator('#clear-btn'), 'Clear button is unavailable.');
+    await expect(this.formulaInput).toHaveValue('');
+    await expect(this.resultSection).toBeHidden();
+    await expect(this.errorBanner).toBeHidden();
   }
 
   async clearHistory(): Promise<void> {
-    await this.page.locator('#clear-history-btn').click();
+    await this.clickAndExpectCount(this.page.locator('#clear-history-btn'), this.historyEntries, 0);
   }
 
   async toggleLanguage(): Promise<void> {
@@ -217,23 +257,71 @@ export class RollzApp {
   }
 
   async clickHistoryEntry(index = 0): Promise<void> {
-    await this.historyEntry(index).click();
+    await this.runAndWaitForRoll(() => this.historyEntry(index).click());
   }
 
   async toggleHistoryFavorite(index = 0): Promise<void> {
-    await this.historyFavoriteButton(index).click();
+    const previousCount = await this.favoritesEntries.count();
+    const previousPressed = await this.historyFavoriteButton(index).getAttribute('aria-pressed');
+
+    const expectedCount = previousPressed === 'true'
+      ? Math.max(0, previousCount - 1)
+      : previousCount + 1;
+
+    await this.clickAndExpectCount(this.historyFavoriteButton(index), this.favoritesEntries, expectedCount);
   }
 
   async clickFavoriteFormula(index = 0): Promise<void> {
-    await this.favoriteLoadButton(index).click();
+    await this.favoriteLoadButton(index).click({ force: true });
   }
 
   async removeFavorite(index = 0): Promise<void> {
-    await this.favoriteRemoveButton(index).click();
+    const previousCount = await this.favoritesEntries.count();
+    await this.clickAndExpectCount(this.favoriteRemoveButton(index), this.favoritesEntries, Math.max(0, previousCount - 1));
   }
 
   async dragFavoriteTo(sourceIndex: number, targetIndex: number): Promise<void> {
-    await this.favoriteDragHandle(sourceIndex).dragTo(this.favoriteEntry(targetIndex));
+    await this.page.evaluate(({ sourceIndex: source, targetIndex: target }) => {
+      const sourceHandle = document.querySelectorAll('[data-action="drag"]')[source];
+      const targetEntry = document.querySelectorAll('.favorite-entry')[target];
+
+      if (!(sourceHandle instanceof HTMLElement) || !(targetEntry instanceof HTMLElement)) {
+        throw new Error('Favorite drag source or target is unavailable.');
+      }
+
+      const targetRect = targetEntry.getBoundingClientRect();
+      const clientX = targetRect.left + targetRect.width / 2;
+      const clientY = targetRect.top + targetRect.height * 0.75;
+      const dataTransfer = new DataTransfer();
+
+      sourceHandle.dispatchEvent(new DragEvent('dragstart', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer,
+      }));
+
+      targetEntry.dispatchEvent(new DragEvent('dragover', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer,
+        clientX,
+        clientY,
+      }));
+
+      targetEntry.dispatchEvent(new DragEvent('drop', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer,
+        clientX,
+        clientY,
+      }));
+
+      sourceHandle.dispatchEvent(new DragEvent('dragend', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer,
+      }));
+    }, { sourceIndex, targetIndex });
   }
 
   async setOffline(offline: boolean): Promise<void> {
