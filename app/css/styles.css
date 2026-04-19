@@ -400,6 +400,17 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: var(--sp-3);
+  transition: opacity 0.18s ease;
+}
+
+.dice-grid:not(.is-ready) {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.dice-grid.is-ready {
+  visibility: visible;
+  opacity: 1;
 }
 
 @media (max-width: 680px) {

@@ -281,15 +281,25 @@ const DICE_BUTTONS_MARKUP = `
 
 export function renderDicePalette() {
   const diceGrid = document.getElementById('dice-grid');
-  if (!diceGrid || diceGrid.querySelector('.die-btn')) {
+  if (!diceGrid) {
+    return;
+  }
+
+  if (diceGrid.querySelector('.die-btn')) {
+    diceGrid.classList.add('is-ready');
+    diceGrid.setAttribute('aria-busy', 'false');
     return;
   }
 
   const modifierWidget = diceGrid.querySelector('.modifier-widget');
   if (modifierWidget) {
     modifierWidget.insertAdjacentHTML('beforebegin', DICE_BUTTONS_MARKUP);
+    diceGrid.classList.add('is-ready');
+    diceGrid.setAttribute('aria-busy', 'false');
     return;
   }
 
   diceGrid.insertAdjacentHTML('beforeend', DICE_BUTTONS_MARKUP);
+  diceGrid.classList.add('is-ready');
+  diceGrid.setAttribute('aria-busy', 'false');
 }
