@@ -301,6 +301,27 @@ export function registerServiceWorker() {
   window.addEventListener('load', () => {
     let hasRefreshedForNewWorker = false;
 
+    const requestSkipWaiting = worker => {
+      worker?.postMessage({ type: 'SKIP_WAITING' });
+    };
+
+    const attachUpdateFlow = registration => {
+      if (registration.waiting) {
+        requestSkipWaiting(registration.waiting);
+      }
+
+      registration.addEventListener('updatefound', () => {
+        const installing = registration.installing;
+        if (!installing) return;
+
+        installing.addEventListener('statechange', () => {
+          if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+            requestSkipWaiting(installing);
+          }
+        });
+      });
+    };
+
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (hasRefreshedForNewWorker) return;
       hasRefreshedForNewWorker = true;
@@ -309,21 +330,19 @@ export function registerServiceWorker() {
 
     navigator.serviceWorker.register(`./sw.js?v=${APP_VERSION}`, { updateViaCache: 'none' })
       .then(registration => {
-        registration.update().catch(() => {});
+        const refreshRegistration = () => {
+          registration.update().catch(() => {});
+        };
 
-        if (registration.waiting) {
-          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
+        attachUpdateFlow(registration);
+        refreshRegistration();
 
-        registration.addEventListener('updatefound', () => {
-          const installing = registration.installing;
-          if (!installing) return;
-
-          installing.addEventListener('statechange', () => {
-            if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-              installing.postMessage({ type: 'SKIP_WAITING' });
-            }
-          });
+        window.addEventListener('focus', refreshRegistration);
+        window.addEventListener('online', refreshRegistration);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            refreshRegistration();
+          }
         });
       })
       .catch(() => {});

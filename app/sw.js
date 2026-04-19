@@ -37,7 +37,7 @@ const OPTIONAL_APP_SHELL = [
 ];
 
 function versionedAsset(path) {
-  return /\.(css|js|webmanifest)$/.test(path)
+  return /\.(css|js|webmanifest|svg|png|ttf)$/.test(path)
     ? `${path}?v=${SERVICE_WORKER_VERSION}`
     : path;
 }

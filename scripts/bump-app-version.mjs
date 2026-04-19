@@ -5,9 +5,11 @@ import process from 'node:process';
 const rootDir = process.cwd();
 const constantsPath = path.join(rootDir, 'app', 'js', 'constants.js');
 const indexPath = path.join(rootDir, 'app', 'index.html');
+const manifestPath = path.join(rootDir, 'app', 'manifest.webmanifest');
 
 const APP_VERSION_RE = /export const APP_VERSION = '([^']+)';/;
-const ASSET_VERSION_RE = /(manifest\.webmanifest\?v=|css\/styles\.css\?v=)([^"']+)/g;
+const INDEX_ASSET_VERSION_RE = /((?:manifest\.webmanifest|css\/styles\.css|favicon\.svg|icons\/apple-touch-icon\.png|https:\/\/virlez\.github\.io\/rollz\/og-image\.svg)\?v=)([^"']+)/g;
+const MANIFEST_ASSET_VERSION_RE = /("src"\s*:\s*"icons\/(?:icon-192|icon-512|icon-512-maskable)\.png\?v=)([^"]+)/g;
 
 function pad(value) {
   return String(value).padStart(2, '0');
@@ -67,6 +69,7 @@ async function main() {
   const { explicitVersion, dryRun } = parseArgs(process.argv.slice(2));
   const constantsSource = await readFile(constantsPath, 'utf8');
   const indexSource = await readFile(indexPath, 'utf8');
+  const manifestSource = await readFile(manifestPath, 'utf8');
 
   const versionMatch = constantsSource.match(APP_VERSION_RE);
   if (!versionMatch) {
@@ -78,9 +81,10 @@ async function main() {
   validateVersion(nextVersion);
 
   const updatedConstants = constantsSource.replace(APP_VERSION_RE, `export const APP_VERSION = '${nextVersion}';`);
-  const updatedIndex = indexSource.replace(ASSET_VERSION_RE, `$1${nextVersion}`);
+  const updatedIndex = indexSource.replace(INDEX_ASSET_VERSION_RE, `$1${nextVersion}`);
+  const updatedManifest = manifestSource.replace(MANIFEST_ASSET_VERSION_RE, `$1${nextVersion}`);
 
-  if (updatedConstants === constantsSource && updatedIndex === indexSource) {
+  if (updatedConstants === constantsSource && updatedIndex === indexSource && updatedManifest === manifestSource) {
     console.log(`No changes needed. Current version is already ${nextVersion}.`);
     return;
   }
@@ -93,6 +97,7 @@ async function main() {
 
   await writeFile(constantsPath, updatedConstants, 'utf8');
   await writeFile(indexPath, updatedIndex, 'utf8');
+  await writeFile(manifestPath, updatedManifest, 'utf8');
 
   console.log(`Updated app version: ${currentVersion} -> ${nextVersion}`);
 }

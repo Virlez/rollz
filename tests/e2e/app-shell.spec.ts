@@ -116,6 +116,37 @@ test.describe('PWA shell', () => {
     await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', /manifest\.webmanifest\?v=/);
   });
 
+  test('versions critical shell assets for cache busting', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+
+    await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', /favicon\.svg\?v=/);
+    await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', /apple-touch-icon\.png\?v=/);
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /og-image\.svg\?v=/);
+    await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute('content', /og-image\.svg\?v=/);
+  });
+
+  test('versions manifest icons for cache busting', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+
+    const manifestHref = await page.locator('link[rel="manifest"]').getAttribute('href');
+    const manifest = await page.evaluate(async href => {
+      if (!href) throw new Error('Missing manifest href');
+
+      const response = await fetch(new URL(href, window.location.href).toString(), { cache: 'no-store' });
+      return response.json();
+    }, manifestHref);
+
+    expect(manifest.icons).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ src: expect.stringMatching(/icon-192\.png\?v=/) }),
+        expect.objectContaining({ src: expect.stringMatching(/icon-512\.png\?v=/) }),
+        expect.objectContaining({ src: expect.stringMatching(/icon-512-maskable\.png\?v=/) }),
+      ])
+    );
+  });
+
   test('shows the install button after beforeinstallprompt fires', async ({ page }) => {
     const app = new RollzApp(page);
     await app.goto();
