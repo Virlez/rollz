@@ -177,6 +177,14 @@ rollz/
 	└── tsconfig.e2e.json
 ```
 
+### License
+
+This repository is distributed under the custom license in [LICENSE](LICENSE).
+
+- Reuse, modification, and redistribution are allowed for non-commercial purposes only.
+- Any reuse must credit `Virlez`, keep the license notice, and, when reasonably possible, link back to the original repository.
+- It is forbidden to include the code, documentation, or images from this repository in any paid product, paid service, SaaS, subscription offering, or billed client work without prior written permission.
+
 ---
 
 <a id="francais"></a>
@@ -353,3 +361,11 @@ rollz/
 	├── playwright.config.ts
 	└── tsconfig.e2e.json
 ```
+
+### Licence
+
+Ce dépôt est distribué sous la licence personnalisée disponible dans [LICENSE](LICENSE).
+
+- La réutilisation, la modification et la redistribution sont autorisées uniquement dans un cadre non commercial.
+- Toute réutilisation doit créditer `Virlez`, conserver la mention de licence et, lorsque c'est raisonnablement possible, renvoyer vers le dépôt d'origine.
+- Il est interdit d'inclure le code, la documentation ou les images de ce dépôt dans un produit payant, un service payant, un SaaS, une offre sur abonnement ou une prestation client facturée sans autorisation écrite préalable.
