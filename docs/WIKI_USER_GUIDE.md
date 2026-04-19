@@ -55,7 +55,26 @@ The interface provides quick access to these dice:
 
 You can either click the dice buttons or type the formula manually.
 
-## 4. Rolling Multiple Formulas At Once
+## 4. Classic Mode And Expert Mode
+
+Rollz now includes two formula-building interfaces.
+
+### Classic Mode
+
+- best for fast everyday rolls
+- click the dice buttons to build the formula automatically
+- use the `MOD` widget for flat bonuses and penalties
+
+### Expert Mode
+
+- switch it on with the mode toggle in the dice card
+- the advanced builder appears directly under the toggle
+- dice shortcuts, digits, and formula symbols are grouped in one panel for faster input on mobile
+- `Advantage`, `Disadvantage`, and `Even/Odd` stay available below the formula bar
+
+![Expert mode builder](images/guide-mode-expert.png)
+
+## 5. Rolling Multiple Formulas At Once
 
 You can separate multiple formulas with a semicolon `;`.
 
@@ -66,7 +85,7 @@ Examples:
 
 Each formula is rolled in sequence and Rollz displays one result block per formula.
 
-## 5. Special Modes
+## 6. Special Modes
 
 ### Advantage
 
@@ -108,7 +127,7 @@ Important:
 - the result total is still labeled `Successes`
 - `Advantage`, `Disadvantage`, and `Even/Odd` are mutually exclusive
 
-## 6. Advanced Formulas
+## 7. Advanced Formulas
 
 Rollz supports two advanced inline operators written directly after a dice group:
 
@@ -190,7 +209,7 @@ Detailed example:
 
 ![Advanced formula example](images/guide-formule-avancee.png)
 
-## 7. Compatibility And Limits
+## 8. Compatibility And Limits
 
 ### Allowed
 
@@ -207,7 +226,7 @@ Detailed example:
 - advanced inline syntax cannot be combined with `Advantage`, `Disadvantage`, or `Even/Odd` on the first formula
 - in `Even/Odd` mode, only the first dice group is used
 
-## 8. Useful Examples
+## 9. Useful Examples
 
 ### Classic Rolls
 
@@ -226,7 +245,7 @@ Detailed example:
 - `1d20 + 4; 1d8 + 2`
 - `8d6>=5; 2d6R2`
 
-## 9. History And Favorites
+## 10. History And Favorites
 
 ### History
 
@@ -257,15 +276,16 @@ When you load a favorite:
 
 ![History and favorites](images/guide-historique-favoris.png)
 
-## 10. Practical Tips
+## 11. Practical Tips
 
 - use the dice buttons to avoid syntax mistakes on simple rolls
+- use `Expert` mode when you want dice, digits, and operators in one place
 - use `;` when you want to prepare several rolls at once
 - use `R` for systems that reroll low values
 - use `>=` for threshold-based success systems
 - use `Even/Odd` when your system counts even dice as successes
 
-## 11. Quick Reference
+## 12. Quick Reference
 
 - `1d20 + 5`: one twenty-sided die plus 5
 - `2d6R2`: reroll every die showing `1` or `2` once
@@ -273,7 +293,7 @@ When you load a favorite:
 - `4d6R2>=5`: rerolls first, then threshold
 - `1d20 + 4; 1d8 + 2`: two separate rolls
 
-## 12. If A Formula Does Not Work
+## 13. If A Formula Does Not Work
 
 Check these points:
 

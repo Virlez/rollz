@@ -54,9 +54,24 @@ async function captureBasicRoll(page) {
   await page.locator('#result-section').screenshot({ path: resolve(outputDir, 'guide-lancer-classique.png') });
 }
 
+async function captureExpertMode(page) {
+  await preparePage(page, []);
+  await page.locator('label[for="expert-check"]').click();
+  await page.locator('.expert-pad').waitFor({ state: 'visible' });
+  await page.locator('.advantage-row').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: resolve(outputDir, 'guide-mode-expert.png'), fullPage: true });
+}
+
 async function captureAdvancedRoll(page) {
   await preparePage(page, [1, 2, 4, 6, 5, 3]);
-  await page.locator('#formula-input').fill('4d6R2>=5');
+  await page.locator('label[for="expert-check"]').click();
+  await page.locator('.expert-pad').waitFor({ state: 'visible' });
+  await page.locator('.expert-numpad .expert-btn', { hasText: '4' }).click();
+  await page.locator('.expert-dice .expert-btn', { hasText: 'd6' }).click();
+  await page.locator('.expert-operators .expert-btn', { hasText: 'R' }).click();
+  await page.locator('.expert-numpad .expert-btn', { hasText: '2' }).click();
+  await page.locator('.expert-operators .expert-btn', { hasText: '≥' }).click();
+  await page.locator('.expert-numpad .expert-btn', { hasText: '5' }).click();
   await page.locator('#roll-btn').click();
   await page.locator('#result-section').waitFor({ state: 'visible' });
   await page.locator('#result-card').screenshot({ path: resolve(outputDir, 'guide-formule-avancee.png') });
@@ -88,6 +103,7 @@ async function main() {
   try {
     await captureHome(page);
     await captureBasicRoll(page);
+    await captureExpertMode(page);
     await captureAdvancedRoll(page);
     await captureHistoryFavorites(page);
   } finally {

@@ -55,7 +55,26 @@ L'interface permet d'ajouter rapidement ces des :
 
 Tu peux soit cliquer sur les boutons de des, soit taper la formule manuellement.
 
-## 4. Lancer plusieurs formules a la fois
+## 4. Mode classique et mode expert
+
+Rollz propose maintenant deux interfaces de construction de formule.
+
+### Mode classique
+
+- ideal pour les lancers rapides du quotidien
+- clique sur les boutons de des pour construire la formule automatiquement
+- utilise le widget `MOD` pour les bonus et malus fixes
+
+### Mode expert
+
+- active-le avec le toggle de mode dans l'encart des des
+- le createur avance apparait directement sous ce toggle
+- raccourcis de des, chiffres et symboles de formule sont regroupes dans un seul panneau, plus pratique sur mobile
+- `Avantage`, `Desavantage` et `Pair/Impair` restent disponibles sous la barre de formule
+
+![Constructeur du mode expert](images/guide-mode-expert.png)
+
+## 5. Lancer plusieurs formules a la fois
 
 Tu peux separer plusieurs formules avec un point-virgule `;`.
 
@@ -66,7 +85,7 @@ Exemples :
 
 Chaque formule est lancee a la suite et Rollz affiche un resultat pour chaque bloc.
 
-## 5. Modes speciaux
+## 6. Modes speciaux
 
 ### Avantage
 
@@ -108,7 +127,7 @@ Important :
 - le total affiche dans le resultat reste nomme `Reussites`
 - `Avantage`, `Desavantage` et `Pair/Impair` s'excluent mutuellement
 
-## 6. Formules avancees
+## 7. Formules avancees
 
 Rollz prend en charge deux operateurs avances directement dans la formule :
 
@@ -190,7 +209,7 @@ Exemple detaille :
 
 ![Exemple de formule avancee](images/guide-formule-avancee.png)
 
-## 7. Compatibilites et limites
+## 8. Compatibilites et limites
 
 ### Ce qui est autorise
 
@@ -207,7 +226,7 @@ Exemple detaille :
 - la syntaxe inline avancee ne peut pas etre combinee avec `Avantage`, `Desavantage` ou `Pair/Impair` sur la premiere formule
 - en mode `Pair/Impair`, seul le premier groupe de des est utilise
 
-## 8. Exemples utiles
+## 9. Exemples utiles
 
 ### Lancers classiques
 
@@ -226,7 +245,7 @@ Exemple detaille :
 - `1d20 + 4; 1d8 + 2`
 - `8d6>=5; 2d6R2`
 
-## 9. Historique et favoris
+## 10. Historique et favoris
 
 ### Historique
 
@@ -257,15 +276,16 @@ Quand tu charges un favori :
 
 ![Historique et favoris](images/guide-historique-favoris.png)
 
-## 10. Conseils pratiques
+## 11. Conseils pratiques
 
 - utilise les boutons de des pour eviter les erreurs de syntaxe sur les lancers simples
+- passe en `Expert` si tu veux les des, chiffres et operateurs au meme endroit
 - utilise `;` si tu veux preparer plusieurs lancers d'un coup
 - utilise `R` pour les systemes qui relancent les faibles resultats
 - utilise `>=` pour les systemes a seuil de reussite
 - utilise `Pair/Impair` si tu veux compter les des pairs comme reussites
 
-## 11. Mini aide-memoire
+## 12. Mini aide-memoire
 
 - `1d20 + 5` : un de a 20 faces plus 5
 - `2d6R2` : relance chaque de de valeur `1` ou `2` une seule fois
@@ -273,7 +293,7 @@ Quand tu charges un favori :
 - `4d6R2>=5` : relances puis seuil
 - `1d20 + 4; 1d8 + 2` : deux lancers separes
 
-## 12. Si une formule ne marche pas
+## 13. Si une formule ne marche pas
 
 Verifie ces points :
 

@@ -17,6 +17,7 @@ User guide in French: [docs/WIKI_UTILISATEUR.md](docs/WIKI_UTILISATEUR.md)
 - Classic dice formulas such as `2d6 + 4`, `1d20 - 2`, `3d8 + 1d4 + 5`
 - Advanced inline formulas such as `8d6>=5`, `2d6R2`, `4d6R2>=5`
 - Interactive visual dice: `d4`, `d6`, `d8`, `d10`, `d12`, `d20`, `d100`
+- Two formula-building interfaces: `Classic` mode for quick dice selection and `Expert` mode for advanced operators in one compact panel
 - `Advantage` / `Disadvantage` mode
 - `Success Mode`:
 	- only even results count as successes
@@ -76,8 +77,11 @@ Rollz supports two advanced inline operators that can be written directly after 
 
 You can use the app in two ways:
 
-- click the dice to build a formula automatically
-- type a formula manually in the input field
+- stay in `Classic` mode to build simple formulas by clicking dice and the modifier widget
+- switch to `Expert` mode to access dice shortcuts, numbers, and advanced operators in one panel under the mode toggle
+- type a formula manually in the input field at any time
+
+The full user guides include screenshots of the interface, including the expert formula builder.
 
 Examples:
 
@@ -96,6 +100,8 @@ This is a static project, so no build step is required.
 The application files live under the `app/` directory, so your local static server should use that folder as its web root.
 
 Example: `npx http-server app`
+
+To refresh the user-guide screenshots locally, serve `app/` and run `node scripts/capture-user-guide-screens.mjs`.
 
 ### GitHub Pages deployment
 
