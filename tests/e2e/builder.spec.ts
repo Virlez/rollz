@@ -290,3 +290,64 @@ test.describe('Mode toggles', () => {
     await expect(app.formulaPreview).not.toContainText('⚠');
   });
 });
+
+test.describe('Expert mode', () => {
+  test('shows expert pad and hides classic options', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+
+    await app.toggleExpertMode();
+
+    await expect(app.expertPad).toBeVisible();
+    await expect(page.locator('#dice-grid')).toBeHidden();
+    await expect(app.modifierInput).toBeHidden();
+    await expect(page.locator('.advantage-row')).toBeVisible();
+    await expect(page.locator('#advantage-label')).toBeVisible();
+    await expect(page.locator('.expert-dice .expert-btn')).toHaveCount(7);
+  });
+
+  test('expert mode keeps special toggles usable', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+    await app.fillFormula('2d20');
+
+    await app.toggleMode('advantage');
+
+    await expect(app.modeCheckbox('advantage')).toBeChecked();
+    await expect(app.formulaPreview).toContainText('⚠');
+  });
+
+  test('clicking a die in expert mode inserts notation at the cursor', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+
+    await app.clickExpertDigit(2);
+    await app.clickExpertDie('d6');
+
+    await expect(app.formulaInput).toHaveValue('2d6');
+  });
+
+  test('expert controls can build a complex valid formula', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+
+    await app.clickExpertDigit(2);
+    await app.clickExpertDie('d6');
+    await app.clickExpertOperator('≥');
+    await app.clickExpertDigit(4);
+    await app.clickExpertOperator(';');
+    await app.clickExpertDigit(1);
+    await app.clickExpertDie('d20');
+    await app.clickExpertOperator('R');
+    await app.clickExpertDigit(2);
+    await app.clickExpertOperator('+');
+    await app.clickExpertDigit(5);
+
+    await expect(app.formulaInput).toHaveValue('2d6>=4 ; 1d20R2 + 5');
+    await expect(app.formulaPreview).toHaveClass(/is-valid/);
+    await expect(app.rollButton).toBeEnabled();
+  });
+});

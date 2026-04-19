@@ -1,4 +1,6 @@
 export const dom = {
+  expertCheck: /** @type {HTMLInputElement|null} */ (document.getElementById('expert-check')),
+  expertPad: document.getElementById('expert-pad'),
   formulaInputWrap: /** @type {HTMLDivElement} */ (document.getElementById('formula-input-wrap')),
   formulaInput: /** @type {HTMLInputElement} */ (document.getElementById('formula-input')),
   formulaPreview: document.getElementById('formula-preview'),

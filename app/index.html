@@ -22,9 +22,9 @@
   <title>Rollz — TTRPG Dice Roller</title>
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="manifest" href="manifest.webmanifest?v=2026-04-13-6" />
+  <link rel="manifest" href="manifest.webmanifest?v=2026-04-19-1" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="css/styles.css?v=2026-04-13-6" />
+  <link rel="stylesheet" href="css/styles.css?v=2026-04-19-1" />
 </head>
 <body>
   <div class="app">
@@ -71,6 +71,45 @@
         <section class="card" aria-labelledby="dice-heading">
           <h2 id="dice-heading" class="card-title" data-i18n="diceTitle">Choisissez Vos Dés</h2>
           <p class="card-hint" data-i18n="diceHint">Cliquez sur un dé pour l'ajouter à votre formule</p>
+          <div class="mode-toggle-row">
+            <span class="mode-toggle-label" data-i18n="expertToggleClassic">Classique</span>
+            <label class="mode-toggle" for="expert-check">
+              <input type="checkbox" id="expert-check" class="advantage-check" aria-label="Mode expert" />
+              <span class="advantage-switch mode-switch"></span>
+            </label>
+            <span class="mode-toggle-label" data-i18n="expertToggleExpert">Expert</span>
+          </div>
+          <div class="expert-pad" id="expert-pad" hidden>
+            <div class="expert-dice" role="group" aria-label="Expert dice shortcuts">
+              <button type="button" class="expert-btn expert-btn--die" data-insert-die="4">d4</button>
+              <button type="button" class="expert-btn expert-btn--die" data-insert-die="6">d6</button>
+              <button type="button" class="expert-btn expert-btn--die" data-insert-die="8">d8</button>
+              <button type="button" class="expert-btn expert-btn--die" data-insert-die="10">d10</button>
+              <button type="button" class="expert-btn expert-btn--die" data-insert-die="12">d12</button>
+              <button type="button" class="expert-btn expert-btn--die" data-insert-die="20">d20</button>
+              <button type="button" class="expert-btn expert-btn--die" data-insert-die="100">d100</button>
+            </div>
+            <div class="expert-operators" role="group" aria-label="Expert operators">
+              <button type="button" class="expert-btn" data-insert=">=" data-i18n-title="expertInsertThreshold" title="Insérer un seuil de réussite">&ge;</button>
+              <button type="button" class="expert-btn" data-insert="R" data-i18n-title="expertInsertReroll" title="Insérer un marqueur de relance">R</button>
+              <button type="button" class="expert-btn" data-insert=" ; " data-i18n-title="expertInsertSeparator" title="Insérer une autre formule de lancer">;</button>
+              <button type="button" class="expert-btn" data-insert=" + " data-i18n-title="expertInsertPlus" title="Insérer un signe plus">+</button>
+              <button type="button" class="expert-btn" data-insert=" - " data-i18n-title="expertInsertMinus" title="Insérer un signe moins">&minus;</button>
+              <button type="button" class="expert-btn expert-btn--backspace" data-action="backspace" data-i18n-title="expertBackspace" title="Supprimer le caractère précédent">&#x232b;</button>
+            </div>
+            <div class="expert-numpad" role="group" aria-label="Expert numeric keypad">
+              <button type="button" class="expert-btn" data-insert="1">1</button>
+              <button type="button" class="expert-btn" data-insert="2">2</button>
+              <button type="button" class="expert-btn" data-insert="3">3</button>
+              <button type="button" class="expert-btn" data-insert="4">4</button>
+              <button type="button" class="expert-btn" data-insert="5">5</button>
+              <button type="button" class="expert-btn" data-insert="6">6</button>
+              <button type="button" class="expert-btn" data-insert="7">7</button>
+              <button type="button" class="expert-btn" data-insert="8">8</button>
+              <button type="button" class="expert-btn" data-insert="9">9</button>
+              <button type="button" class="expert-btn" data-insert="0">0</button>
+            </div>
+          </div>
           <div class="dice-grid" id="dice-grid" role="group" aria-label="Dice type selector">
 
             <div class="modifier-widget" aria-label="Modifier controls">

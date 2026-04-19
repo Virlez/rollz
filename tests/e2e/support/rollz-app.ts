@@ -63,6 +63,14 @@ export class RollzApp {
     return this.page.locator('#formula-preview');
   }
 
+  get expertModeCheckbox(): Locator {
+    return this.page.locator('#expert-check');
+  }
+
+  get expertPad(): Locator {
+    return this.page.locator('#expert-pad');
+  }
+
   get resultSection(): Locator {
     return this.page.locator('#result-section');
   }
@@ -192,8 +200,24 @@ export class RollzApp {
     await this.langToggle.click();
   }
 
+  async toggleExpertMode(): Promise<void> {
+    await this.page.locator('label[for="expert-check"]').click();
+  }
+
   async toggleMode(mode: RollMode): Promise<void> {
     await this.page.locator(`#${mode}-label`).click();
+  }
+
+  async clickExpertOperator(label: string): Promise<void> {
+    await this.page.locator('.expert-operators .expert-btn').filter({ hasText: label }).click();
+  }
+
+  async clickExpertDie(label: string): Promise<void> {
+    await this.page.locator('.expert-dice .expert-btn').filter({ hasText: label }).click();
+  }
+
+  async clickExpertDigit(digit: number | string): Promise<void> {
+    await this.page.locator('.expert-numpad .expert-btn').filter({ hasText: String(digit) }).click();
   }
 
   modeCheckbox(mode: RollMode): Locator {

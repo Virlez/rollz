@@ -4,18 +4,21 @@ import { dom } from './dom.js';
 import { evaluateTokens } from './engine.js';
 import { addFavoriteFormula, loadFavorites, moveFavoriteFormula, removeFavoriteFormula, renderFavorites } from './favorites.js';
 import { buildHistoryBreakdownSummary, loadHistory, pushHistory, renderHistory, saveHistory } from './history.js';
-import { applyTranslations, getLang, loadLanguage, setLang, t } from './i18n.js';
+import { applyTranslations, getLang, loadExpertMode, loadLanguage, setLang, t } from './i18n.js';
 import { normalizeRollMode, parseFormulaInput } from './parser.js';
 import { renderResult } from './render.js';
 import { state } from './state.js';
 import {
   addDieToFormula,
+  deleteAtCursor,
   getFormulaCompatibilityIssues,
+  insertAtCursor,
   registerServiceWorker,
   resetFormulaBuilderState,
   setModifier,
   setupInstallPrompt,
   showError,
+  toggleExpertMode,
   updateFormulaPreview,
   updateModifierUI,
   updateOfflineUI,
@@ -41,6 +44,7 @@ function toggleLanguage() {
   setLang(getLang() === 'en' ? 'fr' : 'en');
   applyTranslations();
   updateModifierUI();
+  if (dom.expertCheck) dom.expertCheck.setAttribute('aria-label', t('expertModeLabel'));
   updateFormulaPreview();
 
   if (state.lastResult && !dom.resultSection.hidden) {
@@ -191,8 +195,10 @@ function init() {
   document.body.dataset.rollSequence = String(completedRollSequence);
   renderDicePalette();
   loadLanguage();
+  state.expertMode = loadExpertMode();
   applyTranslations();
   updateModifierUI();
+  toggleExpertMode(state.expertMode);
   updateOfflineUI();
   setupInstallPrompt();
   registerServiceWorker();
@@ -204,6 +210,13 @@ function init() {
 
   const langToggle = document.getElementById('lang-toggle');
   if (langToggle) langToggle.addEventListener('click', toggleLanguage);
+
+  if (dom.expertCheck) {
+    dom.expertCheck.addEventListener('change', () => {
+      toggleExpertMode(dom.expertCheck.checked);
+      dom.formulaInput.focus({ preventScroll: true });
+    });
+  }
 
   if (dom.advantageCheck) {
     dom.advantageCheck.addEventListener('change', () => {
@@ -303,6 +316,29 @@ function init() {
   });
 
   dom.rollBtn.addEventListener('click', doRoll);
+
+  if (dom.expertPad) {
+    dom.expertPad.addEventListener('click', event => {
+      const target = event.target instanceof HTMLElement ? event.target.closest('.expert-btn') : null;
+      if (!(target instanceof HTMLButtonElement)) return;
+
+      const expertDie = Number(target.dataset.insertDie);
+      if (DICE_SIDES.includes(expertDie)) {
+        addDieToFormula(expertDie);
+        return;
+      }
+
+      if (target.dataset.action === 'backspace') {
+        deleteAtCursor();
+        return;
+      }
+
+      const insertValue = target.dataset.insert;
+      if (insertValue) {
+        insertAtCursor(insertValue);
+      }
+    });
+  }
 
   dom.clearHistoryBtn.addEventListener('click', () => {
     state.history = [];

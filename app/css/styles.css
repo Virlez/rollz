@@ -370,6 +370,31 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   margin-bottom: var(--sp-5);
 }
 
+.mode-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-full);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--clr-border);
+}
+
+.mode-toggle {
+  display: inline-flex;
+  align-items: center;
+}
+
+.mode-toggle-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--clr-text-2);
+}
+
 /* ── Dice Grid ──────────────────────────────────────────────────── */
 .dice-grid {
   display: grid;
@@ -674,6 +699,75 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 .formula-preview.is-valid   { color: var(--clr-green); }
 .formula-preview.is-invalid { color: var(--clr-red); }
 
+.expert-pad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(240,180,41,0.08));
+  border: 1px solid rgba(124,58,237,0.22);
+}
+
+.expert-hint {
+  font-size: 0.78rem;
+  color: var(--clr-text-2);
+}
+
+.expert-operators,
+.expert-dice,
+.expert-numpad {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.expert-dice {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.expert-operators {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.expert-numpad {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.expert-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-md);
+  border: 1px solid rgba(124,58,237,0.34);
+  background: rgba(34,31,53,0.92);
+  color: var(--clr-text);
+  font-weight: 700;
+  transition: transform var(--tr), border-color var(--tr), background var(--tr), box-shadow var(--tr);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.expert-btn:hover {
+  border-color: rgba(240,180,41,0.45);
+  background: rgba(44,40,68,0.96);
+  box-shadow: 0 0 14px rgba(124,58,237,0.2);
+}
+
+.expert-btn:active {
+  transform: scale(0.95);
+}
+
+.expert-btn--backspace {
+  color: var(--clr-gold-light);
+}
+
+.expert-btn--die {
+  font-family: 'Courier New', 'SF Mono', monospace;
+  letter-spacing: 0.02em;
+}
+
 /* ── Advantage / Disadvantage Toggle ────────────────────────────── */
 .advantage-row {
   display: flex;
@@ -756,6 +850,17 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
 .advantage-check:checked + .disadvantage-switch::after {
   transform: translateX(16px);
   background: var(--clr-red);
+}
+
+.advantage-check:checked + .mode-switch {
+  background: rgba(240,180,41,0.2);
+  border-color: var(--clr-gold);
+  box-shadow: 0 0 12px rgba(240,180,41,0.28);
+}
+
+.advantage-check:checked + .mode-switch::after {
+  transform: translateX(16px);
+  background: var(--clr-gold);
 }
 
 /* Checked state — success mode (purple) */
@@ -1392,6 +1497,23 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   animation: spin 0.9s linear infinite;
 }
 
+body.is-expert .dice-grid,
+body.is-expert .modifier-widget,
+body.is-expert .die-counter {
+  display: none !important;
+}
+
+body.is-expert .die-btn.is-selected {
+  background: rgba(255,255,255,0.03);
+  border-color: var(--clr-border);
+  color: var(--clr-text-2);
+  box-shadow: none;
+}
+
+body.is-expert .die-btn.is-selected .die-shape svg {
+  animation: none;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -1420,6 +1542,9 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   .logo-text h1 { font-size: 1.3rem; }
   .logo-tagline { display: none; }
   .card { padding: var(--sp-4); }
+  .mode-toggle-row { gap: var(--sp-2); }
+  .mode-toggle-label { font-size: 0.72rem; }
+  .expert-pad { padding: var(--sp-3); }
   .roll-btn { padding: var(--sp-4) var(--sp-8); font-size: 1rem; }
   .result-card { padding: var(--sp-6) var(--sp-4); }
   .history-header { flex-wrap: wrap; gap: var(--sp-2); }
@@ -1434,6 +1559,20 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   .header-actions { width: min(100%, 168px); }
   .install-btn, .offline-badge { width: 100%; }
   .die-shape { width: 42px; height: 42px; }
+  .mode-toggle-row {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .expert-dice {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .expert-operators {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .expert-btn {
+    min-height: 36px;
+    padding-inline: var(--sp-2);
+  }
   .history-entry {
     grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
@@ -1450,11 +1589,14 @@ input:focus-visible { outline: 2px solid var(--clr-gold); outline-offset: 2px; b
   .logo-tagline { font-size: 0.82rem; }
   .card-title { font-size: 1.15rem; }
   .card-hint { font-size: 0.92rem; }
+  .mode-toggle-label { font-size: 0.86rem; }
   .die-shape { width: 72px; height: 72px; }
   .die-counter { min-width: 26px; height: 26px; font-size: 0.82rem; }
   .formula-input { height: 58px; font-size: 1.15rem; }
   .formula-input::placeholder { font-size: 0.95rem; }
   .formula-preview { font-size: 0.92rem; }
+  .expert-hint { font-size: 0.88rem; }
+  .expert-btn { min-height: 44px; font-size: 1rem; }
   .roll-btn { font-size: 1.3rem; padding: var(--sp-5) var(--sp-12); }
   .roll-icon { width: 26px; height: 26px; }
   .result-formula { font-size: 1.05rem; }

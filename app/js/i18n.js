@@ -1,10 +1,19 @@
-import { LANG_KEY } from './constants.js';
+import { EXPERT_MODE_KEY, LANG_KEY } from './constants.js';
 
 export const i18n = {
   en: {
     tagline: 'TTRPG Dice Roller',
     diceTitle: 'Choose Your Dice',
     diceHint: 'Click a die to add it to your formula',
+    expertToggleClassic: 'Classic',
+    expertToggleExpert: 'Expert',
+    expertModeLabel: 'Expert mode',
+    expertInsertThreshold: 'Insert success threshold',
+    expertInsertReroll: 'Insert reroll marker',
+    expertInsertSeparator: 'Insert another roll formula',
+    expertInsertPlus: 'Insert plus sign',
+    expertInsertMinus: 'Insert minus sign',
+    expertBackspace: 'Delete previous character',
     modifierIncrease: 'Increase modifier',
     modifierDecrease: 'Decrease modifier',
     modifierValue: 'Modifier value',
@@ -63,6 +72,15 @@ export const i18n = {
     tagline: 'Lanceur de Dés JDR',
     diceTitle: 'Choisissez Vos Dés',
     diceHint: 'Cliquez sur un dé pour l\'ajouter à votre formule',
+    expertToggleClassic: 'Classique',
+    expertToggleExpert: 'Expert',
+    expertModeLabel: 'Mode expert',
+    expertInsertThreshold: 'Insérer un seuil de réussite',
+    expertInsertReroll: 'Insérer un marqueur de relance',
+    expertInsertSeparator: 'Insérer une autre formule de lancer',
+    expertInsertPlus: 'Insérer un signe plus',
+    expertInsertMinus: 'Insérer un signe moins',
+    expertBackspace: 'Supprimer le caractère précédent',
     modifierIncrease: 'Augmenter le modificateur',
     modifierDecrease: 'Diminuer le modificateur',
     modifierValue: 'Valeur du modificateur',
@@ -146,9 +164,23 @@ export function loadLanguage() {
   } catch {}
 }
 
+export function loadExpertMode() {
+  try {
+    return localStorage.getItem(EXPERT_MODE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
 export function applyTranslations() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.setAttribute('title', t(el.dataset.i18nTitle));
+    if (el instanceof HTMLButtonElement) {
+      el.setAttribute('aria-label', t(el.dataset.i18nTitle));
+    }
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     el.placeholder = t(el.dataset.i18nPlaceholder);

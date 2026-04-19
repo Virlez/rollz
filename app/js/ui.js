@@ -1,4 +1,4 @@
-import { APP_VERSION } from './constants.js';
+import { APP_VERSION, EXPERT_MODE_KEY } from './constants.js';
 import { dom, isStandaloneMode } from './dom.js';
 import { t } from './i18n.js';
 import { analyzeFormulas, describeFormulaInput, parseFormulaInput } from './parser.js';
@@ -50,7 +50,68 @@ export function setModifier(value) {
   rebuildFormulaFromDice();
 }
 
+export function toggleExpertMode(enabled) {
+  state.expertMode = Boolean(enabled);
+
+  try {
+    localStorage.setItem(EXPERT_MODE_KEY, state.expertMode ? 'true' : 'false');
+  } catch {}
+
+  document.body.classList.toggle('is-expert', state.expertMode);
+
+  if (dom.expertCheck) {
+    dom.expertCheck.checked = state.expertMode;
+    dom.expertCheck.setAttribute('aria-label', t('expertModeLabel'));
+  }
+
+  if (dom.expertPad) {
+    dom.expertPad.hidden = !state.expertMode;
+  }
+
+  resetFormulaBuilderState();
+  updateFormulaPreview();
+}
+
+export function insertAtCursor(text) {
+  const input = dom.formulaInput;
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? start;
+  const nextValue = input.value.slice(0, start) + text + input.value.slice(end);
+
+  input.value = nextValue;
+  input.focus({ preventScroll: true });
+  const nextCursor = start + text.length;
+  input.setSelectionRange(nextCursor, nextCursor);
+  updateFormulaPreview();
+}
+
+export function deleteAtCursor() {
+  const input = dom.formulaInput;
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? start;
+
+  if (start !== end) {
+    input.value = input.value.slice(0, start) + input.value.slice(end);
+    input.focus({ preventScroll: true });
+    input.setSelectionRange(start, start);
+    updateFormulaPreview();
+    return;
+  }
+
+  if (start === 0) return;
+
+  input.value = input.value.slice(0, start - 1) + input.value.slice(start);
+  input.focus({ preventScroll: true });
+  input.setSelectionRange(start - 1, start - 1);
+  updateFormulaPreview();
+}
+
 export function addDieToFormula(sides) {
+  if (state.expertMode) {
+    insertAtCursor(`d${sides}`);
+    return;
+  }
+
   state.selectedDice[sides] = (state.selectedDice[sides] || 0) + 1;
   if (!state.diceOrder.includes(sides)) {
     state.diceOrder.push(sides);

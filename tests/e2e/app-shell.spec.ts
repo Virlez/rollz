@@ -155,4 +155,18 @@ test.describe('PWA shell', () => {
     await expect(app.resultSection).toBeVisible();
     await expect(app.resultSourceNote).toContainText('Crypto');
   });
+
+  test('expert mode preference is persisted in localStorage', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+
+    await app.toggleExpertMode();
+    await expect(app.expertModeCheckbox).toBeChecked();
+    await expect(app.expertPad).toBeVisible();
+
+    await app.reload();
+
+    await expect(app.expertModeCheckbox).toBeChecked();
+    await expect(app.expertPad).toBeVisible();
+  });
 });
