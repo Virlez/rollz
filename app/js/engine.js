@@ -1,6 +1,3 @@
-import { state } from './state.js';
-import { getRandomNumbers } from './random.js';
-
 /**
  * @param {number[]} values
  * @returns {number}
@@ -56,9 +53,10 @@ function allDiceUseThreshold(tokens) {
 
 /**
  * @param {Array<any>} tokens
+ * @param {(count: number, sides: number) => Promise<number[]>} drawNumbers
  * @returns {Promise<any>}
  */
-async function evaluateInlineAdvancedTokens(tokens) {
+async function evaluateInlineAdvancedTokens(tokens, drawNumbers) {
   let total = 0;
   const tokenResults = createTokenResults(tokens);
 
@@ -69,13 +67,13 @@ async function evaluateInlineAdvancedTokens(tokens) {
     }
 
     const count = Math.abs(token.count);
-    const originalRolls = await getRandomNumbers(count, token.sides);
+    const originalRolls = await drawNumbers(count, token.sides);
     const finalRolls = originalRolls.slice();
     const rerollMask = originalRolls.map(value => token.rerollAtOrBelow !== undefined && value <= token.rerollAtOrBelow);
     const rerollCount = rerollMask.filter(Boolean).length;
 
     if (rerollCount > 0) {
-      const rerolls = await getRandomNumbers(rerollCount, token.sides);
+      const rerolls = await drawNumbers(rerollCount, token.sides);
       let rerollCursor = 0;
 
       rerollMask.forEach((shouldReroll, rollIndex) => {
@@ -117,12 +115,23 @@ async function evaluateInlineAdvancedTokens(tokens) {
 
 /**
  * @param {Array<any>} tokens
- * @param {{ advantageMode?: 'none'|'advantage'|'disadvantage', successMode?: boolean }} [options]
+ * @param {{
+ *   advantageMode?: 'none'|'advantage'|'disadvantage',
+ *   successMode?: boolean,
+ *   drawNumbers: (count: number, sides: number) => Promise<number[]>,
+ * }} options
  * @returns {Promise<any>}
  */
-export async function evaluateTokens(tokens, options = {}) {
-  const successMode = options.successMode ?? state.successMode;
-  const mode = options.advantageMode ?? state.advantageMode;
+export async function evaluateTokens(tokens, options) {
+  const successMode = options.successMode === true;
+  const mode = options.advantageMode === 'advantage' || options.advantageMode === 'disadvantage'
+    ? options.advantageMode
+    : 'none';
+  const drawNumbers = options.drawNumbers;
+
+  if (typeof drawNumbers !== 'function') {
+    throw new TypeError('evaluateTokens requires a drawNumbers option');
+  }
 
   if (successMode) {
     const tokenResults = createTokenResults(tokens);
@@ -141,13 +150,13 @@ export async function evaluateTokens(tokens, options = {}) {
     }
 
     const diceCount = Math.abs(firstDiceToken.count);
-    const drawn = await getRandomNumbers(diceCount, firstDiceToken.sides);
+    const drawn = await drawNumbers(diceCount, firstDiceToken.sides);
     const successMatches = mapSuccesses(drawn, value => value % 2 === 0);
     const successCount = successMatches.filter(Boolean).length;
     const criticalFailure = drawn.length > 0 && drawn.every(value => value % 2 !== 0);
     const allEven = drawn.length > 0 && drawn.every(value => value % 2 === 0);
     const successBonusRolls = (!criticalFailure && allEven)
-      ? await getRandomNumbers(diceCount, firstDiceToken.sides)
+      ? await drawNumbers(diceCount, firstDiceToken.sides)
       : [];
     const successBonusCount = successBonusRolls.reduce((sum, value) => sum + (value % 2 === 0 ? 1 : 0), 0);
     const modifierTotal = tokens.reduce((sum, token) => token.type === 'modifier' ? sum + token.value : sum, 0);
@@ -190,7 +199,7 @@ export async function evaluateTokens(tokens, options = {}) {
   }
 
   if (hasInlineAdvancedTokens(tokens)) {
-    return evaluateInlineAdvancedTokens(tokens);
+    return evaluateInlineAdvancedTokens(tokens, drawNumbers);
   }
 
   const hasAdvantage = mode !== 'none';
@@ -208,7 +217,7 @@ export async function evaluateTokens(tokens, options = {}) {
 
   const fetched = await Promise.all(
     Object.entries(diceNeeded).map(([sides, count]) =>
-      getRandomNumbers(count, Number(sides)).then(numbers => ({
+      drawNumbers(count, Number(sides)).then(numbers => ({
         sides: Number(sides),
         numbers,
       }))

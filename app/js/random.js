@@ -1,5 +1,4 @@
 import { RANDOM_ORG } from './constants.js';
-import { state } from './state.js';
 
 /**
  * @param {number} count
@@ -57,15 +56,35 @@ export function getCryptoRandomNumbers(count, sides) {
 }
 
 /**
+ * @returns {{
+ *   getRandomNumbers: (count: number, sides: number) => Promise<number[]>,
+ *   getSource: () => 'randomorg'|'crypto',
+ * }}
+ */
+export function createRandomNumberSource() {
+  /** @type {'randomorg'|'crypto'} */
+  let source = 'randomorg';
+
+  return {
+    async getRandomNumbers(count, sides) {
+      try {
+        return await fetchFromRandomOrg(count, 1, sides);
+      } catch {
+        source = 'crypto';
+        return getCryptoRandomNumbers(count, sides);
+      }
+    },
+    getSource() {
+      return source;
+    },
+  };
+}
+
+/**
  * @param {number} count
  * @param {number} sides
  * @returns {Promise<number[]>}
  */
 export async function getRandomNumbers(count, sides) {
-  try {
-    return await fetchFromRandomOrg(count, 1, sides);
-  } catch {
-    state.currentRollSource = 'crypto';
-    return getCryptoRandomNumbers(count, sides);
-  }
+  return createRandomNumberSource().getRandomNumbers(count, sides);
 }

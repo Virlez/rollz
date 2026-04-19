@@ -1,17 +1,16 @@
 import { DICE_SIDES } from './constants.js';
 import { renderDicePalette } from './dice-palette.js';
 import { dom } from './dom.js';
-import { evaluateTokens } from './engine.js';
 import { addFavoriteFormula, loadFavorites, moveFavoriteFormula, removeFavoriteFormula, renderFavorites } from './favorites.js';
-import { buildHistoryBreakdownSummary, loadHistory, pushHistory, renderHistory, saveHistory } from './history.js';
+import { loadHistory, renderHistory, saveHistory } from './history.js';
 import { applyTranslations, getLang, loadExpertMode, loadLanguage, setLang, t } from './i18n.js';
-import { normalizeRollMode, parseFormulaInput } from './parser.js';
+import { setRollMode, setRollModeFromToggle } from './roll-mode.js';
+import { rollFormulaInput } from './roll-service.js';
 import { renderResult } from './render.js';
 import { state } from './state.js';
 import {
   addDieToFormula,
   deleteAtCursor,
-  getFormulaCompatibilityIssues,
   insertAtCursor,
   registerServiceWorker,
   resetFormulaBuilderState,
@@ -32,13 +31,6 @@ let completedRollSequence = 0;
 function markRollCompleted() {
   completedRollSequence += 1;
   document.body.dataset.rollSequence = String(completedRollSequence);
-}
-
-function getCurrentRollMode() {
-  return {
-    advantageMode: state.advantageMode,
-    successMode: state.successMode,
-  };
 }
 
 function toggleLanguage() {
@@ -119,75 +111,9 @@ function finalizeFavoriteDrop(insertIndex) {
   draggedFavorite = null;
 }
 
-function applyFavoriteSuccessMode(successMode) {
-  if (!dom.successCheck || !dom.advantageCheck || !dom.disadvantageCheck) return;
-
-  dom.successCheck.checked = successMode;
-  if (successMode) {
-    dom.advantageCheck.checked = false;
-    dom.disadvantageCheck.checked = false;
-    state.advantageMode = 'none';
-  }
-  state.successMode = successMode;
-}
-
 async function doRoll(options = {}) {
-  const raw = dom.formulaInput.value.trim();
-  const formulas = parseFormulaInput(raw);
-  const rollMode = normalizeRollMode(options.mode ?? getCurrentRollMode());
-
-  if (formulas.length === 0) {
-    showError(t('errorInvalid'));
-    return;
-  }
-
-  const compatibilityIssues = getFormulaCompatibilityIssues(formulas, rollMode);
-  if (compatibilityIssues.length > 0) {
-    showError(compatibilityIssues[0]);
-    return;
-  }
-
-  showError(null);
-  dom.rollBtn.disabled = true;
-  dom.rollBtn.classList.add('is-rolling');
-  dom.spinnerOverlay.hidden = false;
-  dom.spinnerOverlay.removeAttribute('aria-hidden');
-
-  try {
-    const renderedRolls = [];
-
-    for (const [index, entry] of formulas.entries()) {
-      state.currentRollSource = 'randomorg';
-      const result = await evaluateTokens(entry.tokens, {
-        advantageMode: index === 0 ? rollMode.advantageMode : 'none',
-        successMode: index === 0 ? rollMode.successMode : false,
-      });
-      result.randomSource = state.currentRollSource;
-      renderedRolls.push({ formula: entry.formula, result });
-    }
-
-    state.lastResult = renderedRolls;
-    renderResult(renderedRolls);
-
-    const breakdownSummary = renderedRolls
-      .map((entry, index) => buildHistoryBreakdownSummary(formulas[index].tokens, entry.result))
-      .join(' ; ');
-    const totalSummary = renderedRolls.map(entry => String(entry.result.total)).join(' | ');
-
-    pushHistory({
-      formula: raw,
-      total: totalSummary,
-      breakdown: breakdownSummary,
-      timestamp: Date.now(),
-      mode: rollMode,
-    });
-  } catch (err) {
-    showError(`${t('errorRoll')}${err.message}`);
-  } finally {
-    dom.rollBtn.disabled = false;
-    dom.rollBtn.classList.remove('is-rolling');
-    dom.spinnerOverlay.hidden = true;
-    dom.spinnerOverlay.setAttribute('aria-hidden', 'true');
+  const completed = await rollFormulaInput(dom.formulaInput.value, options);
+  if (completed) {
     markRollCompleted();
   }
 }
@@ -220,42 +146,21 @@ function init() {
 
   if (dom.advantageCheck) {
     dom.advantageCheck.addEventListener('change', () => {
-      if (dom.advantageCheck.checked) {
-        dom.disadvantageCheck.checked = false;
-        if (dom.successCheck) dom.successCheck.checked = false;
-        state.advantageMode = 'advantage';
-        state.successMode = false;
-      } else {
-        state.advantageMode = 'none';
-      }
+      setRollModeFromToggle('advantage', dom.advantageCheck.checked);
       updateFormulaPreview();
     });
   }
 
   if (dom.disadvantageCheck) {
     dom.disadvantageCheck.addEventListener('change', () => {
-      if (dom.disadvantageCheck.checked) {
-        dom.advantageCheck.checked = false;
-        if (dom.successCheck) dom.successCheck.checked = false;
-        state.advantageMode = 'disadvantage';
-        state.successMode = false;
-      } else {
-        state.advantageMode = 'none';
-      }
+      setRollModeFromToggle('disadvantage', dom.disadvantageCheck.checked);
       updateFormulaPreview();
     });
   }
 
   if (dom.successCheck) {
     dom.successCheck.addEventListener('change', () => {
-      if (dom.successCheck.checked) {
-        dom.advantageCheck.checked = false;
-        dom.disadvantageCheck.checked = false;
-        state.advantageMode = 'none';
-        state.successMode = true;
-      } else {
-        state.successMode = false;
-      }
+      setRollModeFromToggle('success', dom.successCheck.checked);
       updateFormulaPreview();
     });
   }
@@ -381,7 +286,7 @@ function init() {
     resetFormulaBuilderState();
     dom.formulaInput.value = entry.formula;
     updateFormulaPreview();
-    await doRoll({ mode: normalizeRollMode(entry.mode) });
+    await doRoll({ mode: entry.mode });
   });
 
   if (dom.favoritesList) {
@@ -408,7 +313,7 @@ function init() {
 
       resetFormulaBuilderState();
       dom.formulaInput.value = formula;
-      applyFavoriteSuccessMode(successMode);
+      setRollMode({ advantageMode: 'none', successMode });
       updateFormulaPreview();
       focusFormulaContainer();
     });
