@@ -407,6 +407,34 @@ test.describe('Expert mode', () => {
     await expect(app.formulaInput).toHaveValue('2d6');
   });
 
+  test('repeat shortcut in expert mode inserts x with a trailing space', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+
+    await app.clickExpertDigit(3);
+    await app.clickExpertOperator('x');
+
+    await expect(app.formulaInput).toHaveValue('3x ');
+  });
+
+  test('expert operator shortcuts stay on a single row on desktop widths', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+
+    const operatorButtons = page.locator('.expert-operators .expert-btn');
+    await expect(operatorButtons).toHaveCount(7);
+
+    const yPositions = await operatorButtons.evaluateAll(elements =>
+      elements.map(element => Math.round(element.getBoundingClientRect().y))
+    );
+
+    expect(new Set(yPositions).size).toBe(1);
+  });
+
   test('expert controls can build a complex valid formula', async ({ page }) => {
     const app = new RollzApp(page);
     await app.goto();

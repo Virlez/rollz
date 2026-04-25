@@ -130,6 +130,89 @@ test.describe('Roll action — normal mode', () => {
     await expect(app.multiResultTotal(1)).toHaveText('5');
   });
 
+  test('global repeat prefix rerolls a full formula three times', async ({ page }) => {
+    await mockRandomOrg(page, [10, 4, 18]);
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+    await app.rollFormula('3x 1d20 + 6');
+
+    await expect(app.resultMulti).toBeVisible();
+    await expect(app.resultMulti.locator('.result-sub-block')).toHaveCount(3);
+    await expect(app.multiResultTotal(0)).toHaveText('16');
+    await expect(app.multiResultTotal(1)).toHaveText('10');
+    await expect(app.multiResultTotal(2)).toHaveText('24');
+  });
+
+  test('manual repeat syntax works without a space after x', async ({ page }) => {
+    await mockRandomOrg(page, [10, 1, 2, 12, 3, 4, 20, 5, 6]);
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+    await app.rollFormula('3x1d20+9;2d6+3');
+
+    await expect(app.resultMulti.locator('.result-repeat-block')).toHaveCount(3);
+    await expect(app.multiResultTotal(0)).toHaveText('19');
+    await expect(app.multiResultTotal(1)).toHaveText('6');
+    await expect(app.multiResultTotal(2)).toHaveText('21');
+    await expect(app.multiResultTotal(3)).toHaveText('10');
+    await expect(app.multiResultTotal(4)).toHaveText('29');
+    await expect(app.multiResultTotal(5)).toHaveText('14');
+  });
+
+  test('global repeat prefix rerolls every formula group in each repetition', async ({ page }) => {
+    await mockRandomOrg(page, [10, 4, 12, 5, 20, 1]);
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+    await app.rollFormula('3x 1d20 + 6;1d10');
+
+    await expect(app.resultMulti.locator('.result-repeat-block')).toHaveCount(3);
+    await expect(app.resultMulti.locator('.result-repeat-block').nth(0).locator('.result-sub-block')).toHaveCount(2);
+    await expect(app.resultMulti.locator('.result-repeat-block').nth(1).locator('.result-sub-block')).toHaveCount(2);
+    await expect(app.resultMulti.locator('.result-repeat-block').nth(2).locator('.result-sub-block')).toHaveCount(2);
+    await expect(app.multiResultTotal(0)).toHaveText('16');
+    await expect(app.multiResultTotal(1)).toHaveText('4');
+    await expect(app.multiResultTotal(2)).toHaveText('18');
+    await expect(app.multiResultTotal(3)).toHaveText('5');
+    await expect(app.multiResultTotal(4)).toHaveText('26');
+    await expect(app.multiResultTotal(5)).toHaveText('1');
+  });
+
+  test('global repeat keeps advantage scoped to the first group of each repetition', async ({ page }) => {
+    await mockRandomOrg(page, [4, 17, 6, 12, 15, 2, 11, 3, 8]);
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+    await app.fillFormula('3x 1d20;1d8');
+    await app.toggleMode('advantage');
+    await app.roll();
+
+    await expect(app.resultMulti.locator('.result-repeat-block')).toHaveCount(3);
+    await expect(app.resultMulti.locator('.is-kept')).toHaveCount(3);
+    await expect(app.resultMulti.locator('.is-discarded')).toHaveCount(3);
+    await expect(app.multiResultTotal(0)).toHaveText('17');
+    await expect(app.multiResultTotal(1)).toHaveText('6');
+    await expect(app.multiResultTotal(2)).toHaveText('15');
+    await expect(app.multiResultTotal(3)).toHaveText('2');
+    await expect(app.multiResultTotal(4)).toHaveText('11');
+    await expect(app.multiResultTotal(5)).toHaveText('8');
+  });
+
+  test('invalid suffix repeat syntax stays blocked', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+    await app.fillFormula('1d20x3');
+
+    await expect(app.formulaPreview).toContainText('Formule non reconnue');
+    await expect(app.rollButton).toBeDisabled();
+  });
+
   test('two semicolon-separated results display side by side on large mobile widths', async ({ page }) => {
     await mockRandomOrg(page, [10, 3]);
     await page.setViewportSize({ width: 430, height: 932 });
@@ -216,6 +299,17 @@ test.describe('Roll action — normal mode', () => {
     const app = new RollzApp(page);
     await app.goto();
     await app.fillFormula('4d6>=5');
+    await app.toggleMode('advantage');
+
+    await expect(app.rollButton).toBeDisabled();
+    await expect(app.formulaPreview).toContainText('avancée');
+  });
+
+  test('advanced syntax stays blocked when repeated rolls use advantage mode', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+    await app.fillFormula('3x 4d6>=5');
     await app.toggleMode('advantage');
 
     await expect(app.rollButton).toBeDisabled();

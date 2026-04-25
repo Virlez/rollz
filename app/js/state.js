@@ -12,7 +12,7 @@
  *   expertMode: boolean,
  *   advantageMode: 'none'|'advantage'|'disadvantage',
  *   successMode: boolean,
- *   lastResult: import('./parser.js').RenderedRoll[] | null,
+ *   lastResult: import('./parser.js').RenderedRoll[] | import('./parser.js').RenderedRoll[][] | null,
  *   isOffline: boolean,
  *   deferredInstallPrompt: BeforeInstallPromptEvent|null,
  *   isInstalled: boolean,

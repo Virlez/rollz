@@ -103,6 +103,18 @@ test.describe('Roll history', () => {
     await expect(app.historyTotal(0)).toHaveText('14 | 5');
   });
 
+  test('repeated rolls keep the raw formula and group totals in history', async ({ page }) => {
+    await mockRandomOrg(page, [10, 4, 12, 5, 20, 1]);
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+    await app.rollFormula('3x 1d20 + 6;1d10');
+
+    await expect(app.historyFormula(0)).toHaveText('3x 1d20 + 6;1d10');
+    await expect(app.historyTotal(0)).toHaveText('16 | 4 • 18 | 5 • 26 | 1');
+  });
+
   test('multiple rolls add multiple history entries', async ({ page }) => {
     await mockRandomOrg(page, [3, 5, 2]);
 

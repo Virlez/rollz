@@ -1,7 +1,7 @@
 import { APP_VERSION, EXPERT_MODE_KEY } from './constants.js';
 import { dom, isStandaloneMode } from './dom.js';
 import { t } from './i18n.js';
-import { analyzeFormulas, describeFormulaInput, parseFormulaInput } from './parser.js';
+import { analyzeFormulas, describeRollRequest, parseRollRequest } from './parser.js';
 import { state } from './state.js';
 
 let formulaSelectionStart = null;
@@ -188,7 +188,7 @@ export function updateDiceButtons() {
 
 export function updateFormulaPreview() {
   const raw = dom.formulaInput.value.trim();
-  const formulas = parseFormulaInput(raw);
+  const request = parseRollRequest(raw);
 
   if (!raw) {
     dom.formulaPreview.textContent = t('formulaPreviewEmpty');
@@ -197,18 +197,20 @@ export function updateFormulaPreview() {
     return;
   }
 
-  if (formulas.length === 0) {
+  if (!request) {
     dom.formulaPreview.textContent = t('formulaInvalid');
     dom.formulaPreview.className = 'formula-preview is-invalid';
     dom.rollBtn.disabled = true;
     return;
   }
 
+  const { formulas } = request;
+
   const analysis = analyzeFormulas(formulas);
   const compatibilityIssues = getFormulaCompatibilityIssues(formulas);
 
   if (compatibilityIssues.length > 0) {
-    dom.formulaPreview.textContent = '⚠  ' + describeFormulaInput(formulas) + '  ' + compatibilityIssues.join('  ');
+    dom.formulaPreview.textContent = '⚠  ' + describeRollRequest(request) + '  ' + compatibilityIssues.join('  ');
     dom.formulaPreview.className = 'formula-preview is-invalid';
     dom.rollBtn.disabled = true;
     return;
@@ -233,7 +235,7 @@ export function updateFormulaPreview() {
 
   const successWarning = successWarnings.length > 0 ? `  ${successWarnings.join('  ')}` : '';
 
-  dom.formulaPreview.textContent = '✓  ' + describeFormulaInput(formulas) + advWarning + successWarning;
+  dom.formulaPreview.textContent = '✓  ' + describeRollRequest(request) + advWarning + successWarning;
   dom.formulaPreview.className = 'formula-preview is-valid';
   dom.rollBtn.disabled = false;
 }

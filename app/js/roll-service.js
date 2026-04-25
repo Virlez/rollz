@@ -2,7 +2,7 @@ import { dom } from './dom.js';
 import { evaluateTokens } from './engine.js';
 import { buildHistoryBreakdownSummary, pushHistory } from './history.js';
 import { t } from './i18n.js';
-import { normalizeRollMode, parseFormulaInput } from './parser.js';
+import { normalizeRollMode, parseRollRequest } from './parser.js';
 import { createRandomNumberSource } from './random.js';
 import { renderResult } from './render.js';
 import { getCurrentRollMode } from './roll-mode.js';
@@ -37,15 +37,31 @@ async function evaluateFormulaEntry(entry, index, rollMode) {
   };
 }
 
+function buildRepeatedBreakdownSummary(formulas, repeatedRolls) {
+  return repeatedRolls
+    .map(renderedRolls => renderedRolls
+      .map((entry, index) => buildHistoryBreakdownSummary(formulas[index].tokens, entry.result))
+      .join(' ; '))
+    .join(' • ');
+}
+
+function buildRepeatedTotalSummary(repeatedRolls) {
+  return repeatedRolls
+    .map(renderedRolls => renderedRolls.map(entry => String(entry.result.total)).join(' | '))
+    .join(' • ');
+}
+
 export async function rollFormulaInput(rawInput, options = {}) {
   const raw = rawInput.trim();
-  const formulas = parseFormulaInput(raw);
+  const request = parseRollRequest(raw);
   const rollMode = normalizeRollMode(options.mode ?? getCurrentRollMode());
 
-  if (formulas.length === 0) {
+  if (!request) {
     showError(t('errorInvalid'));
     return false;
   }
+
+  const { formulas, repeatCount } = request;
 
   const compatibilityIssues = getFormulaCompatibilityIssues(formulas, rollMode);
   if (compatibilityIssues.length > 0) {
@@ -57,19 +73,25 @@ export async function rollFormulaInput(rawInput, options = {}) {
   setRollingUi(true);
 
   try {
-    const renderedRolls = [];
+    const repeatedRolls = [];
 
-    for (const [index, entry] of formulas.entries()) {
-      renderedRolls.push(await evaluateFormulaEntry(entry, index, rollMode));
+    for (let repeatIndex = 0; repeatIndex < repeatCount; repeatIndex += 1) {
+      const renderedRolls = [];
+
+      for (const [index, entry] of formulas.entries()) {
+        renderedRolls.push(await evaluateFormulaEntry(entry, index, rollMode));
+      }
+
+      repeatedRolls.push(renderedRolls);
     }
 
-    state.lastResult = renderedRolls;
-    renderResult(renderedRolls);
+    const renderedResult = repeatCount === 1 ? repeatedRolls[0] : repeatedRolls;
 
-    const breakdownSummary = renderedRolls
-      .map((entry, index) => buildHistoryBreakdownSummary(formulas[index].tokens, entry.result))
-      .join(' ; ');
-    const totalSummary = renderedRolls.map(entry => String(entry.result.total)).join(' | ');
+    state.lastResult = renderedResult;
+    renderResult(renderedResult);
+
+    const breakdownSummary = buildRepeatedBreakdownSummary(formulas, repeatedRolls);
+    const totalSummary = buildRepeatedTotalSummary(repeatedRolls);
 
     pushHistory({
       formula: raw,

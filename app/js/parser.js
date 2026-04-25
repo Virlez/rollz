@@ -17,10 +17,15 @@
  * @typedef {{ formula: string, tokens: Token[] }} ParsedFormula
  */
 
+/**
+ * @typedef {{ repeatCount: number, formulas: ParsedFormula[] }} RollRequest
+ */
+
 /** @typedef {{ formula: string, result: import('./engine.js').RollResult }} RenderedRoll */
 
 const TOKEN_RE = /([+-]?)(\d*)d(\d+)((?:(?:>=\d+)|(?:R\d+))*)|([+-]?\d+)/gi;
 const DICE_SUFFIX_RE = /(>=)(\d+)|(R)(\d+)/gi;
+const REPEAT_PREFIX_RE = /^(\d+)x\s*(.+)$/i;
 
 /**
  * @param {string} suffix
@@ -163,6 +168,34 @@ export function parseFormulaInput(formulaInput) {
 }
 
 /**
+ * @param {string} rawInput
+ * @returns {RollRequest|null}
+ */
+export function parseRollRequest(rawInput) {
+  const raw = typeof rawInput === 'string' ? rawInput.trim() : '';
+  if (!raw) return null;
+
+  let repeatCount = 1;
+  let formulaInput = raw;
+
+  const repeatMatch = raw.match(REPEAT_PREFIX_RE);
+  if (repeatMatch) {
+    repeatCount = parseInt(repeatMatch[1], 10);
+    if (!Number.isInteger(repeatCount) || repeatCount < 1) return null;
+    formulaInput = repeatMatch[2].trim();
+    if (!formulaInput) return null;
+  }
+
+  const formulas = parseFormulaInput(formulaInput);
+  if (formulas.length === 0) return null;
+
+  return {
+    repeatCount,
+    formulas,
+  };
+}
+
+/**
  * @param {Token[]} tokens
  * @returns {string}
  */
@@ -176,6 +209,17 @@ export function describeFormula(tokens) {
  */
 export function describeFormulaInput(formulas) {
   return formulas.map(entry => describeFormula(entry.tokens)).join('  ;  ');
+}
+
+/**
+ * @param {RollRequest} request
+ * @returns {string}
+ */
+export function describeRollRequest(request) {
+  const formulaDescription = describeFormulaInput(request.formulas);
+  return request.repeatCount > 1
+    ? `${request.repeatCount}x ${formulaDescription}`
+    : formulaDescription;
 }
 
 /**

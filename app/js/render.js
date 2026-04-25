@@ -7,6 +7,12 @@ import { describeFormula } from './parser.js';
 /** @typedef {import('./parser.js').Token} Token */
 /** @typedef {import('./parser.js').RenderedRoll} RenderedRoll */
 
+function isRepeatedRolls(renderedRolls) {
+  return Array.isArray(renderedRolls)
+    && renderedRolls.length > 0
+    && Array.isArray(renderedRolls[0]);
+}
+
 /**
  * @typedef {{
  *   formula: HTMLElement,
@@ -327,11 +333,70 @@ function createCenteredTailRow(result) {
   return row;
 }
 
+function appendRollBlocks(container, renderedRolls) {
+  const rolls = Array.isArray(renderedRolls) ? renderedRolls : [];
+  const hasCenteredTail = rolls.length > 2 && rolls.length % 2 === 1;
+  container.classList.toggle('is-two-up', rolls.length > 1);
+  container.classList.toggle('has-centered-tail', hasCenteredTail);
+  clearElement(container);
+
+  rolls.forEach((entry, index) => {
+    if (index > 0) {
+      const separator = document.createElement('div');
+      separator.className = 'result-separator';
+      container.appendChild(separator);
+    }
+
+    container.appendChild(
+      hasCenteredTail && index === rolls.length - 1
+        ? createCenteredTailRow(entry.result)
+        : createResultSubBlock(entry.result)
+    );
+  });
+}
+
+function createRepeatBlock(renderedRolls, index) {
+  const block = document.createElement('div');
+  block.className = 'result-repeat-block';
+
+  const title = document.createElement('div');
+  title.className = 'result-repeat-title';
+  title.textContent = `${t('repeatRollLabel')} ${index + 1}`;
+
+  const body = document.createElement('div');
+  body.className = 'result-repeat-body result-multi';
+  appendRollBlocks(body, renderedRolls);
+
+  block.appendChild(title);
+  block.appendChild(body);
+  return block;
+}
+
 /**
- * @param {RenderedRoll[]} renderedRolls
+ * @param {RenderedRoll[]|RenderedRoll[][]} renderedRolls
  */
 export function renderResult(renderedRolls) {
+  const isRepeated = isRepeatedRolls(renderedRolls);
   const rolls = Array.isArray(renderedRolls) ? renderedRolls : [];
+
+  if (isRepeated) {
+    dom.resultFormula.hidden = true;
+    dom.resultBreakdown.hidden = true;
+    dom.resultTotalRow.hidden = true;
+    dom.resultMulti.hidden = false;
+    dom.resultMulti.classList.remove('is-two-up');
+    dom.resultMulti.classList.remove('has-centered-tail');
+    clearElement(dom.resultMulti);
+
+    rolls.forEach((repeatRolls, index) => {
+      dom.resultMulti.appendChild(createRepeatBlock(repeatRolls, index));
+    });
+
+    dom.resultSection.hidden = false;
+    dom.resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
   const hasCenteredTail = rolls.length > 2 && rolls.length % 2 === 1;
   dom.resultMulti.classList.toggle('is-two-up', rolls.length > 1);
   dom.resultMulti.classList.toggle('has-centered-tail', hasCenteredTail);
