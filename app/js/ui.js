@@ -78,14 +78,11 @@ export function setModifier(value) {
   rebuildFormulaFromDice();
 }
 
-export function toggleExpertMode(enabled) {
-  state.expertMode = Boolean(enabled);
+function applyLayoutModes() {
+  const effectiveExpertMode = state.expertMode;
 
-  try {
-    localStorage.setItem(EXPERT_MODE_KEY, state.expertMode ? 'true' : 'false');
-  } catch {}
-
-  document.body.classList.toggle('is-expert', state.expertMode);
+  document.body.classList.toggle('is-expert', effectiveExpertMode);
+  document.body.classList.toggle('is-vtt-compact', effectiveExpertMode);
 
   if (dom.expertCheck) {
     dom.expertCheck.checked = state.expertMode;
@@ -93,8 +90,18 @@ export function toggleExpertMode(enabled) {
   }
 
   if (dom.expertPad) {
-    dom.expertPad.hidden = !state.expertMode;
+    dom.expertPad.hidden = !effectiveExpertMode;
   }
+}
+
+export function toggleExpertMode(enabled) {
+  state.expertMode = Boolean(enabled);
+
+  try {
+    localStorage.setItem(EXPERT_MODE_KEY, state.expertMode ? 'true' : 'false');
+  } catch {}
+
+  applyLayoutModes();
 
   resetFormulaBuilderState();
   updateFormulaPreview();

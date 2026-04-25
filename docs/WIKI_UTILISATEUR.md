@@ -68,8 +68,10 @@ Rollz propose maintenant deux interfaces de construction de formule.
 ### Mode expert
 
 - active-le avec le toggle de mode dans l'encart des des
-- le createur avance apparait directement sous ce toggle
+- le createur avance apparait directement dans ce mode
+- l'interface se resserre pour mieux tenir dans une petite fenetre a cote d'un virtual tabletop
 - raccourcis de des, chiffres et symboles de formule sont regroupes dans un seul panneau, plus pratique sur mobile
+- les cartes de resultat, favoris et historique prennent moins de place, avec historique et favoris scrollables si besoin
 - `Avantage`, `Desavantage` et `Pair/Impair` restent disponibles sous la barre de formule
 
 ![Constructeur du mode expert](images/guide-mode-expert.png)
