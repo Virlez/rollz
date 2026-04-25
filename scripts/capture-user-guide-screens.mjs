@@ -41,6 +41,34 @@ async function preparePage(page, mockValues) {
   });
 }
 
+async function saveHistoryFavorite(page, { category, label } = {}) {
+  await page.locator('.history-entry .favorite-btn').first().click();
+  await page.locator('#favorites-modal').waitFor({ state: 'visible' });
+
+  if (category) {
+    const categorySelect = page.locator('#favorites-modal-category-select');
+    const options = await categorySelect.locator('option').evaluateAll(optionEls => optionEls.map(option => ({
+      value: option instanceof HTMLOptionElement ? option.value : '',
+      label: option.textContent?.trim() || '',
+    })));
+
+    const existingCategory = options.find(option => option.label === category);
+    if (existingCategory) {
+      await categorySelect.selectOption(existingCategory.value);
+    } else if (options.length > 0) {
+      await categorySelect.selectOption(options[options.length - 1].value);
+      await page.locator('#favorites-modal-category-name-input').fill(category);
+    }
+  }
+
+  if (label) {
+    await page.locator('#favorites-modal-label-input').fill(label);
+  }
+
+  await page.locator('#favorites-modal-submit').click();
+  await page.locator('#favorites-modal').waitFor({ state: 'hidden' });
+}
+
 async function captureHome(page) {
   await preparePage(page, []);
   await page.screenshot({ path: resolve(outputDir, 'guide-accueil.png'), fullPage: true });
@@ -82,12 +110,23 @@ async function captureHistoryFavorites(page) {
   await page.locator('#formula-input').fill('1d6');
   await page.locator('#roll-btn').click();
   await page.locator('.history-entry').waitFor({ state: 'visible' });
-  await page.locator('.favorite-btn').first().click();
+  await saveHistoryFavorite(page, { category: 'Orea', label: 'Jet intel' });
   await page.locator('#formula-input').fill('1d8 + 2');
   await page.locator('#roll-btn').click();
   await page.locator('.history-entry').nth(1).waitFor({ state: 'visible' });
+  await saveHistoryFavorite(page, { category: 'Orea' });
   await page.locator('.favorites-card').scrollIntoViewIfNeeded();
   await page.screenshot({ path: resolve(outputDir, 'guide-historique-favoris.png'), fullPage: true });
+}
+
+async function captureFavoriteSaveModal(page) {
+  await preparePage(page, [4]);
+  await page.locator('#formula-input').fill('1d20 + 4');
+  await page.locator('#roll-btn').click();
+  await page.locator('.history-entry').waitFor({ state: 'visible' });
+  await page.locator('.history-entry .favorite-btn').first().click();
+  await page.locator('#favorites-modal').waitFor({ state: 'visible' });
+  await page.locator('#favorites-modal').screenshot({ path: resolve(outputDir, 'guide-favori-modal.png') });
 }
 
 async function main() {
@@ -105,6 +144,7 @@ async function main() {
     await captureBasicRoll(page);
     await captureExpertMode(page);
     await captureAdvancedRoll(page);
+    await captureFavoriteSaveModal(page);
     await captureHistoryFavorites(page);
   } finally {
     await context.close();

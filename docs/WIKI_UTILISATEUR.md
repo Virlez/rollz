@@ -265,6 +265,8 @@ Cliquer sur une entree de l'historique relance automatiquement cette formule ave
 Tu peux sauvegarder une formule depuis l'historique pour la retrouver rapidement.
 Au moment de l'enregistrement, Rollz te laisse choisir une categorie existante ou en creer une nouvelle, puis ajouter un label optionnel.
 
+![Modal de sauvegarde d'un favori](images/guide-favori-modal.png)
+
 Les favoris conservent :
 
 - la categorie choisie
@@ -285,7 +287,7 @@ Tu peux aussi :
 - renommer ou supprimer une categorie
 - replier une categorie pour gagner de la place
 - deplacer un favori dans une autre categorie par glisser-deposer
-- modifier le label d'un favori sans toucher a sa formule
+- modifier le label d'un favori avec le bouton crayon sans toucher a sa formule
 
 ![Historique et favoris](images/guide-historique-favoris.png)
 

@@ -265,6 +265,8 @@ Clicking a history entry automatically rerolls that formula with its saved mode.
 You can save a formula from history for quick access later.
 When saving, Rollz lets you choose an existing category or create a new one, then add an optional label.
 
+![Favorite save modal](images/guide-favori-modal.png)
+
 Favorites preserve:
 
 - the chosen category
@@ -285,7 +287,7 @@ You can also:
 - rename or delete a category
 - collapse a category to save space
 - drag a favorite into another category
-- edit a favorite label without changing its formula
+- edit a favorite label with the pencil button without changing its formula
 
 ![History and favorites](images/guide-historique-favoris.png)
 

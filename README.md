@@ -12,6 +12,24 @@ User guide in English: [docs/WIKI_USER_GUIDE.md](docs/WIKI_USER_GUIDE.md)
 
 User guide in French: [docs/WIKI_UTILISATEUR.md](docs/WIKI_UTILISATEUR.md)
 
+### Screenshots
+
+Home and classic builder:
+
+![Rollz home screen](docs/images/guide-accueil.png)
+
+Expert builder:
+
+![Rollz expert mode](docs/images/guide-mode-expert.png)
+
+Favorite save modal:
+
+![Rollz favorite save modal](docs/images/guide-favori-modal.png)
+
+History and categorized favorites:
+
+![Rollz history and favorites](docs/images/guide-historique-favoris.png)
+
 ### Features
 
 - Classic dice formulas such as `2d6 + 4`, `1d20 - 2`, `3d8 + 1d4 + 5`
@@ -102,6 +120,11 @@ The application files live under the `app/` directory, so your local static serv
 Example: `npx http-server app`
 
 To refresh the user-guide screenshots locally, serve `app/` and run `node scripts/capture-user-guide-screens.mjs`.
+
+Recommended local command on Windows:
+
+- `cmd /c npx http-server app -p 8081 -c-1`
+- `node scripts/capture-user-guide-screens.mjs`
 
 ### GitHub Pages deployment
 
@@ -195,6 +218,24 @@ Rollz est un lanceur de dés JDR/TTRPG au style dark fantasy, conçu en HTML, CS
 
 Guide utilisateur complet : [docs/WIKI_UTILISATEUR.md](docs/WIKI_UTILISATEUR.md)
 
+### Captures d'écran
+
+Accueil et builder classique :
+
+![Accueil Rollz](docs/images/guide-accueil.png)
+
+Builder expert :
+
+![Mode expert Rollz](docs/images/guide-mode-expert.png)
+
+Modal de sauvegarde d'un favori :
+
+![Modal favori Rollz](docs/images/guide-favori-modal.png)
+
+Historique et favoris catégorisés :
+
+![Historique et favoris Rollz](docs/images/guide-historique-favoris.png)
+
 ### Fonctionnalités
 
 - Lancers classiques avec formules comme `2d6 + 4`, `1d20 - 2`, `3d8 + 1d4 + 5`
@@ -279,6 +320,13 @@ Le projet est statique : aucun build n'est nécessaire.
 Les fichiers de l'application se trouvent dans le dossier `app/`. Pour un serveur local, il faut donc servir ce dossier comme racine web.
 
 Exemple : `npx http-server app`
+
+Pour régénérer les captures du guide, sers `app/` puis exécute `node scripts/capture-user-guide-screens.mjs`.
+
+Commande recommandée sous Windows :
+
+- `cmd /c npx http-server app -p 8081 -c-1`
+- `node scripts/capture-user-guide-screens.mjs`
 
 ### Déploiement GitHub Pages
 
