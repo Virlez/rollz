@@ -28,6 +28,18 @@ import {
 
 let completedRollSequence = 0;
 
+function getEventTargetElement(event) {
+  if (event.target instanceof Element) {
+    return event.target;
+  }
+
+  if (event.target instanceof Node) {
+    return event.target.parentElement;
+  }
+
+  return null;
+}
+
 function markRollCompleted() {
   completedRollSequence += 1;
   document.body.dataset.rollSequence = String(completedRollSequence);
@@ -167,7 +179,7 @@ function init() {
 
   if (dom.expertPad) {
     dom.expertPad.addEventListener('click', event => {
-      const target = event.target instanceof HTMLElement ? event.target.closest('.expert-btn') : null;
+      const target = getEventTargetElement(event)?.closest('.expert-btn');
       if (!(target instanceof HTMLButtonElement)) return;
 
       const expertDie = Number(target.dataset.insertDie);
@@ -195,7 +207,7 @@ function init() {
   });
 
   dom.historyList.addEventListener('click', async event => {
-    const target = event.target instanceof HTMLElement ? event.target : null;
+    const target = getEventTargetElement(event);
     const favoriteBtn = target ? target.closest('.favorite-btn') : null;
     if (favoriteBtn instanceof HTMLButtonElement) {
       event.stopPropagation();

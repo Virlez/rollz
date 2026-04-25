@@ -1,0 +1,178 @@
+/* Rollz CSS base: fonts, design tokens, reset, and element defaults. */
+
+@font-face {
+  font-family: 'Cinzel';
+  src: url('../fonts/cinzel-400.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cinzel';
+  src: url('../fonts/cinzel-600.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cinzel';
+  src: url('../fonts/cinzel-700.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/inter-300.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/inter-400.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/inter-500.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/inter-600.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --clr-bg: #0f0e17;
+  --clr-surface: #1a1829;
+  --clr-surface-2: #221f35;
+  --clr-border: rgba(255, 255, 255, 0.08);
+  --clr-gold: #f0b429;
+  --clr-gold-light: #ffd166;
+  --clr-gold-dim: #c88a1a;
+  --clr-purple: #7c3aed;
+  --clr-purple-lt: #9d5cf6;
+  --clr-red: #ef4444;
+  --clr-green: #10b981;
+  --clr-text: #e2e8f0;
+  --clr-text-2: #94a3b8;
+  --clr-text-3: #64748b;
+
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-full: 9999px;
+
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.35);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.45);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.6);
+  --glow-gold: 0 0 24px rgba(240,180,41,0.35);
+  --glow-purple: 0 0 24px rgba(124,58,237,0.4);
+
+  --tr: 0.2s ease;
+  --tr-slow: 0.4s ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--clr-text);
+  background-color: var(--clr-bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--clr-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--clr-surface-2);
+  border-radius: var(--r-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--clr-text-3);
+}
+
+a {
+  color: var(--clr-gold);
+  text-decoration: none;
+  transition: color var(--tr);
+}
+
+a:hover {
+  color: var(--clr-gold-light);
+  text-decoration: underline;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--clr-gold);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+
+input:focus-visible {
+  outline: 2px solid var(--clr-gold);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}

@@ -320,13 +320,21 @@ export function createResultSubBlock(result) {
   return block;
 }
 
+function createCenteredTailRow(result) {
+  const row = document.createElement('div');
+  row.className = 'result-tail-row';
+  row.appendChild(createResultSubBlock(result));
+  return row;
+}
+
 /**
  * @param {RenderedRoll[]} renderedRolls
  */
 export function renderResult(renderedRolls) {
   const rolls = Array.isArray(renderedRolls) ? renderedRolls : [];
+  const hasCenteredTail = rolls.length > 2 && rolls.length % 2 === 1;
   dom.resultMulti.classList.toggle('is-two-up', rolls.length > 1);
-  dom.resultMulti.classList.toggle('has-centered-tail', rolls.length > 2 && rolls.length % 2 === 1);
+  dom.resultMulti.classList.toggle('has-centered-tail', hasCenteredTail);
 
   if (rolls.length === 1) {
     dom.resultFormula.hidden = false;
@@ -357,7 +365,11 @@ export function renderResult(renderedRolls) {
         dom.resultMulti.appendChild(separator);
       }
 
-      dom.resultMulti.appendChild(createResultSubBlock(entry.result));
+      dom.resultMulti.appendChild(
+        hasCenteredTail && index === rolls.length - 1
+          ? createCenteredTailRow(entry.result)
+          : createResultSubBlock(entry.result)
+      );
     });
   }
 

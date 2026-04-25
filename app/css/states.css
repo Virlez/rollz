@@ -1,0 +1,279 @@
+/* Rollz CSS states: density presets and feature-specific display overrides. */
+
+body:not(.is-vtt-compact) .main {
+  padding: var(--sp-6) var(--sp-4) var(--sp-8);
+}
+
+body:not(.is-vtt-compact) .container {
+  gap: var(--sp-5);
+}
+
+body:not(.is-vtt-compact) .card {
+  padding: var(--sp-5);
+}
+
+body:not(.is-vtt-compact) .card-hint {
+  margin-bottom: var(--sp-4);
+}
+
+body:not(.is-vtt-compact) .mode-toggle-row {
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-2);
+}
+
+body:not(.is-vtt-compact) .dice-grid {
+  gap: var(--sp-2);
+}
+
+body:not(.is-vtt-compact) .die-btn {
+  gap: 0.35rem;
+  padding: var(--sp-2) 0.35rem;
+}
+
+body:not(.is-vtt-compact) .modifier-widget {
+  gap: 0.35rem;
+  padding: 0.7rem 0.35rem;
+}
+
+body:not(.is-vtt-compact) .modifier-step {
+  width: 26px;
+  height: 26px;
+}
+
+body:not(.is-vtt-compact) .modifier-input {
+  width: 46px;
+  height: 30px;
+}
+
+body:not(.is-vtt-compact) .die-shape {
+  width: 54px;
+  height: 54px;
+}
+
+body:not(.is-vtt-compact) .die-num {
+  font-size: 0.68rem;
+}
+
+body:not(.is-vtt-compact) .die-counter {
+  min-width: 20px;
+  height: 20px;
+  font-size: 0.68rem;
+}
+
+body:not(.is-vtt-compact) .formula-row {
+  gap: var(--sp-2);
+}
+
+body:not(.is-vtt-compact) .formula-input {
+  height: 50px;
+  font-size: 1rem;
+}
+
+body:not(.is-vtt-compact) .formula-preview {
+  font-size: 0.78rem;
+}
+
+body:not(.is-vtt-compact) .advantage-row {
+  gap: var(--sp-3);
+}
+
+body:not(.is-vtt-compact) .advantage-toggle {
+  padding: var(--sp-2) var(--sp-3);
+}
+
+body.is-expert .dice-grid,
+body.is-expert .modifier-widget,
+body.is-expert .die-counter {
+  display: none !important;
+}
+
+body.is-expert .die-btn.is-selected {
+  background: rgba(255,255,255,0.03);
+  border-color: var(--clr-border);
+  color: var(--clr-text-2);
+  box-shadow: none;
+}
+
+body.is-expert .die-btn.is-selected .die-shape svg {
+  animation: none;
+}
+
+body.is-vtt-compact .header {
+  padding-block: var(--sp-2);
+}
+
+body.is-vtt-compact .header-inner,
+body.is-vtt-compact .container {
+  max-width: 720px;
+}
+
+body.is-vtt-compact .main {
+  padding: var(--sp-5) var(--sp-4) var(--sp-6);
+}
+
+body.is-vtt-compact .container {
+  gap: var(--sp-4);
+}
+
+body.is-vtt-compact .card {
+  padding: var(--sp-4);
+}
+
+body.is-vtt-compact .card-hint,
+body.is-vtt-compact .footer {
+  display: none;
+}
+
+body.is-vtt-compact .logo-tagline {
+  display: none;
+}
+
+body.is-vtt-compact .mode-toggle-row {
+  margin-bottom: var(--sp-2);
+}
+
+body.is-vtt-compact .expert-pad {
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+}
+
+body.is-vtt-compact .formula-row {
+  gap: var(--sp-2);
+}
+
+body.is-vtt-compact .formula-input {
+  height: 50px;
+}
+
+body.is-vtt-compact .advantage-row {
+  gap: var(--sp-2);
+}
+
+body.is-vtt-compact .advantage-toggle {
+  padding: var(--sp-2) var(--sp-3);
+}
+
+body.is-vtt-compact .advantage-text {
+  font-size: 0.82rem;
+}
+
+body.is-vtt-compact .roll-row {
+  position: static;
+  top: auto;
+  z-index: auto;
+  padding-block: var(--sp-1);
+  background: transparent;
+}
+
+body.is-vtt-compact .roll-btn {
+  padding: var(--sp-4) var(--sp-8);
+  font-size: 1rem;
+}
+
+body.is-vtt-compact .result-card {
+  padding: var(--sp-4) var(--sp-3);
+}
+
+body.is-vtt-compact .result-formula {
+  font-size: 0.8rem;
+}
+
+body.is-vtt-compact .result-breakdown {
+  gap: var(--sp-2);
+}
+
+body.is-vtt-compact .die-result,
+body.is-vtt-compact .modifier-chip {
+  min-width: 32px;
+  height: 32px;
+  font-size: 0.8rem;
+}
+
+body.is-vtt-compact .result-total {
+  font-size: clamp(2rem, 8vw, 3.5rem);
+}
+
+body.is-vtt-compact .result-sub-block .result-total {
+  font-size: clamp(1.9rem, 7vw, 3rem);
+}
+
+body.is-vtt-compact .result-total-label {
+  font-size: 0.66rem;
+}
+
+body.is-vtt-compact .result-total-note,
+body.is-vtt-compact .result-source-note,
+body.is-vtt-compact .breakdown-note,
+body.is-vtt-compact .breakdown-subtotal {
+  font-size: 0.72rem;
+}
+
+body.is-vtt-compact .favorites-card,
+body.is-vtt-compact .history-card {
+  padding-bottom: var(--sp-3);
+}
+
+body.is-vtt-compact .favorites-list,
+body.is-vtt-compact .history-list {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: var(--sp-1);
+}
+
+body.is-vtt-compact .favorites-list {
+  max-height: min(23rem, 56vh);
+}
+
+body.is-vtt-compact .favorite-category {
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-2);
+}
+
+body.is-vtt-compact .history-entry,
+body.is-vtt-compact .favorite-entry {
+  padding-block: var(--sp-1);
+}
+
+body.is-vtt-compact .history-total {
+  font-size: 1.05rem;
+}
+
+body.is-vtt-compact .history-header {
+  margin-bottom: var(--sp-2);
+}
+
+body.is-vtt-compact .history-formula,
+body.is-vtt-compact .favorite-formula {
+  font-size: 0.74rem;
+}
+
+body.is-vtt-compact .favorite-category-name {
+  font-size: 0.76rem;
+}
+
+body.is-vtt-compact .history-meta,
+body.is-vtt-compact .favorite-category-count,
+body.is-vtt-compact .favorite-label,
+body.is-vtt-compact .favorite-mode-badge,
+body.is-vtt-compact .btn-ghost {
+  font-size: 0.62rem;
+}
+
+body.is-vtt-compact .favorite-load-btn {
+  min-height: 32px;
+  padding-inline: var(--sp-2);
+}
+
+body.is-vtt-compact .favorite-btn,
+body.is-vtt-compact .favorite-category-btn,
+body.is-vtt-compact .favorite-label-btn,
+body.is-vtt-compact .favorite-remove-btn,
+body.is-vtt-compact .favorite-drag-handle {
+  min-width: 28px;
+  min-height: 28px;
+}
+
+body.is-vtt-compact .result-multi.is-two-up {
+  gap: var(--sp-3);
+}

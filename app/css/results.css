@@ -1,0 +1,311 @@
+/* Rollz CSS results: result rendering and shared feedback animations. */
+
+.die-pair {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.die-pair.is-reroll {
+  gap: var(--sp-1);
+}
+
+.die-result.is-kept {
+  border-width: 2px;
+}
+
+.die-result.is-discarded {
+  opacity: 0.35;
+  text-decoration: line-through;
+  font-size: 0.72rem;
+  min-width: 28px;
+  height: 28px;
+  background: rgba(255,255,255,0.02);
+  border-color: rgba(255,255,255,0.05);
+}
+
+.die-result.is-rerolled-new {
+  border-color: rgba(240,180,41,0.4);
+  box-shadow: 0 0 10px rgba(240,180,41,0.18);
+}
+
+.breakdown-group.is-ignored {
+  opacity: 0.45;
+}
+
+.breakdown-group.is-ignored .breakdown-label {
+  text-decoration: line-through;
+}
+
+.breakdown-note {
+  font-size: 0.72rem;
+  color: var(--clr-text-3);
+}
+
+.breakdown-bonus {
+  margin-top: var(--sp-2);
+}
+
+.result-section {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.result-card {
+  background: linear-gradient(135deg, rgba(34,31,53,0.95) 0%, rgba(26,24,41,0.95) 100%);
+  border: 1px solid rgba(240,180,41,0.3);
+  border-radius: var(--r-xl);
+  padding: var(--sp-6) var(--sp-5);
+  box-shadow: var(--glow-gold), var(--shadow-lg);
+  text-align: center;
+}
+
+.result-formula {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: var(--clr-text-2);
+  margin-bottom: var(--sp-4);
+  letter-spacing: 0.04em;
+}
+
+.result-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+}
+
+.result-multi {
+  --result-multi-gap: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--result-multi-gap);
+}
+
+.result-multi.is-two-up {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: var(--result-multi-gap);
+}
+
+.result-multi.is-two-up.has-centered-tail .result-sub-block:last-child {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: calc((100% - var(--result-multi-gap)) / 2);
+  justify-self: center;
+}
+
+.result-multi.is-two-up.has-centered-tail .result-tail-row {
+  display: flex;
+  justify-content: center;
+  grid-column: 1 / -1;
+  width: 100%;
+  padding-top: var(--sp-2);
+}
+
+.result-multi.is-two-up.has-centered-tail .result-tail-row .result-sub-block {
+  width: 100%;
+  max-width: calc((100% - var(--result-multi-gap)) / 2);
+}
+
+.result-sub-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 100%;
+}
+
+.result-sub-block .result-breakdown {
+  margin-bottom: var(--sp-4);
+}
+
+.result-sub-block .result-total {
+  font-size: clamp(2.2rem, 7vw, 3.6rem);
+}
+
+.result-sub-block .result-total-row {
+  margin-top: auto;
+  padding-top: var(--sp-3);
+}
+
+.result-separator {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(240,180,41,0.45), transparent);
+}
+
+.result-multi.is-two-up .result-separator {
+  display: none;
+}
+
+.breakdown-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.breakdown-label {
+  font-size: 0.63rem;
+  color: var(--clr-text-3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.breakdown-dice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  justify-content: center;
+}
+
+.die-result {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-sm);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--clr-border);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pop-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.die-result.is-max {
+  background: rgba(240,180,41,0.15);
+  border-color: var(--clr-gold);
+  color: var(--clr-gold);
+  box-shadow: 0 0 10px rgba(240,180,41,0.3);
+}
+
+.die-result.is-min {
+  background: rgba(239,68,68,0.1);
+  border-color: rgba(239,68,68,0.4);
+  color: #fca5a5;
+}
+
+.die-result.is-success {
+  background: rgba(16,185,129,0.16);
+  border-color: rgba(16,185,129,0.5);
+  color: #86efac;
+  box-shadow: 0 0 10px rgba(16,185,129,0.22);
+}
+
+.die-result.is-failure {
+  opacity: 0.55;
+  background: rgba(255,255,255,0.035);
+  border-color: rgba(255,255,255,0.06);
+  color: var(--clr-text-3);
+}
+
+.breakdown-subtotal {
+  font-size: 0.72rem;
+  color: var(--clr-text-2);
+}
+
+.modifier-chip {
+  height: 34px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-sm);
+  background: rgba(124,58,237,0.15);
+  border: 1px solid rgba(124,58,237,0.35);
+  color: var(--clr-purple-lt);
+  font-size: 0.84rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pop-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.result-total-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.result-total-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--clr-text-3);
+}
+
+.result-total {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 9vw, 4.4rem);
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--clr-gold-light), var(--clr-gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 12px rgba(240,180,41,0.5));
+}
+
+.result-total.is-critical {
+  background: linear-gradient(135deg, #fca5a5, #ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 12px rgba(239,68,68,0.45));
+}
+
+.result-total-note {
+  min-height: 1.2em;
+  font-size: 0.8rem;
+  color: var(--clr-text-3);
+}
+
+.result-source-note {
+  min-height: 1.2em;
+  font-size: 0.78rem;
+  color: var(--clr-gold-light);
+}
+
+.result-total-note.is-critical {
+  color: #fca5a5;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

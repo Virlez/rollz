@@ -1,0 +1,364 @@
+/* Rollz CSS responsive layer: all breakpoint-specific overrides live here. */
+
+@media (max-width: 680px) {
+  .dice-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 559px) {
+  .result-multi {
+    --result-multi-gap: var(--sp-3);
+  }
+
+  .result-multi.is-two-up {
+    gap: var(--result-multi-gap);
+  }
+
+  .result-sub-block .result-breakdown {
+    margin-bottom: var(--sp-3);
+  }
+
+  .result-sub-block .result-total {
+    font-size: clamp(1.85rem, 8vw, 2.5rem);
+  }
+}
+
+@media (max-width: 560px) {
+  .header-inner { gap: var(--sp-3); }
+  .header-actions { gap: var(--sp-2); }
+  .logo-icon { width: 36px; height: 36px; }
+  .logo-text h1 { font-size: 1.3rem; }
+  .logo-tagline { display: none; }
+  .card { padding: var(--sp-4); }
+  .mode-group { padding: var(--sp-2) var(--sp-3); }
+  .mode-toggle-row { gap: var(--sp-2); }
+  .mode-toggle-label { font-size: 0.72rem; }
+  .expert-pad { padding: var(--sp-3); }
+  .roll-btn { padding: var(--sp-4) var(--sp-8); font-size: 1rem; }
+  .result-card { padding: var(--sp-6) var(--sp-4); }
+  .history-header { flex-wrap: wrap; gap: var(--sp-2); }
+  .history-header .card-title { flex: 1 1 100%; }
+  .history-entry { gap: var(--sp-3); padding-inline: var(--sp-3); }
+  .history-actions { gap: var(--sp-1); }
+  .history-total { font-size: clamp(1.15rem, 6vw, 1.35rem); }
+}
+
+@media (max-width: 420px) {
+  .modal-overlay {
+    padding: var(--sp-3);
+  }
+
+  .modal-card {
+    padding: var(--sp-3);
+    border-radius: var(--r-lg);
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions .btn-ghost,
+  .modal-submit-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  .history-list,
+  .favorites-list {
+    max-height: min(19rem, 48vh);
+  }
+
+  .favorites-list {
+    max-height: min(22rem, 56vh);
+  }
+
+  .history-breakdown {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    overflow-wrap: normal;
+  }
+
+  .header {
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .header-inner {
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: min(100%, 152px);
+    gap: var(--sp-1);
+  }
+
+  .install-btn,
+  .offline-badge {
+    width: 100%;
+    min-height: 32px;
+    font-size: 0.68rem;
+    padding-inline: var(--sp-2);
+  }
+
+  .offline-badge::before {
+    font-size: 0.82rem;
+  }
+
+  .lang-toggle {
+    width: 32px;
+    height: 32px;
+  }
+
+  .lang-flag {
+    width: 20px;
+    height: 14px;
+  }
+
+  .die-shape {
+    width: 42px;
+    height: 42px;
+  }
+
+  .mode-toggle-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--sp-1);
+    padding: var(--sp-1) var(--sp-2);
+  }
+
+  .mode-group {
+    padding: var(--sp-2);
+  }
+
+  .mode-group-title {
+    font-size: 0.76rem;
+  }
+
+  .mode-group-note {
+    font-size: 0.66rem;
+  }
+
+  .mode-toggle-label {
+    font-size: 0.66rem;
+  }
+
+  .expert-dice {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .expert-operators {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .expert-btn {
+    min-height: 40px;
+    padding-inline: var(--sp-2);
+    touch-action: manipulation;
+  }
+
+  .advantage-row {
+    gap: var(--sp-1);
+  }
+
+  .advantage-toggle {
+    padding: var(--sp-1) var(--sp-2);
+    gap: var(--sp-1);
+  }
+
+  .advantage-text {
+    font-size: 0.74rem;
+  }
+
+  .history-entry {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .history-actions {
+    justify-content: space-between;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+  }
+
+  .favorite-btn,
+  .favorite-category-btn,
+  .favorite-label-btn,
+  .favorite-remove-btn,
+  .favorite-drag-handle {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .favorite-load-btn {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 399px) {
+  .result-multi.is-two-up {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+  }
+
+  .result-multi.is-two-up.has-centered-tail .result-sub-block:last-child {
+    width: auto;
+    max-width: none;
+  }
+
+  .result-multi.is-two-up.has-centered-tail .result-tail-row {
+    display: block;
+    padding-top: 0;
+  }
+
+  .result-multi.is-two-up.has-centered-tail .result-tail-row .result-sub-block {
+    width: auto;
+    max-width: none;
+  }
+
+  .result-multi.is-two-up .result-separator {
+    display: block;
+  }
+}
+
+@media (max-width: 380px) {
+  .dice-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 360px) {
+  .logo-text h1 { font-size: 1.15rem; }
+  .install-btn,
+  .offline-badge {
+    font-size: 0.64rem;
+    letter-spacing: 0.05em;
+  }
+  .mode-toggle-label { font-size: 0.62rem; }
+  .card-title { font-size: 0.92rem; }
+  .formula-preview { font-size: 0.72rem; }
+  .advantage-text { font-size: 0.7rem; }
+  .advantage-switch { width: 32px; height: 18px; }
+  .advantage-switch::after { width: 12px; height: 12px; }
+  .advantage-check:checked + .advantage-switch::after,
+  .advantage-check:checked + .disadvantage-switch::after,
+  .advantage-check:checked + .mode-switch::after,
+  .advantage-check:checked + .success-switch::after {
+    transform: translateX(14px);
+  }
+  .favorite-mode-badge,
+  .history-meta,
+  .result-total-label,
+  .result-total-note,
+  .result-source-note,
+  .breakdown-note,
+  .breakdown-subtotal {
+    font-size: 0.66rem;
+  }
+  .history-total { font-size: 0.96rem; }
+  .favorite-formula,
+  .history-formula,
+  .result-formula { font-size: 0.72rem; }
+  .history-formula,
+  .favorite-formula,
+  .result-formula {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.35;
+  }
+  .die-result,
+  .modifier-chip {
+    min-width: 30px;
+    height: 30px;
+    font-size: 0.76rem;
+  }
+  .result-total { font-size: clamp(1.85rem, 8vw, 3rem); }
+}
+
+@media (max-width: 320px) {
+  .header { padding-inline: var(--sp-2); }
+  .card { padding: var(--sp-3); }
+  .mode-group { padding: var(--sp-2); }
+  .mode-toggle-row {
+    gap: 0.2rem;
+    padding-inline: var(--sp-1);
+  }
+  .mode-toggle-label,
+  .advantage-text,
+  .formula-preview,
+  .favorite-mode-badge,
+  .history-meta,
+  .result-total-label,
+  .result-total-note,
+  .result-source-note,
+  .breakdown-note,
+  .breakdown-subtotal {
+    font-size: 0.7rem;
+  }
+  .history-list,
+  .favorites-list {
+    max-height: min(16rem, 44vh);
+  }
+  .favorites-list {
+    max-height: min(18rem, 50vh);
+  }
+  .history-entry,
+  .favorite-entry,
+  .favorite-category {
+    padding-inline: var(--sp-2);
+  }
+  .history-actions,
+  .favorite-actions,
+  .favorite-category-actions {
+    gap: var(--sp-1);
+  }
+  .modal-overlay {
+    padding: var(--sp-2);
+  }
+  .modal-card {
+    padding: var(--sp-3);
+    width: min(100%, 100vw - 1rem);
+  }
+}
+
+@media (min-width: 1200px) {
+  body { font-size: 1.1rem; }
+  body:not(.is-vtt-compact) .result-card {
+    position: sticky;
+    top: calc(var(--sp-6) + 4.5rem);
+    z-index: 2;
+  }
+  .logo-text h1 { font-size: 2rem; }
+  .logo-tagline { font-size: 0.82rem; }
+  .card-title { font-size: 1.15rem; }
+  .card-hint { font-size: 0.92rem; }
+  .mode-toggle-label { font-size: 0.86rem; }
+  .die-shape { width: 72px; height: 72px; }
+  .die-counter { min-width: 26px; height: 26px; font-size: 0.82rem; }
+  .formula-input { height: 58px; font-size: 1.15rem; }
+  .formula-input::placeholder { font-size: 0.95rem; }
+  .formula-preview { font-size: 0.92rem; }
+  .expert-hint { font-size: 0.88rem; }
+  .expert-btn { min-height: 44px; font-size: 1rem; }
+  .roll-btn { font-size: 1.3rem; padding: var(--sp-5) var(--sp-12); }
+  .roll-icon { width: 26px; height: 26px; }
+  .result-formula { font-size: 1.05rem; }
+  .die-result { min-width: 42px; height: 42px; font-size: 1.05rem; }
+  .modifier-chip { height: 42px; font-size: 1.05rem; }
+  .breakdown-label { font-size: 0.78rem; }
+  .breakdown-subtotal { font-size: 0.88rem; }
+  .result-total-label { font-size: 0.85rem; }
+  .result-total { font-size: clamp(3.5rem, 11vw, 6rem); }
+  .history-formula { font-size: 0.95rem; }
+  .history-meta { font-size: 0.78rem; }
+  .history-total { font-size: 1.6rem; }
+  .error-banner { font-size: 1rem; }
+  .footer { font-size: 0.88rem; }
+  .container { max-width: 960px; }
+  .advantage-text { font-size: 0.92rem; }
+}
