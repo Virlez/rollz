@@ -53,6 +53,24 @@ test.describe('Page load', () => {
 
     await expect(app.historyEmpty).toBeVisible();
   });
+
+  test('header actions and mode toggles stay within the viewport on narrow screens', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 800 });
+
+    const app = new RollzApp(page);
+    await app.goto();
+
+    const headerBox = await page.locator('.header-inner').boundingBox();
+    const actionsBox = await page.locator('.header-actions').boundingBox();
+    const modeToggleBox = await page.locator('.mode-toggle-row').boundingBox();
+
+    expect(headerBox).not.toBeNull();
+    expect(actionsBox).not.toBeNull();
+    expect(modeToggleBox).not.toBeNull();
+
+    expect(actionsBox!.x + actionsBox!.width).toBeLessThanOrEqual(headerBox!.x + headerBox!.width + 1);
+    expect(modeToggleBox!.x + modeToggleBox!.width).toBeLessThanOrEqual(360);
+  });
 });
 
 test.describe('Language toggle', () => {
@@ -194,10 +212,13 @@ test.describe('PWA shell', () => {
     await app.toggleExpertMode();
     await expect(app.expertModeCheckbox).toBeChecked();
     await expect(app.expertPad).toBeVisible();
+    await expect(page.locator('body')).toHaveClass(/is-vtt-compact/);
 
     await app.reload();
 
     await expect(app.expertModeCheckbox).toBeChecked();
     await expect(app.expertPad).toBeVisible();
+    await expect(app.expertPad).toBeVisible();
+    await expect(page.locator('body')).toHaveClass(/is-vtt-compact/);
   });
 });

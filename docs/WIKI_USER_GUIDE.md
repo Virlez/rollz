@@ -68,8 +68,10 @@ Rollz now includes two formula-building interfaces.
 ### Expert Mode
 
 - switch it on with the mode toggle in the dice card
-- the advanced builder appears directly under the toggle
+- the advanced builder is available directly in this mode
+- the layout tightens up so Rollz fits more comfortably in a narrow window next to a virtual tabletop
 - dice shortcuts, digits, and formula symbols are grouped in one panel for faster input on mobile
+- result, favorites, and history cards use a denser layout, with scrollable lists when needed
 - `Advantage`, `Disadvantage`, and `Even/Odd` stay available below the formula bar
 
 ![Expert mode builder](images/guide-mode-expert.png)

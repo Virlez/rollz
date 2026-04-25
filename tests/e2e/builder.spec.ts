@@ -221,6 +221,26 @@ test.describe('Clear button', () => {
 });
 
 test.describe('Mode toggles', () => {
+  test('expert mode enables the expert builder and compact layout', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+
+    await app.toggleExpertMode();
+
+    await expect(app.expertModeCheckbox).toBeChecked();
+    await expect(app.expertPad).toBeVisible();
+    await expect(page.locator('#dice-grid')).toBeHidden();
+    await expect(app.modifierInput).toBeHidden();
+    await expect(page.locator('body')).toHaveClass(/is-vtt-compact/);
+
+    await app.toggleExpertMode();
+
+    await expect(app.expertModeCheckbox).not.toBeChecked();
+    await expect(app.expertPad).toBeHidden();
+    await expect(page.locator('#dice-grid')).toBeVisible();
+    await expect(page.locator('body')).not.toHaveClass(/is-vtt-compact/);
+  });
+
   test('expert mode actions do not focus the formula input', async ({ page }) => {
     const app = new RollzApp(page);
     await app.goto();
@@ -326,6 +346,7 @@ test.describe('Expert mode', () => {
     await app.toggleExpertMode();
 
     await expect(app.expertPad).toBeVisible();
+    await expect(page.locator('body')).toHaveClass(/is-vtt-compact/);
     await expect(page.locator('#dice-grid')).toBeHidden();
     await expect(app.modifierInput).toBeHidden();
     await expect(page.locator('.advantage-row')).toBeVisible();
@@ -344,6 +365,16 @@ test.describe('Expert mode', () => {
 
     await expect(app.modeCheckbox('advantage')).toBeChecked();
     await expect(app.formulaPreview).toContainText('⚠');
+  });
+
+  test('expert mode keeps the roll button in normal document flow', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+
+    const rollRowPosition = await page.locator('.roll-row').evaluate(element => getComputedStyle(element).position);
+
+    expect(rollRowPosition).toBe('static');
   });
 
   test('clicking a die in expert mode inserts notation at the cursor', async ({ page }) => {
