@@ -595,7 +595,7 @@ export function renderFavorites() {
       labelButton.type = 'button';
       labelButton.className = 'favorite-label-btn';
       labelButton.dataset.action = 'edit-label';
-      labelButton.textContent = 'Lbl';
+      labelButton.textContent = '✎';
       labelButton.setAttribute('aria-label', t('favoriteEditLabel'));
       labelButton.title = t('favoriteEditLabel');
 
