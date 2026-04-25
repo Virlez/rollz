@@ -10,6 +10,7 @@ Rollz est un lanceur de des pour les jeux de role. Il permet de :
 
 - lancer des formules classiques comme `1d20 + 5` ou `2d6 + 3`
 - lancer plusieurs formules en une seule fois
+- repeter une expression complete avec un prefixe comme `3x1d20 + 6`
 - utiliser des regles avancees directement dans la formule
 - rejouer une formule depuis l'historique
 - sauvegarder des favoris
@@ -71,6 +72,7 @@ Rollz propose maintenant deux interfaces de construction de formule.
 - le createur avance apparait directement dans ce mode
 - l'interface se resserre pour mieux tenir dans une petite fenetre a cote d'un virtual tabletop
 - raccourcis de des, chiffres et symboles de formule sont regroupes dans un seul panneau, plus pratique sur mobile
+- le raccourci `x` ajoute un debut de prefixe de repetition et aide a construire des formules comme `3x 1d20 + 6`
 - les cartes de resultat, favoris et historique prennent moins de place, avec historique et favoris scrollables si besoin
 - `Avantage`, `Desavantage` et `Pair/Impair` restent disponibles sous la barre de formule
 
@@ -86,6 +88,23 @@ Exemples :
 - `2d6; 2d6; 1d20 + 3`
 
 Chaque formule est lancee a la suite et Rollz affiche un resultat pour chaque bloc.
+
+Tu peux aussi repeter toute la saisie avec un prefixe comme `3x`.
+
+Exemples :
+
+- `3x1d20 + 6`
+- `3x 1d20 + 6 ; 1d10`
+
+Les deux formes `3x1d20...` et `3x 1d20...` sont acceptees quand tu tapes la formule a la main.
+En mode `Expert`, le bouton `x` insere automatiquement `x ` pour rendre le prefixe plus lisible.
+
+Quand tu repetes une expression :
+
+- Rollz relance toute l'expression a chaque fois
+- les groupes separes par `;` sont relances dans chaque repetition
+- `Avantage`, `Desavantage` et `Pair/Impair` s'appliquent toujours seulement au premier groupe de des de la premiere formule de chaque repetition
+- Rollz affiche un bloc parent par repetition
 
 ## 6. Modes speciaux
 
@@ -247,6 +266,11 @@ Exemple detaille :
 - `1d20 + 4; 1d8 + 2`
 - `8d6>=5; 2d6R2`
 
+### Expressions repetees
+
+- `3x1d20 + 6`
+- `3x 1d20 + 6 ; 1d10`
+
 ## 10. Historique et favoris
 
 ### Historique
@@ -257,6 +281,8 @@ Chaque lancer est ajoute a l'historique avec :
 - le total
 - un resume du lancer
 - le mode utilise
+
+Quand une expression repetee est utilisee, l'historique separe les groupes internes avec `|` et les repetitions avec `•`.
 
 Cliquer sur une entree de l'historique relance automatiquement cette formule avec son mode enregistre.
 
@@ -296,6 +322,7 @@ Tu peux aussi :
 - utilise les boutons de des pour eviter les erreurs de syntaxe sur les lancers simples
 - passe en `Expert` si tu veux les des, chiffres et operateurs au meme endroit
 - utilise `;` si tu veux preparer plusieurs lancers d'un coup
+- utilise `3x` au debut si tu veux relancer plusieurs fois la meme expression complete
 - utilise `R` pour les systemes qui relancent les faibles resultats
 - utilise `>=` pour les systemes a seuil de reussite
 - utilise `Pair/Impair` si tu veux compter les des pairs comme reussites
@@ -307,6 +334,7 @@ Tu peux aussi :
 - `6d10>=8` : compte les des de `8` ou plus comme reussites
 - `4d6R2>=5` : relances puis seuil
 - `1d20 + 4; 1d8 + 2` : deux lancers separes
+- `3x1d20 + 6 ; 1d10` : repete trois fois toute l'expression
 
 ## 13. Si une formule ne marche pas
 
@@ -314,6 +342,7 @@ Verifie ces points :
 
 - la formule contient bien au moins un groupe de des
 - il n'y a pas de separateur `;` vide
+- si tu utilises un prefixe de repetition, il doit etre place au debut de la formule, par exemple `3x1d20 + 6` ou `3x 1d20 + 6`
 - le suffixe avance est bien colle au groupe de des, par exemple `4d6R2>=5`
 - tu n'essaies pas de melanger syntaxe avancee et `Avantage`, `Desavantage` ou `Pair/Impair` sur la premiere formule
 

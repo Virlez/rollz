@@ -10,6 +10,7 @@ Rollz is a dice roller for tabletop RPGs. It lets you:
 
 - roll classic formulas such as `1d20 + 5` or `2d6 + 3`
 - roll multiple formulas at once
+- repeat a full expression with a prefix such as `3x1d20 + 6`
 - use advanced rules directly inside the formula
 - reroll a formula from history
 - save favorites
@@ -71,6 +72,7 @@ Rollz now includes two formula-building interfaces.
 - the advanced builder is available directly in this mode
 - the layout tightens up so Rollz fits more comfortably in a narrow window next to a virtual tabletop
 - dice shortcuts, digits, and formula symbols are grouped in one panel for faster input on mobile
+- the `x` shortcut inserts a repeat prefix starter and helps you build formulas such as `3x 1d20 + 6`
 - result, favorites, and history cards use a denser layout, with scrollable lists when needed
 - `Advantage`, `Disadvantage`, and `Even/Odd` stay available below the formula bar
 
@@ -86,6 +88,23 @@ Examples:
 - `2d6; 2d6; 1d20 + 3`
 
 Each formula is rolled in sequence and Rollz displays one result block per formula.
+
+You can also repeat the whole input with a prefix such as `3x`.
+
+Examples:
+
+- `3x1d20 + 6`
+- `3x 1d20 + 6 ; 1d10`
+
+Both `3x1d20...` and `3x 1d20...` are accepted when you type manually.
+In `Expert` mode, the `x` button inserts `x ` automatically to make the prefix easier to read.
+
+When you repeat an expression:
+
+- Rollz rerolls the full expression each time
+- semicolon-separated groups are rerolled inside every repetition
+- `Advantage`, `Disadvantage`, and `Even/Odd` still apply only to the first dice group of the first formula inside each repetition
+- Rollz displays one parent block per repetition
 
 ## 6. Special Modes
 
@@ -247,6 +266,11 @@ Detailed example:
 - `1d20 + 4; 1d8 + 2`
 - `8d6>=5; 2d6R2`
 
+### Repeated Expressions
+
+- `3x1d20 + 6`
+- `3x 1d20 + 6 ; 1d10`
+
 ## 10. History And Favorites
 
 ### History
@@ -257,6 +281,8 @@ Every roll is added to history with:
 - the total
 - a short roll summary
 - the mode used
+
+When repeated expressions are involved, history separates internal formula groups with `|` and repetitions with `•`.
 
 Clicking a history entry automatically rerolls that formula with its saved mode.
 
@@ -296,6 +322,7 @@ You can also:
 - use the dice buttons to avoid syntax mistakes on simple rolls
 - use `Expert` mode when you want dice, digits, and operators in one place
 - use `;` when you want to prepare several rolls at once
+- use `3x` at the start when you want to reroll the same full expression several times
 - use `R` for systems that reroll low values
 - use `>=` for threshold-based success systems
 - use `Even/Odd` when your system counts even dice as successes
@@ -307,6 +334,7 @@ You can also:
 - `6d10>=8`: count dice showing `8` or more as successes
 - `4d6R2>=5`: rerolls first, then threshold
 - `1d20 + 4; 1d8 + 2`: two separate rolls
+- `3x1d20 + 6 ; 1d10`: repeat the full expression three times
 
 ## 13. If A Formula Does Not Work
 
@@ -314,6 +342,7 @@ Check these points:
 
 - the formula contains at least one dice group
 - there is no empty `;` separator
+- if you use a repeat prefix, it must be at the start of the formula, for example `3x1d20 + 6` or `3x 1d20 + 6`
 - the advanced suffix is attached directly to the dice group, for example `4d6R2>=5`
 - you are not mixing advanced syntax with `Advantage`, `Disadvantage`, or `Even/Odd` on the first formula
 
