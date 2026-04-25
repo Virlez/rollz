@@ -241,6 +241,25 @@ test.describe('Mode toggles', () => {
     await expect(page.locator('body')).not.toHaveClass(/is-vtt-compact/);
   });
 
+  test('switching to expert mode resets classic builder state immediately', async ({ page }) => {
+    const app = new RollzApp(page);
+    await app.goto();
+
+    await app.clickDie(6);
+    await app.incrementModifier();
+    await app.toggleExpertMode();
+
+    await expect(app.expertModeCheckbox).toBeChecked();
+    await expect(app.expertPad).toBeVisible();
+
+    await app.toggleExpertMode();
+
+    await expect(app.expertModeCheckbox).not.toBeChecked();
+    await expect(app.dieCounter(6)).toHaveText('0');
+    await expect(app.modifierInput).toHaveValue('0');
+    await expect(app.formulaInput).toHaveValue('1d6 + 1');
+  });
+
   test('expert mode actions do not focus the formula input', async ({ page }) => {
     const app = new RollzApp(page);
     await app.goto();

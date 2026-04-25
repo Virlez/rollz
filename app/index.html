@@ -11,20 +11,20 @@
   <meta property="og:title" content="Rollz — TTRPG Dice Roller" />
   <meta property="og:description" content="Roll your TTRPG dice with true randomness from random.org" />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://virlez.github.io/rollz/og-image.svg?v=2026-04-25-1" />
+  <meta property="og:image" content="https://virlez.github.io/rollz/og-image.svg?v=2026-04-25-2" />
   <meta property="og:image:type" content="image/svg+xml" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Rollz — TTRPG Dice Roller" />
   <meta name="twitter:description" content="Roll your TTRPG dice with true randomness from random.org" />
-  <meta name="twitter:image" content="https://virlez.github.io/rollz/og-image.svg?v=2026-04-25-1" />
+  <meta name="twitter:image" content="https://virlez.github.io/rollz/og-image.svg?v=2026-04-25-2" />
   <title>Rollz — TTRPG Dice Roller</title>
 
-  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=2026-04-25-1" />
-  <link rel="manifest" href="manifest.webmanifest?v=2026-04-25-1" />
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=2026-04-25-1" />
-  <link rel="stylesheet" href="css/styles.css?v=2026-04-25-1" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=2026-04-25-2" />
+  <link rel="manifest" href="manifest.webmanifest?v=2026-04-25-2" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=2026-04-25-2" />
+  <link rel="stylesheet" href="css/styles.css?v=2026-04-25-2" />
 </head>
 <body>
   <div class="app">
@@ -161,23 +161,29 @@
         </section>
 
         <!-- Advantage / Disadvantage toggle -->
-        <div class="advantage-row">
-          <label class="advantage-toggle" id="advantage-label">
-            <input type="checkbox" id="advantage-check" class="advantage-check" />
-            <span class="advantage-switch"></span>
-            <span class="advantage-text" data-i18n="advantageLabel">Avantage</span>
-          </label>
-          <label class="advantage-toggle" id="disadvantage-label">
-            <input type="checkbox" id="disadvantage-check" class="advantage-check" />
-            <span class="advantage-switch disadvantage-switch"></span>
-            <span class="advantage-text" data-i18n="disadvantageLabel">Désavantage</span>
-          </label>
-          <label class="advantage-toggle" id="success-label">
-            <input type="checkbox" id="success-check" class="advantage-check" />
-            <span class="advantage-switch success-switch"></span>
-            <span class="advantage-text" data-i18n="successLabel">Pair/Impair</span>
-          </label>
-        </div>
+        <section class="mode-group" aria-labelledby="roll-modes-heading">
+          <div class="mode-group-header">
+            <h2 class="mode-group-title" id="roll-modes-heading" data-i18n="rollModesTitle">Modes de lancer</h2>
+            <p class="mode-group-note" data-i18n="rollModesExclusive">Un seul mode actif a la fois.</p>
+          </div>
+          <div class="advantage-row">
+            <label class="advantage-toggle" id="advantage-label">
+              <input type="checkbox" id="advantage-check" class="advantage-check" />
+              <span class="advantage-switch"></span>
+              <span class="advantage-text" data-i18n="advantageLabel">Avantage</span>
+            </label>
+            <label class="advantage-toggle" id="disadvantage-label">
+              <input type="checkbox" id="disadvantage-check" class="advantage-check" />
+              <span class="advantage-switch disadvantage-switch"></span>
+              <span class="advantage-text" data-i18n="disadvantageLabel">Désavantage</span>
+            </label>
+            <label class="advantage-toggle" id="success-label">
+              <input type="checkbox" id="success-check" class="advantage-check" />
+              <span class="advantage-switch success-switch"></span>
+              <span class="advantage-text" data-i18n="successLabel">Pair/Impair</span>
+            </label>
+          </div>
+        </section>
 
         <!-- Roll button -->
         <div class="roll-row">
@@ -221,6 +227,9 @@
         <section class="card favorites-card" aria-labelledby="favorites-heading">
           <div class="history-header">
             <h2 id="favorites-heading" class="card-title" data-i18n="favoritesTitle">Formules Favorites</h2>
+            <button class="btn-ghost" id="add-category-btn" type="button" data-i18n="favoritesAddCategory">
+              Nouvelle categorie
+            </button>
           </div>
           <div class="favorites-list" id="favorites-list" role="list">
             <div class="history-empty" id="favorites-empty">
@@ -274,6 +283,46 @@
           stroke-dasharray="94 31" stroke-linecap="round"/>
       </svg>
       <p data-i18n="rolling">Lancer en cours…</p>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="favorites-modal" hidden aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="favorites-modal-title">
+      <div class="modal-header">
+        <h2 class="modal-title" id="favorites-modal-title">Favoris</h2>
+        <button class="modal-close-btn" id="favorites-modal-close" type="button" aria-label="Fermer">×</button>
+      </div>
+      <form class="modal-form" id="favorites-modal-form" novalidate>
+        <p class="modal-message" id="favorites-modal-message" hidden></p>
+        <p class="modal-summary" id="favorites-modal-summary" hidden></p>
+
+        <label class="modal-field" id="favorites-modal-category-field" hidden>
+          <span class="modal-label" id="favorites-modal-category-label">Categorie</span>
+          <select class="modal-select" id="favorites-modal-category-select"></select>
+        </label>
+
+        <label class="modal-field" id="favorites-modal-category-name-field" hidden>
+          <span class="modal-label" id="favorites-modal-category-name-label">Nouvelle categorie</span>
+          <input class="modal-input" id="favorites-modal-category-name-input" type="text" maxlength="80" autocomplete="off">
+        </label>
+
+        <label class="modal-field" id="favorites-modal-name-field" hidden>
+          <span class="modal-label" id="favorites-modal-name-label">Nom</span>
+          <input class="modal-input" id="favorites-modal-name-input" type="text" maxlength="80" autocomplete="off">
+        </label>
+
+        <label class="modal-field" id="favorites-modal-label-field" hidden>
+          <span class="modal-label" id="favorites-modal-label-label">Label</span>
+          <input class="modal-input" id="favorites-modal-label-input" type="text" maxlength="120" autocomplete="off">
+        </label>
+
+        <p class="modal-error" id="favorites-modal-error" role="alert" hidden></p>
+
+        <div class="modal-actions">
+          <button class="btn-ghost" id="favorites-modal-cancel" type="button">Annuler</button>
+          <button class="modal-submit-btn" id="favorites-modal-submit" type="submit">Sauvegarder</button>
+        </div>
+      </form>
     </div>
   </div>
 

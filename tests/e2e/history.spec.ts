@@ -3,6 +3,37 @@ import { expect, test } from './support/test';
 import { mockRandomOrg } from './support/test-helpers';
 
 test.describe('Roll history', () => {
+  test('history truncates long breakdown details on narrow screens without hiding the time', async ({ page }) => {
+    await mockRandomOrg(page, [13, 2, 4, 6, 4]);
+
+    await page.setViewportSize({ width: 360, height: 800 });
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.rollFormula('1d20+10;2d4r2+2d6r2+1d8+5');
+
+    const entry = page.locator('.history-entry').first();
+    const breakdown = entry.locator('.history-breakdown');
+    const time = entry.locator('.history-time');
+
+    await expect(time).toBeVisible();
+
+    const styles = await breakdown.evaluate(el => {
+      const computed = window.getComputedStyle(el);
+      return {
+        overflow: computed.overflow,
+        textOverflow: computed.textOverflow,
+        whiteSpace: computed.whiteSpace,
+        text: el.textContent,
+      };
+    });
+
+    expect(styles.text?.length ?? 0).toBeGreaterThan(10);
+    expect(styles.overflow).toBe('hidden');
+    expect(styles.textOverflow).toBe('ellipsis');
+    expect(styles.whiteSpace).toBe('nowrap');
+  });
+
   test('history layout stays within the card on narrow screens', async ({ page }) => {
     await mockRandomOrg(page, [13, 2, 4, 6, 4]);
 
@@ -22,6 +53,22 @@ test.describe('Roll history', () => {
 
     expect(totalBox!.x + totalBox!.width).toBeLessThanOrEqual(entryBox!.x + entryBox!.width + 1);
     expect(favoriteBox!.x + favoriteBox!.width).toBeLessThanOrEqual(entryBox!.x + entryBox!.width + 1);
+  });
+
+  test('history favorite action keeps a mobile-friendly touch target on narrow screens', async ({ page }) => {
+    await mockRandomOrg(page, [4]);
+
+    await page.setViewportSize({ width: 360, height: 800 });
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.rollFormula('1d6');
+
+    const favoriteBox = await app.historyFavoriteButton(0).boundingBox();
+
+    expect(favoriteBox).not.toBeNull();
+    expect(favoriteBox!.width).toBeGreaterThanOrEqual(40);
+    expect(favoriteBox!.height).toBeGreaterThanOrEqual(40);
   });
 
   test('history shows entry after a roll', async ({ page }) => {

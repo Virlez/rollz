@@ -1,10 +1,21 @@
 import { dom } from './dom.js';
-import { moveFavoriteFormula, removeFavoriteFormula, renderFavorites } from './favorites.js';
+import {
+  moveFavoriteById,
+  promptCreateFavoriteCategory,
+  promptDeleteFavoriteCategory,
+  promptEditFavoriteLabel,
+  promptRenameFavoriteCategory,
+  removeFavoriteById,
+  renderFavorites,
+  toggleFavoriteCategoryCollapsed,
+} from './favorites.js';
 import { renderHistory } from './history.js';
 import { setRollMode } from './roll-mode.js';
 import { resetFormulaBuilderState, updateFormulaPreview } from './ui.js';
 
-/** @typedef {{ formula: string, successMode: boolean, mode: 'native'|'pointer', pointerId?: number }} DraggedFavorite */
+/** @typedef {{ favoriteId: string, mode: 'native'|'pointer', pointerId?: number }} DraggedFavorite */
+
+/** @typedef {{ categoryId: string, insertIndex: number } | null} FavoriteDropLocation */
 
 /** @type {DraggedFavorite|null} */
 let draggedFavorite = null;
@@ -16,10 +27,10 @@ function focusFormulaContainer() {
   dom.formulaInputWrap.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
 }
 
-function focusFavoriteAction(formula, successMode, action) {
+function focusFavoriteAction(favoriteId, action) {
   if (!dom.favoritesList || !window.CSS || typeof window.CSS.escape !== 'function') return;
 
-  const selector = `.favorite-entry[data-formula="${window.CSS.escape(formula)}"][data-success-mode="${successMode ? 'true' : 'false'}"] button[data-action="${action}"]`;
+  const selector = `.favorite-entry[data-favorite-id="${window.CSS.escape(favoriteId)}"] button[data-action="${action}"]`;
   const button = dom.favoritesList.querySelector(selector);
   if (button instanceof HTMLButtonElement) {
     button.focus({ preventScroll: true });
@@ -29,56 +40,85 @@ function focusFavoriteAction(formula, successMode, action) {
 function clearFavoriteDropIndicators() {
   if (!dom.favoritesList) return;
 
-  dom.favoritesList.querySelectorAll('.favorite-entry.is-dragging, .favorite-entry.is-drop-target-before, .favorite-entry.is-drop-target-after')
+  dom.favoritesList.querySelectorAll('.favorite-entry.is-dragging, .favorite-entry.is-drop-target-before, .favorite-entry.is-drop-target-after, .favorite-category-content.is-drop-target')
     .forEach(entry => {
       entry.classList.remove('is-dragging', 'is-drop-target-before', 'is-drop-target-after');
+      entry.classList.remove('is-drop-target');
     });
 }
 
 /**
  * @param {HTMLElement} entry
  * @param {number} clientY
- * @returns {number|null}
+ * @returns {FavoriteDropLocation}
  */
-function getFavoriteInsertIndex(entry, clientY) {
-  const targetIndex = Number.parseInt(entry.dataset.index || '', 10);
+function getFavoriteDropLocationFromEntry(entry, clientY) {
+  const targetIndex = Number.parseInt(entry.dataset.categoryIndex || '', 10);
   if (Number.isNaN(targetIndex)) return null;
+
+  const categoryId = entry.dataset.categoryId || '';
+  if (!categoryId) return null;
 
   const rect = entry.getBoundingClientRect();
   const insertAfter = clientY > rect.top + rect.height / 2;
   entry.classList.toggle('is-drop-target-before', !insertAfter);
   entry.classList.toggle('is-drop-target-after', insertAfter);
-  return targetIndex + (insertAfter ? 1 : 0);
+  return {
+    categoryId,
+    insertIndex: targetIndex + (insertAfter ? 1 : 0),
+  };
+}
+
+/**
+ * @param {HTMLElement|null} categoryContent
+ * @returns {FavoriteDropLocation}
+ */
+function getFavoriteDropLocationFromContent(categoryContent) {
+  if (!(categoryContent instanceof HTMLElement)) return null;
+
+  const categoryId = categoryContent.dataset.categoryId || '';
+  if (!categoryId) return null;
+
+  categoryContent.classList.add('is-drop-target');
+  const entries = categoryContent.querySelectorAll('.favorite-entry');
+  return {
+    categoryId,
+    insertIndex: entries.length,
+  };
 }
 
 /**
  * @param {number} clientX
  * @param {number} clientY
- * @returns {number|null}
+ * @returns {FavoriteDropLocation}
  */
-function getFavoriteInsertIndexFromPoint(clientX, clientY) {
+function getFavoriteDropLocationFromPoint(clientX, clientY) {
   const target = document.elementFromPoint(clientX, clientY);
   const favoriteEntry = target instanceof HTMLElement ? target.closest('.favorite-entry') : null;
-  if (!(favoriteEntry instanceof HTMLElement)) return null;
+  const categoryContent = target instanceof HTMLElement ? target.closest('.favorite-category-content') : null;
 
   clearFavoriteDropIndicators();
-  return getFavoriteInsertIndex(favoriteEntry, clientY);
+  if (favoriteEntry instanceof HTMLElement) {
+    return getFavoriteDropLocationFromEntry(favoriteEntry, clientY);
+  }
+
+  return getFavoriteDropLocationFromContent(categoryContent instanceof HTMLElement ? categoryContent : null);
 }
 
 /**
- * @param {number|null} insertIndex
+ * @param {FavoriteDropLocation} location
  */
-function finalizeFavoriteDrop(insertIndex) {
-  if (!draggedFavorite || insertIndex === null) {
+function finalizeFavoriteDrop(location) {
+  if (!draggedFavorite || !location) {
     clearFavoriteDropIndicators();
     draggedFavorite = null;
     return;
   }
 
-  if (moveFavoriteFormula(draggedFavorite.formula, insertIndex, { successMode: draggedFavorite.successMode })) {
-    const { formula, successMode } = draggedFavorite;
+  if (moveFavoriteById(draggedFavorite.favoriteId, location.categoryId, location.insertIndex)) {
+    const { favoriteId } = draggedFavorite;
     renderFavorites();
-    focusFavoriteAction(formula, successMode, 'drag');
+    focusFavoriteAction(favoriteId, 'drag');
   }
 
   clearFavoriteDropIndicators();
@@ -96,20 +136,56 @@ function loadFavoriteFormula(formula, successMode) {
 export function setupFavoritesInteractions() {
   if (!dom.favoritesList) return;
 
-  dom.favoritesList.addEventListener('click', event => {
+  dom.addCategoryBtn?.addEventListener('click', async () => {
+    await promptCreateFavoriteCategory();
+  });
+
+  dom.favoritesList.addEventListener('click', async event => {
     const target = event.target instanceof HTMLElement ? event.target : null;
+    const actionButton = target ? target.closest('button[data-action]') : null;
+    const category = target ? target.closest('.favorite-category') : null;
     const favoriteEntry = target ? target.closest('.favorite-entry') : null;
+
+    if (actionButton instanceof HTMLButtonElement && category instanceof HTMLElement && !favoriteEntry) {
+      const categoryId = category.dataset.categoryId || '';
+      if (!categoryId) return;
+
+      switch (actionButton.dataset.action) {
+        case 'toggle-category':
+          if (toggleFavoriteCategoryCollapsed(categoryId)) {
+            renderFavorites();
+          }
+          return;
+        case 'rename-category':
+          await promptRenameFavoriteCategory(categoryId);
+          return;
+        case 'delete-category':
+          if (await promptDeleteFavoriteCategory(categoryId)) {
+            renderHistory();
+          }
+          return;
+        default:
+          return;
+      }
+    }
+
     if (!(favoriteEntry instanceof HTMLElement)) return;
 
+    const favoriteId = favoriteEntry.dataset.favoriteId || '';
     const formula = favoriteEntry.dataset.formula || '';
     const successMode = favoriteEntry.dataset.successMode === 'true';
-    if (!formula) return;
+    if (!favoriteId || !formula) return;
 
-    const action = target && target.closest('button') ? target.closest('button').dataset.action : 'load';
+    const action = actionButton instanceof HTMLButtonElement ? actionButton.dataset.action : 'load';
     if (action === 'remove') {
-      removeFavoriteFormula(formula, { successMode });
+      removeFavoriteById(favoriteId);
       renderFavorites();
       renderHistory();
+      return;
+    }
+
+    if (action === 'edit-label') {
+      await promptEditFavoriteLabel(favoriteId);
       return;
     }
 
@@ -126,41 +202,33 @@ export function setupFavoritesInteractions() {
     const favoriteEntry = dragHandle ? dragHandle.closest('.favorite-entry') : null;
     if (!(dragHandle instanceof HTMLButtonElement) || !(favoriteEntry instanceof HTMLElement)) return;
 
+    const favoriteId = favoriteEntry.dataset.favoriteId || '';
+    if (!favoriteId) return;
+
     draggedFavorite = {
-      formula: favoriteEntry.dataset.formula || '',
-      successMode: favoriteEntry.dataset.successMode === 'true',
+      favoriteId,
       mode: 'native',
     };
-
-    if (!draggedFavorite.formula) {
-      draggedFavorite = null;
-      return;
-    }
 
     favoriteEntry.classList.add('is-dragging');
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', draggedFavorite.formula);
+      event.dataTransfer.setData('text/plain', draggedFavorite.favoriteId);
     }
   });
 
   dom.favoritesList.addEventListener('dragover', event => {
-    const target = event.target instanceof HTMLElement ? event.target : null;
-    const favoriteEntry = target ? target.closest('.favorite-entry') : null;
-    if (!draggedFavorite || !(favoriteEntry instanceof HTMLElement)) return;
+    if (!draggedFavorite) return;
 
     event.preventDefault();
-    clearFavoriteDropIndicators();
-    getFavoriteInsertIndex(favoriteEntry, event.clientY);
+    getFavoriteDropLocationFromPoint(event.clientX, event.clientY);
   });
 
   dom.favoritesList.addEventListener('drop', event => {
-    const target = event.target instanceof HTMLElement ? event.target : null;
-    const favoriteEntry = target ? target.closest('.favorite-entry') : null;
-    if (!draggedFavorite || !(favoriteEntry instanceof HTMLElement)) return;
+    if (!draggedFavorite) return;
 
     event.preventDefault();
-    finalizeFavoriteDrop(getFavoriteInsertIndex(favoriteEntry, event.clientY));
+    finalizeFavoriteDrop(getFavoriteDropLocationFromPoint(event.clientX, event.clientY));
   });
 
   dom.favoritesList.addEventListener('dragend', () => {
@@ -176,13 +244,12 @@ export function setupFavoritesInteractions() {
     const favoriteEntry = dragHandle ? dragHandle.closest('.favorite-entry') : null;
     if (!(dragHandle instanceof HTMLButtonElement) || !(favoriteEntry instanceof HTMLElement)) return;
 
-    const formula = favoriteEntry.dataset.formula || '';
-    if (!formula) return;
+    const favoriteId = favoriteEntry.dataset.favoriteId || '';
+    if (!favoriteId) return;
 
     event.preventDefault();
     draggedFavorite = {
-      formula,
-      successMode: favoriteEntry.dataset.successMode === 'true',
+      favoriteId,
       mode: 'pointer',
       pointerId: event.pointerId,
     };
@@ -194,14 +261,14 @@ export function setupFavoritesInteractions() {
     if (!draggedFavorite || draggedFavorite.mode !== 'pointer' || draggedFavorite.pointerId !== event.pointerId) return;
 
     event.preventDefault();
-    getFavoriteInsertIndexFromPoint(event.clientX, event.clientY);
+    getFavoriteDropLocationFromPoint(event.clientX, event.clientY);
   });
 
   dom.favoritesList.addEventListener('pointerup', event => {
     if (!draggedFavorite || draggedFavorite.mode !== 'pointer' || draggedFavorite.pointerId !== event.pointerId) return;
 
     event.preventDefault();
-    finalizeFavoriteDrop(getFavoriteInsertIndexFromPoint(event.clientX, event.clientY));
+    finalizeFavoriteDrop(getFavoriteDropLocationFromPoint(event.clientX, event.clientY));
   });
 
   dom.favoritesList.addEventListener('pointercancel', event => {

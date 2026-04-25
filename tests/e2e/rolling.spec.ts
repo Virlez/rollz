@@ -13,6 +13,19 @@ test.describe('Roll action — normal mode', () => {
     await expect(app.resultSection).toBeVisible();
   });
 
+  test('result card stays sticky on wide desktop layouts', async ({ page }) => {
+    await mockRandomOrg(page, [3]);
+    await page.setViewportSize({ width: 1280, height: 900 });
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.rollFormula('1d6');
+
+    const resultCardPosition = await page.locator('#result-card').evaluate(element => getComputedStyle(element).position);
+
+    expect(resultCardPosition).toBe('sticky');
+  });
+
   test('displays the correct total', async ({ page }) => {
     await mockRandomOrg(page, [5]);
 

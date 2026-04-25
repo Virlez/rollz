@@ -1,6 +1,6 @@
 import { RollzApp } from './support/rollz-app';
 import { expect, test } from './support/test';
-import { clearLocalStorageOnInit } from './support/test-helpers';
+import { clearLocalStorageOnInit, mockRandomOrg } from './support/test-helpers';
 
 test.describe('Page load', () => {
   test('has correct title', async ({ page }) => {
@@ -70,6 +70,21 @@ test.describe('Page load', () => {
 
     expect(actionsBox!.x + actionsBox!.width).toBeLessThanOrEqual(headerBox!.x + headerBox!.width + 1);
     expect(modeToggleBox!.x + modeToggleBox!.width).toBeLessThanOrEqual(360);
+  });
+
+  test('favorites modal stays within the viewport at 320px', async ({ page }) => {
+    await mockRandomOrg(page, [4]);
+    await page.setViewportSize({ width: 320, height: 800 });
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.rollFormula('1d6');
+    await app.historyFavoriteButton(0).click({ force: true });
+
+    const modalBox = await page.locator('.modal-card').boundingBox();
+    expect(modalBox).not.toBeNull();
+    expect(modalBox!.x).toBeGreaterThanOrEqual(0);
+    expect(modalBox!.x + modalBox!.width).toBeLessThanOrEqual(320);
   });
 });
 

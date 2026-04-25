@@ -75,6 +75,7 @@ export function renderHistory() {
   state.history.forEach((entry, index) => {
     const successMode = entry.mode && entry.mode.successMode === true;
     const isFavorite = isFavoriteFormula(entry.formula, { successMode });
+    const timeLabel = formatTime(entry.timestamp);
     const el = document.createElement('div');
     el.className = 'history-entry';
     el.role = 'listitem';
@@ -90,7 +91,26 @@ export function renderHistory() {
 
     const meta = document.createElement('div');
     meta.className = 'history-meta';
-    meta.textContent = `${entry.breakdown}  ·  ${formatTime(entry.timestamp)}`;
+
+    if (entry.breakdown) {
+      const breakdown = document.createElement('span');
+      breakdown.className = 'history-breakdown';
+      breakdown.textContent = entry.breakdown;
+      breakdown.title = entry.breakdown;
+
+      const separator = document.createElement('span');
+      separator.className = 'history-meta-separator';
+      separator.textContent = '·';
+      separator.setAttribute('aria-hidden', 'true');
+
+      meta.appendChild(breakdown);
+      meta.appendChild(separator);
+    }
+
+    const time = document.createElement('span');
+    time.className = 'history-time';
+    time.textContent = timeLabel;
+    meta.appendChild(time);
 
     left.appendChild(formula);
     left.appendChild(meta);
@@ -110,8 +130,8 @@ export function renderHistory() {
     favoriteBtn.dataset.formula = entry.formula;
     favoriteBtn.dataset.successMode = successMode ? 'true' : 'false';
     favoriteBtn.setAttribute('aria-pressed', isFavorite ? 'true' : 'false');
-    favoriteBtn.setAttribute('aria-label', isFavorite ? t('favoriteRemove') : t('favoriteAdd'));
-    favoriteBtn.title = isFavorite ? t('favoriteRemove') : t('favoriteAdd');
+    favoriteBtn.setAttribute('aria-label', isFavorite ? t('favoriteAddAnother') : t('favoriteAdd'));
+    favoriteBtn.title = isFavorite ? t('favoriteAddAnother') : t('favoriteAdd');
     favoriteBtn.textContent = isFavorite ? '★' : '☆';
 
     right.appendChild(total);

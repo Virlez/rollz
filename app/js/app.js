@@ -2,7 +2,8 @@ import { DICE_SIDES } from './constants.js';
 import { renderDicePalette } from './dice-palette.js';
 import { dom } from './dom.js';
 import { setupFavoritesInteractions } from './favorites-controller.js';
-import { addFavoriteFormula, loadFavorites, removeFavoriteFormula, renderFavorites } from './favorites.js';
+import { setupFavoritesModal } from './favorites-modal.js';
+import { loadFavorites, promptForFavoriteSave, renderFavorites } from './favorites.js';
 import { loadHistory, renderHistory, saveHistory } from './history.js';
 import { applyTranslations, getLang, loadExpertMode, loadLanguage, setLang, t } from './i18n.js';
 import { setRollModeFromToggle } from './roll-mode.js';
@@ -64,6 +65,7 @@ function init() {
   toggleExpertMode(state.expertMode);
   updateOfflineUI();
   setupInstallPrompt();
+  setupFavoritesModal();
   registerServiceWorker();
   loadHistory();
   loadFavorites();
@@ -201,11 +203,8 @@ function init() {
       const successMode = favoriteBtn.dataset.successMode === 'true';
       if (!formula) return;
 
-      if (favoriteBtn.getAttribute('aria-pressed') === 'true') {
-        removeFavoriteFormula(formula, { successMode });
-      } else {
-        addFavoriteFormula(formula, { successMode });
-      }
+      const savedFavorite = await promptForFavoriteSave(formula, { successMode });
+      if (!savedFavorite) return;
 
       renderFavorites();
       renderHistory();

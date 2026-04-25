@@ -2,8 +2,10 @@ import { RollzApp } from './support/rollz-app';
 import { expect, test } from './support/test';
 import { clearLocalStorageOnInit, mockRandomOrg } from './support/test-helpers';
 
+const DEFAULT_CATEGORY = 'General';
+
 test.describe('Favorite formulas', () => {
-  test('saving a history entry creates a persistent favorite', async ({ page }) => {
+  test('saving a history entry creates a persistent favorite in the default category', async ({ page }) => {
     await mockRandomOrg(page, [4]);
 
     const app = new RollzApp(page);
@@ -11,30 +13,37 @@ test.describe('Favorite formulas', () => {
     await page.evaluate(() => localStorage.clear());
     await app.reload();
     await app.rollFormula('1d6');
-    await app.toggleHistoryFavorite(0);
+    await app.saveHistoryFavorite(0);
 
-    await expect(app.favoritesEntries).toHaveCount(1);
-    await expect(app.favoriteFormula(0)).toHaveText('1d6');
+    await expect(app.favoriteCategories).toHaveCount(1);
+    await expect(app.favoriteCategoryByName(DEFAULT_CATEGORY)).toBeVisible();
+    await expect(app.favoriteFormulaInCategory(DEFAULT_CATEGORY, 0)).toHaveText('1d6');
     await expect(app.historyFavoriteButton(0)).toHaveAttribute('aria-pressed', 'true');
     await expect(app.historyFavoriteButton(0)).toHaveText('★');
 
     await app.reload();
 
-    await expect(app.favoritesEntries).toHaveCount(1);
-    await expect(app.favoriteFormula(0)).toHaveText('1d6');
+    await expect(app.favoriteCategories).toHaveCount(1);
+    await expect(app.favoriteFormulaInCategory(DEFAULT_CATEGORY, 0)).toHaveText('1d6');
   });
 
-  test('favorites are deduplicated by exact formula', async ({ page }) => {
+  test('favorites are deduplicated inside a category but can exist in another category', async ({ page }) => {
     await clearLocalStorageOnInit(page);
     await mockRandomOrg(page, [2, 5]);
 
     const app = new RollzApp(page);
     await app.goto();
+    await app.createFavoriteCategory('Attaques');
     await app.rollFormula('1d6');
     await app.rollFormula('1d6');
-    await app.toggleHistoryFavorite(0);
+    await app.saveHistoryFavorite(0, { expectedCount: 1 });
+    await app.saveHistoryFavorite(0, { expectedCount: 1 });
+    await app.saveHistoryFavorite(0, { category: 'Attaques', label: 'Epee', expectedCount: 2 });
 
-    await expect(app.favoritesEntries).toHaveCount(1);
+    await expect(app.favoritesEntries).toHaveCount(2);
+    await expect(app.favoriteFormulaInCategory(DEFAULT_CATEGORY, 0)).toHaveText('1d6');
+    await expect(app.favoriteFormulaInCategory('Attaques', 0)).toHaveText('1d6');
+    await expect(app.favoriteLabelInCategory('Attaques', 0)).toHaveText('Epee');
   });
 
   test('success-mode favorites restore the success toggle automatically', async ({ page }) => {
@@ -46,11 +55,11 @@ test.describe('Favorite formulas', () => {
     await app.fillFormula('2d6');
     await app.toggleMode('success');
     await app.roll();
-    await app.toggleHistoryFavorite(0);
+    await app.saveHistoryFavorite(0, { label: 'Jet de groupe' });
 
     await app.toggleMode('success');
     await app.clearFormula();
-    await app.clickFavoriteFormula(0);
+    await app.favoriteEntryInCategory(DEFAULT_CATEGORY, 0).locator('.favorite-load-btn').click();
 
     await expect(app.formulaInput).toHaveValue('2d6');
     await expect(app.modeCheckbox('success')).toBeChecked();
@@ -62,21 +71,6 @@ test.describe('Favorite formulas', () => {
     await expect(app.resultTotalLabel).toHaveText('Réussites');
   });
 
-  test('normal and success-mode favorites are stored separately for the same formula', async ({ page }) => {
-    await clearLocalStorageOnInit(page);
-    await mockRandomOrg(page, [4, 5]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.rollFormula('1d6');
-    await app.toggleHistoryFavorite(0);
-    await app.toggleMode('success');
-    await app.rollFormula('1d6');
-    await app.toggleHistoryFavorite(0);
-
-    await expect(app.favoritesEntries).toHaveCount(2);
-  });
-
   test('clicking a favorite loads its formula without rolling', async ({ page }) => {
     await clearLocalStorageOnInit(page);
     await mockRandomOrg(page, [6, 2, 5]);
@@ -85,9 +79,9 @@ test.describe('Favorite formulas', () => {
     await app.goto();
     await app.rollFormula('2d6R2');
     await expect(app.resultTotal).toHaveText('11');
-    await app.toggleHistoryFavorite(0);
+    await app.saveHistoryFavorite(0, { label: 'Dommages' });
     await app.clearFormula();
-    await app.clickFavoriteFormula(0);
+    await app.favoriteEntryInCategory(DEFAULT_CATEGORY, 0).locator('.favorite-load-btn').click();
 
     await expect(app.formulaInput).toHaveValue('2d6R2');
     await expect(app.resultTotal).toHaveText('11');
@@ -105,36 +99,62 @@ test.describe('Favorite formulas', () => {
     await page.evaluate(() => localStorage.clear());
     await app.reload();
     await app.rollFormula('1d6');
-    await app.toggleHistoryFavorite(0);
+    await app.saveHistoryFavorite(0);
     await app.rollFormula('1d8');
-    await app.toggleHistoryFavorite(0);
+    await app.saveHistoryFavorite(0);
 
-    await expect(app.favoriteFormula(0)).toHaveText('1d8');
-    await expect(app.favoriteFormula(1)).toHaveText('1d6');
+    await expect(app.favoriteFormulaInCategory(DEFAULT_CATEGORY, 0)).toHaveText('1d8');
+    await expect(app.favoriteFormulaInCategory(DEFAULT_CATEGORY, 1)).toHaveText('1d6');
 
     await app.dragFavoriteTo(0, 1);
 
-    await expect(app.favoriteFormula(0)).toHaveText('1d6');
-    await expect(app.favoriteFormula(1)).toHaveText('1d8');
+    await expect(app.favoriteFormulaInCategory(DEFAULT_CATEGORY, 0)).toHaveText('1d6');
+    await expect(app.favoriteFormulaInCategory(DEFAULT_CATEGORY, 1)).toHaveText('1d8');
 
     await app.reload();
 
-    await expect(app.favoriteFormula(0)).toHaveText('1d6');
-    await expect(app.favoriteFormula(1)).toHaveText('1d8');
+    await expect(app.favoriteFormulaInCategory(DEFAULT_CATEGORY, 0)).toHaveText('1d6');
+    await expect(app.favoriteFormulaInCategory(DEFAULT_CATEGORY, 1)).toHaveText('1d8');
   });
 
-  test('removing a favorite updates the list and the history button state', async ({ page }) => {
+  test('favorites can move across categories and collapsed state persists', async ({ page }) => {
+    await mockRandomOrg(page, [3, 6]);
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await page.evaluate(() => localStorage.clear());
+    await app.reload();
+    await app.createFavoriteCategory('Sorts');
+    await app.rollFormula('1d6');
+    await app.saveHistoryFavorite(0);
+    await app.rollFormula('1d8');
+    await app.saveHistoryFavorite(0);
+
+    await app.dragFavoriteToCategory(DEFAULT_CATEGORY, 0, 'Sorts');
+    await expect(app.favoriteEntryInCategory('Sorts', 0)).toBeVisible();
+
+    await app.toggleFavoriteCategory('Sorts');
+    await expect(app.favoriteCategoryByName('Sorts')).toHaveClass(/is-collapsed/);
+
+    await app.reload();
+
+    await expect(app.favoriteCategoryByName('Sorts')).toHaveClass(/is-collapsed/);
+    await expect(app.favoriteEntryInCategory('Sorts', 0)).toBeHidden();
+  });
+
+  test('deleting a category updates the history button state when it removes the last matching favorite', async ({ page }) => {
     await clearLocalStorageOnInit(page);
     await mockRandomOrg(page, [3]);
 
     const app = new RollzApp(page);
     await app.goto();
+    await app.createFavoriteCategory('Temporaire');
     await app.rollFormula('1d6');
-    await app.toggleHistoryFavorite(0);
-    await app.removeFavorite(0);
+    await app.saveHistoryFavorite(0, { category: 'Temporaire' });
+    await app.deleteFavoriteCategory('Temporaire');
 
     await expect(app.favoritesEntries).toHaveCount(0);
-    await expect(app.favoritesEmpty).toBeVisible();
+    await expect(app.favoriteCategoryByName(DEFAULT_CATEGORY)).toBeVisible();
     await expect(app.historyFavoriteButton(0)).toHaveAttribute('aria-pressed', 'false');
     await expect(app.historyFavoriteButton(0)).toHaveText('☆');
   });

@@ -43,6 +43,42 @@ export class RollzApp {
     await expect(collection).toHaveCount(expectedCount);
   }
 
+  private async submitFavoritesModal(options: { category?: string; name?: string; label?: string; confirm?: boolean } = {}): Promise<void> {
+    await expect(this.favoritesModal).toBeVisible();
+
+    if (options.category !== undefined) {
+      const availableOptions = await this.favoriteModalCategorySelect.locator('option').evaluateAll(optionEls => optionEls.map(option => ({
+        value: option instanceof HTMLOptionElement ? option.value : '',
+        label: option.textContent?.trim() || '',
+      })));
+
+      const existingCategory = availableOptions.find(option => option.label === options.category);
+      if (existingCategory) {
+        await this.favoriteModalCategorySelect.selectOption(existingCategory.value);
+      } else if (availableOptions.length > 0) {
+        await this.favoriteModalCategorySelect.selectOption(availableOptions[availableOptions.length - 1].value);
+        await this.favoriteModalCategoryNameInput.fill(options.category);
+      }
+    }
+
+    if (options.name !== undefined) {
+      await this.favoriteModalNameInput.fill(options.name);
+    }
+
+    if (options.label !== undefined) {
+      await this.favoriteModalLabelInput.fill(options.label);
+    }
+
+    if (options.confirm === false) {
+      await this.favoriteModalCancelButton.click();
+      await expect(this.favoritesModal).toBeHidden();
+      return;
+    }
+
+    await this.favoriteModalSubmitButton.click();
+    await expect(this.favoritesModal).toBeHidden();
+  }
+
   get rollButton(): Locator {
     return this.page.locator('#roll-btn');
   }
@@ -131,8 +167,44 @@ export class RollzApp {
     return this.page.locator('.favorite-entry');
   }
 
+  get favoriteCategories(): Locator {
+    return this.page.locator('.favorite-category');
+  }
+
   get favoritesEmpty(): Locator {
     return this.page.locator('#favorites-empty');
+  }
+
+  get addCategoryButton(): Locator {
+    return this.page.locator('#add-category-btn');
+  }
+
+  get favoritesModal(): Locator {
+    return this.page.locator('#favorites-modal');
+  }
+
+  get favoriteModalCategorySelect(): Locator {
+    return this.page.locator('#favorites-modal-category-select');
+  }
+
+  get favoriteModalCategoryNameInput(): Locator {
+    return this.page.locator('#favorites-modal-category-name-input');
+  }
+
+  get favoriteModalNameInput(): Locator {
+    return this.page.locator('#favorites-modal-name-input');
+  }
+
+  get favoriteModalLabelInput(): Locator {
+    return this.page.locator('#favorites-modal-label-input');
+  }
+
+  get favoriteModalCancelButton(): Locator {
+    return this.page.locator('#favorites-modal-cancel');
+  }
+
+  get favoriteModalSubmitButton(): Locator {
+    return this.page.locator('#favorites-modal-submit');
   }
 
   async goto(): Promise<void> {
@@ -252,6 +324,50 @@ export class RollzApp {
     return this.favoritesEntries.nth(index);
   }
 
+  favoriteCategory(index = 0): Locator {
+    return this.favoriteCategories.nth(index);
+  }
+
+  favoriteCategoryByName(name: string): Locator {
+    return this.favoriteCategories.filter({ has: this.page.locator('.favorite-category-name', { hasText: name }) }).first();
+  }
+
+  favoriteEntryInCategory(categoryName: string, index = 0): Locator {
+    return this.favoriteCategoryByName(categoryName).locator('.favorite-entry').nth(index);
+  }
+
+  favoriteFormulaInCategory(categoryName: string, index = 0): Locator {
+    return this.favoriteEntryInCategory(categoryName, index).locator('.favorite-formula');
+  }
+
+  favoriteLabelInCategory(categoryName: string, index = 0): Locator {
+    return this.favoriteEntryInCategory(categoryName, index).locator('.favorite-label');
+  }
+
+  favoriteCategoryToggle(categoryName: string): Locator {
+    return this.favoriteCategoryByName(categoryName).locator('[data-action="toggle-category"]');
+  }
+
+  favoriteCategoryRenameButton(categoryName: string): Locator {
+    return this.favoriteCategoryByName(categoryName).locator('[data-action="rename-category"]');
+  }
+
+  favoriteCategoryDeleteButton(categoryName: string): Locator {
+    return this.favoriteCategoryByName(categoryName).locator('[data-action="delete-category"]');
+  }
+
+  favoriteLabelButtonInCategory(categoryName: string, index = 0): Locator {
+    return this.favoriteEntryInCategory(categoryName, index).locator('[data-action="edit-label"]');
+  }
+
+  favoriteRemoveButtonInCategory(categoryName: string, index = 0): Locator {
+    return this.favoriteEntryInCategory(categoryName, index).locator('.favorite-remove-btn');
+  }
+
+  favoriteDragHandleInCategory(categoryName: string, index = 0): Locator {
+    return this.favoriteEntryInCategory(categoryName, index).locator('[data-action="drag"]');
+  }
+
   favoriteFormula(index = 0): Locator {
     return this.favoriteEntry(index).locator('.favorite-formula');
   }
@@ -285,14 +401,22 @@ export class RollzApp {
   }
 
   async toggleHistoryFavorite(index = 0): Promise<void> {
+    await this.saveHistoryFavorite(index);
+  }
+
+  async saveHistoryFavorite(index = 0, options: { category?: string; label?: string; expectedCount?: number } = {}): Promise<void> {
     const previousCount = await this.favoritesEntries.count();
-    const previousPressed = await this.historyFavoriteButton(index).getAttribute('aria-pressed');
+    const expectedCount = options.expectedCount ?? (previousCount + 1);
 
-    const expectedCount = previousPressed === 'true'
-      ? Math.max(0, previousCount - 1)
-      : previousCount + 1;
+    const favoriteButton = this.historyFavoriteButton(index);
+    await favoriteButton.scrollIntoViewIfNeeded();
+    await this.clickButtonViaDom(favoriteButton, 'History favorite button is unavailable.');
+    await this.submitFavoritesModal({
+      category: options.category,
+      label: options.label,
+    });
 
-    await this.clickAndExpectCount(this.historyFavoriteButton(index), this.favoritesEntries, expectedCount);
+    await expect(this.favoritesEntries).toHaveCount(expectedCount);
   }
 
   async clickFavoriteFormula(index = 0): Promise<void> {
@@ -302,6 +426,35 @@ export class RollzApp {
   async removeFavorite(index = 0): Promise<void> {
     const previousCount = await this.favoritesEntries.count();
     await this.clickAndExpectCount(this.favoriteRemoveButton(index), this.favoritesEntries, Math.max(0, previousCount - 1));
+  }
+
+  async removeFavoriteInCategory(categoryName: string, index = 0): Promise<void> {
+    const previousCount = await this.favoritesEntries.count();
+    await this.clickAndExpectCount(this.favoriteRemoveButtonInCategory(categoryName, index), this.favoritesEntries, Math.max(0, previousCount - 1));
+  }
+
+  async createFavoriteCategory(name: string): Promise<void> {
+    await this.addCategoryButton.click();
+    await this.submitFavoritesModal({ name });
+  }
+
+  async renameFavoriteCategory(currentName: string, nextName: string): Promise<void> {
+    await this.favoriteCategoryRenameButton(currentName).click();
+    await this.submitFavoritesModal({ name: nextName });
+  }
+
+  async deleteFavoriteCategory(categoryName: string, confirm = true): Promise<void> {
+    await this.favoriteCategoryDeleteButton(categoryName).click();
+    await this.submitFavoritesModal({ confirm });
+  }
+
+  async editFavoriteLabel(categoryName: string, index: number, label: string): Promise<void> {
+    await this.favoriteLabelButtonInCategory(categoryName, index).click();
+    await this.submitFavoritesModal({ label });
+  }
+
+  async toggleFavoriteCategory(categoryName: string): Promise<void> {
+    await this.favoriteCategoryToggle(categoryName).click();
   }
 
   async dragFavoriteTo(sourceIndex: number, targetIndex: number): Promise<void> {
@@ -346,6 +499,53 @@ export class RollzApp {
         dataTransfer,
       }));
     }, { sourceIndex, targetIndex });
+  }
+
+  async dragFavoriteToCategory(sourceCategoryName: string, sourceIndex: number, targetCategoryName: string): Promise<void> {
+    await this.page.evaluate(({ sourceCategoryName: sourceName, sourceIndex: sourceIdx, targetCategoryName: targetName }) => {
+      const categories = [...document.querySelectorAll('.favorite-category')];
+      const sourceCategory = categories.find(category => category.querySelector('.favorite-category-name')?.textContent?.trim() === sourceName);
+      const targetCategory = categories.find(category => category.querySelector('.favorite-category-name')?.textContent?.trim() === targetName);
+      const sourceHandle = sourceCategory?.querySelectorAll('[data-action="drag"]')[sourceIdx];
+      const targetContent = targetCategory?.querySelector('.favorite-category-content');
+
+      if (!(sourceHandle instanceof HTMLElement) || !(targetContent instanceof HTMLElement)) {
+        throw new Error('Favorite drag source or target category is unavailable.');
+      }
+
+      const targetRect = targetContent.getBoundingClientRect();
+      const clientX = targetRect.left + targetRect.width / 2;
+      const clientY = targetRect.top + Math.min(targetRect.height - 4, 24);
+      const dataTransfer = new DataTransfer();
+
+      sourceHandle.dispatchEvent(new DragEvent('dragstart', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer,
+      }));
+
+      targetContent.dispatchEvent(new DragEvent('dragover', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer,
+        clientX,
+        clientY,
+      }));
+
+      targetContent.dispatchEvent(new DragEvent('drop', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer,
+        clientX,
+        clientY,
+      }));
+
+      sourceHandle.dispatchEvent(new DragEvent('dragend', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer,
+      }));
+    }, { sourceCategoryName, sourceIndex, targetCategoryName });
   }
 
   async setOffline(offline: boolean): Promise<void> {
