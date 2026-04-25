@@ -12,23 +12,9 @@ User guide in English: [docs/WIKI_USER_GUIDE.md](docs/WIKI_USER_GUIDE.md)
 
 User guide in French: [docs/WIKI_UTILISATEUR.md](docs/WIKI_UTILISATEUR.md)
 
-### Screenshots
-
-Home and classic builder:
+### Interface Preview
 
 ![Rollz home screen](docs/images/guide-accueil.png)
-
-Expert builder:
-
-![Rollz expert mode](docs/images/guide-mode-expert.png)
-
-Favorite save modal:
-
-![Rollz favorite save modal](docs/images/guide-favori-modal.png)
-
-History and categorized favorites:
-
-![Rollz history and favorites](docs/images/guide-historique-favoris.png)
 
 ### Features
 
@@ -217,24 +203,6 @@ This repository is distributed under the custom license in [LICENSE](LICENSE).
 Rollz est un lanceur de dés JDR/TTRPG au style dark fantasy, conçu en HTML, CSS et JavaScript vanilla, avec génération de nombres via `random.org`.
 
 Guide utilisateur complet : [docs/WIKI_UTILISATEUR.md](docs/WIKI_UTILISATEUR.md)
-
-### Captures d'écran
-
-Accueil et builder classique :
-
-![Accueil Rollz](docs/images/guide-accueil.png)
-
-Builder expert :
-
-![Mode expert Rollz](docs/images/guide-mode-expert.png)
-
-Modal de sauvegarde d'un favori :
-
-![Modal favori Rollz](docs/images/guide-favori-modal.png)
-
-Historique et favoris catégorisés :
-
-![Historique et favoris Rollz](docs/images/guide-historique-favoris.png)
 
 ### Fonctionnalités
 
