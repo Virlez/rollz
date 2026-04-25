@@ -325,7 +325,8 @@ export function createResultSubBlock(result) {
  */
 export function renderResult(renderedRolls) {
   const rolls = Array.isArray(renderedRolls) ? renderedRolls : [];
-  dom.resultMulti.classList.toggle('is-two-up', rolls.length === 2);
+  dom.resultMulti.classList.toggle('is-two-up', rolls.length > 1);
+  dom.resultMulti.classList.toggle('has-centered-tail', rolls.length > 2 && rolls.length % 2 === 1);
 
   if (rolls.length === 1) {
     dom.resultFormula.hidden = false;

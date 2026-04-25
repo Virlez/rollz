@@ -1171,16 +1171,24 @@ body:not(.is-vtt-compact) .advantage-toggle {
 }
 
 .result-multi {
+  --result-multi-gap: var(--sp-4);
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
+  gap: var(--result-multi-gap);
 }
 
 .result-multi.is-two-up {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: var(--sp-4);
+  align-items: stretch;
+  gap: var(--result-multi-gap);
+}
+
+.result-multi.is-two-up.has-centered-tail .result-sub-block:last-child {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: calc((100% - var(--result-multi-gap)) / 2);
+  justify-self: center;
 }
 
 .result-sub-block {
@@ -1214,8 +1222,12 @@ body:not(.is-vtt-compact) .advantage-toggle {
 }
 
 @media (max-width: 559px) {
+  .result-multi {
+    --result-multi-gap: var(--sp-3);
+  }
+
   .result-multi.is-two-up {
-    gap: var(--sp-3);
+    gap: var(--result-multi-gap);
   }
 
   .result-sub-block .result-breakdown {
@@ -1232,6 +1244,11 @@ body:not(.is-vtt-compact) .advantage-toggle {
     display: flex;
     flex-direction: column;
     gap: var(--sp-4);
+  }
+
+  .result-multi.is-two-up.has-centered-tail .result-sub-block:last-child {
+    width: auto;
+    max-width: none;
   }
 
   .result-multi.is-two-up .result-separator {
@@ -1413,10 +1430,17 @@ body:not(.is-vtt-compact) .advantage-toggle {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  max-height: min(22rem, 52vh);
   overflow-y: auto;
   padding-right: var(--sp-1);
   overscroll-behavior: contain;
+}
+
+.history-list {
+  max-height: min(22rem, 52vh);
+}
+
+.favorites-list {
+  max-height: min(28rem, 62vh);
 }
 
 .history-entry {
@@ -2116,6 +2140,10 @@ body.is-vtt-compact .history-list {
   padding-right: var(--sp-1);
 }
 
+body.is-vtt-compact .favorites-list {
+  max-height: min(23rem, 56vh);
+}
+
 body.is-vtt-compact .favorite-category {
   gap: var(--sp-1);
   padding: var(--sp-1) var(--sp-2);
@@ -2214,6 +2242,10 @@ body.is-vtt-compact .result-multi.is-two-up {
   .history-list,
   .favorites-list {
     max-height: min(19rem, 48vh);
+  }
+
+  .favorites-list {
+    max-height: min(22rem, 56vh);
   }
   .history-breakdown {
     white-space: nowrap;
@@ -2401,6 +2433,10 @@ body.is-vtt-compact .result-multi.is-two-up {
   .history-list,
   .favorites-list {
     max-height: min(16rem, 44vh);
+  }
+
+  .favorites-list {
+    max-height: min(18rem, 50vh);
   }
   .history-entry,
   .favorite-entry,
