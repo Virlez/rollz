@@ -130,6 +130,28 @@ test.describe('Roll action — normal mode', () => {
     await expect(app.multiResultTotal(1)).toHaveText('5');
   });
 
+  test('two semicolon-separated results display side by side on large mobile widths', async ({ page }) => {
+    await mockRandomOrg(page, [10, 3]);
+    await page.setViewportSize({ width: 430, height: 932 });
+
+    const app = new RollzApp(page);
+    await app.goto();
+    await app.toggleExpertMode();
+    await app.rollFormula('1d20 + 4;1d8 + 2');
+
+    const firstBox = await app.resultBlock(0).boundingBox();
+    const secondBox = await app.resultBlock(1).boundingBox();
+    const firstTotalBox = await app.multiResultTotal(0).boundingBox();
+    const secondTotalBox = await app.multiResultTotal(1).boundingBox();
+
+    expect(firstBox).not.toBeNull();
+    expect(secondBox).not.toBeNull();
+    expect(firstTotalBox).not.toBeNull();
+    expect(secondTotalBox).not.toBeNull();
+    expect(secondBox!.x).toBeGreaterThan(firstBox!.x + firstBox!.width / 2);
+    expect(Math.abs(secondTotalBox!.y - firstTotalBox!.y)).toBeLessThanOrEqual(8);
+  });
+
   test('threshold syntax counts dice at or above the threshold', async ({ page }) => {
     await mockRandomOrg(page, [6, 5, 4, 1]);
 
