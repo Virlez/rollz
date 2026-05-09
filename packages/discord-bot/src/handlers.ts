@@ -94,44 +94,37 @@ function buildHelpEmbed(isAdministrator: boolean): EmbedBuilder {
 }
 
 function buildStatusEmbed(input: {
-  config: BotConfig;
   requestedBy: string;
-  guildName: string | null;
-  guildId: string | null;
+  guildName: string;
+  guildId: string;
   effectivePublishMode: PublishMode;
+  publishModeSource: string;
   dedicatedChannelStatus: string;
-  storageStatus: string;
-  readyTimestamp: number | null;
+  dedicatedChannelSource: string;
+  serverConfigUpdatedAt: number | null;
 }): EmbedBuilder {
-  const uptime = input.readyTimestamp ? `${Math.max(0, Math.round((Date.now() - input.readyTimestamp) / 1000))}s` : 'inconnu';
+  const updatedAt = input.serverConfigUpdatedAt
+    ? `<t:${Math.floor(input.serverConfigUpdatedAt / 1000)}:F>`
+    : 'aucune configuration spécifique enregistrée';
 
   return new EmbedBuilder()
-    .setTitle('État de Rollz')
+    .setTitle('Configuration du serveur Rollz')
     .addFields(
       {
-        name: 'Discord',
+        name: 'Serveur',
         value: [
-          `Serveur: ${input.guildName ?? 'Message privé / inconnu'}${input.guildId ? ` (${input.guildId})` : ''}`,
-          `Portée des commandes: ${input.config.guildId ? `serveur ${input.config.guildId}` : 'globale'}`,
-          `Mode de publication: ${formatPublishMode(input.effectivePublishMode)}${input.effectivePublishMode === input.config.publishMode ? ' (global)' : ' (spécifique au serveur)'}`,
-          `Salon dédié: ${input.dedicatedChannelStatus}`,
-          `Temps de fonctionnement: ${uptime}`,
+          `Nom: ${input.guildName}`,
+          `ID: ${input.guildId}`,
+          `Dernière mise à jour locale: ${updatedAt}`,
         ].join('\n'),
       },
       {
-        name: 'Stockage',
+        name: 'Publication',
         value: [
-          `Base SQLite: ${input.storageStatus}`,
-          `Chemin: ${input.config.favoritesFilePath}`,
-        ].join('\n'),
-      },
-      {
-        name: 'Limites',
-        value: [
-          `Répétitions max: ${input.config.limits.maxRepeatCount}`,
-          `Formules max: ${input.config.limits.maxFormulasPerRequest}`,
-          `Dés max/formule: ${input.config.limits.maxDicePerFormula}`,
-          `Longueur max de saisie: ${input.config.limits.maxInputLength}`,
+          `Mode effectif: ${formatPublishMode(input.effectivePublishMode)}`,
+          `Origine du mode: ${input.publishModeSource}`,
+          `Salon dédié effectif: ${input.dedicatedChannelStatus}`,
+          `Origine du salon dédié: ${input.dedicatedChannelSource}`,
         ].join('\n'),
       },
     )
@@ -228,41 +221,36 @@ export async function handleStatusCommand(
     return;
   }
 
-  const storageStatus = await Promise.allSettled([
-    favoritesStore.getStatus(),
-    guildConfigStore.getStatus(),
-  ]).then(results => {
-    const rejected = results.find(result => result.status === 'rejected');
-    if (rejected?.status === 'rejected') {
-      const reason = rejected.reason;
-      return reason instanceof Error ? `erreur: ${reason.message}` : 'erreur';
-    }
-    return 'ok';
-  });
+  if (!interaction.guildId || !interaction.guild) {
+    await interaction.reply({ content: 'Cette commande affiche uniquement la configuration du serveur courant.', ephemeral: true });
+    return;
+  }
 
-  const guildConfig = interaction.guildId
-    ? await guildConfigStore.get(interaction.guildId)
-    : null;
+  const guildConfig = await guildConfigStore.get(interaction.guildId);
   const effectivePublishMode = guildConfig?.publishMode ?? config.publishMode;
   const dedicatedChannelId = guildConfig?.dedicatedChannelId ?? config.dedicatedChannelId;
+  const publishModeSource = guildConfig?.publishMode ? 'configuration spécifique au serveur' : 'valeur par défaut du bot';
+  const dedicatedChannelSource = guildConfig?.dedicatedChannelId
+    ? 'configuration spécifique au serveur'
+    : config.dedicatedChannelId
+      ? 'valeur par défaut du bot'
+      : 'aucun salon défini';
 
   const dedicatedChannelStatus = dedicatedChannelId
     ? await interaction.client.channels.fetch(dedicatedChannelId)
-      .then(channel => channel && 'send' in channel ? `${channel.id}` : 'configuré mais inaccessible')
+      .then(channel => channel && 'send' in channel ? `<#${channel.id}>` : 'configuré mais inaccessible')
       .catch(error => error instanceof Error ? `erreur: ${error.message}` : 'erreur')
-    : config.dedicatedChannelId
-      ? `par défaut: ${config.dedicatedChannelId}`
-      : 'non configuré';
+    : 'non configuré';
 
   const embed = buildStatusEmbed({
-    config,
     requestedBy: interaction.user.username,
-    guildName: interaction.guild?.name ?? null,
+    guildName: interaction.guild.name,
     guildId: interaction.guildId,
     effectivePublishMode,
+    publishModeSource,
     dedicatedChannelStatus,
-    storageStatus,
-    readyTimestamp: interaction.client.readyTimestamp,
+    dedicatedChannelSource,
+    serverConfigUpdatedAt: guildConfig?.updatedAt ?? null,
   });
 
   await interaction.reply({ embeds: [embed], ephemeral: true });
