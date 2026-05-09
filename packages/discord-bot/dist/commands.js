@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { ChannelType, SlashCommandBuilder } from 'discord.js';
 export const rollCommand = new SlashCommandBuilder()
     .setName('roll')
     .setDescription('Lance une formule Rollz')
@@ -46,5 +46,27 @@ export const statusCommand = new SlashCommandBuilder()
     .setDescription('Diagnostic du bot Rollz')
     .addSubcommand(subcommand => subcommand
     .setName('status')
-    .setDescription('Affiche l’état de la configuration et des dépendances du bot'));
+    .setDescription('Affiche l’état de la configuration et des dépendances du bot'))
+    .addSubcommand(subcommand => subcommand
+    .setName('set-channel')
+    .setDescription('Configure le salon dédié pour ce serveur')
+    .addChannelOption(option => option
+    .setName('channel')
+    .setDescription('Salon textuel dédié aux jets publics')
+    .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
+    .setRequired(true)))
+    .addSubcommand(subcommand => subcommand
+    .setName('clear-channel')
+    .setDescription('Supprime le salon dédié configuré pour ce serveur'))
+    .addSubcommand(subcommand => subcommand
+    .setName('set-mode')
+    .setDescription('Configure le mode de publication pour ce serveur')
+    .addStringOption(option => option
+    .setName('mode')
+    .setDescription('Mode de publication des jets publics')
+    .setRequired(true)
+    .addChoices({ name: 'dans le salon de commande', value: 'invocation' }, { name: 'dans le salon dédié', value: 'dedicated' }, { name: 'dans les deux', value: 'both' })))
+    .addSubcommand(subcommand => subcommand
+    .setName('clear-mode')
+    .setDescription('Réutilise le mode de publication global pour ce serveur'));
 export const commandDefinitions = [rollCommand, favoriteCommand, statusCommand];

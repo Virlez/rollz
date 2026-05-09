@@ -1,10 +1,12 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { loadConfig } from './config.js';
 import { FavoritesStore } from './favorites-store.js';
+import { GuildConfigStore } from './guild-config-store.js';
 import { handleFavoriteAutocomplete, handleFavoriteCommand, handleRollCommand, handleStatusCommand } from './handlers.js';
 async function main() {
     const config = loadConfig();
     const favoritesStore = new FavoritesStore(config.favoritesFilePath);
+    const guildConfigStore = new GuildConfigStore(config.favoritesFilePath);
     const client = new Client({ intents: [GatewayIntentBits.Guilds] });
     client.once('clientReady', () => {
         console.log(`Rollz Discord bot connected as ${client.user?.tag ?? 'unknown user'}`);
@@ -17,15 +19,15 @@ async function main() {
         if (!interaction.isChatInputCommand())
             return;
         if (interaction.commandName === 'roll') {
-            await handleRollCommand(interaction, config);
+            await handleRollCommand(interaction, config, guildConfigStore);
             return;
         }
         if (interaction.commandName === 'favorite') {
-            await handleFavoriteCommand(interaction, config, favoritesStore);
+            await handleFavoriteCommand(interaction, config, favoritesStore, guildConfigStore);
             return;
         }
         if (interaction.commandName === 'rollz') {
-            await handleStatusCommand(interaction, config, favoritesStore);
+            await handleStatusCommand(interaction, config, favoritesStore, guildConfigStore);
         }
     });
     await client.login(config.token);

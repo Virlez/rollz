@@ -26,9 +26,6 @@ function parseNumber(name, fallback) {
 export function loadConfig() {
     const publishMode = parsePublishMode(process.env.ROLLZ_PUBLISH_MODE);
     const dedicatedChannelId = process.env.ROLLZ_DEDICATED_CHANNEL_ID?.trim();
-    if ((publishMode === 'dedicated' || publishMode === 'both') && !dedicatedChannelId) {
-        throw new Error('ROLLZ_DEDICATED_CHANNEL_ID est requis quand le mode de publication est dedicated ou both.');
-    }
     return {
         token: requireEnv('DISCORD_TOKEN'),
         applicationId: requireEnv('DISCORD_APPLICATION_ID'),

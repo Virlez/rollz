@@ -1,5 +1,5 @@
 import { executeRoll, normalizeRollMode, RollValidationError } from '@rollz/core';
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, PermissionsBitField } from 'discord.js';
 import { buildRollMessage } from './format.js';
 import { publishResponse } from './publish.js';
 function parseMode(mode) {
@@ -13,6 +13,15 @@ function parseMode(mode) {
 }
 function parseVisibility(visibility) {
     return visibility === 'private' ? 'private' : 'public';
+}
+function formatPublishMode(mode) {
+    if (mode === 'dedicated') {
+        return 'salon dédié';
+    }
+    if (mode === 'both') {
+        return 'les deux';
+    }
+    return 'salon de commande';
 }
 function buildFavoritesEmbed(items) {
     return new EmbedBuilder()
@@ -31,14 +40,14 @@ function buildStatusEmbed(input) {
         value: [
             `Serveur: ${input.guildName ?? 'Message privé / inconnu'}${input.guildId ? ` (${input.guildId})` : ''}`,
             `Portée des commandes: ${input.config.guildId ? `serveur ${input.config.guildId}` : 'globale'}`,
-            `Mode de publication: ${input.config.publishMode}`,
+            `Mode de publication: ${formatPublishMode(input.effectivePublishMode)}${input.effectivePublishMode === input.config.publishMode ? ' (global)' : ' (spécifique au serveur)'}`,
             `Salon dédié: ${input.dedicatedChannelStatus}`,
             `Temps de fonctionnement: ${uptime}`,
         ].join('\n'),
     }, {
         name: 'Stockage',
         value: [
-            `Base des favoris: ${input.favoritesStatus}`,
+            `Base SQLite: ${input.storageStatus}`,
             `Chemin: ${input.config.favoritesFilePath}`,
         ].join('\n'),
     }, {
@@ -53,27 +62,108 @@ function buildStatusEmbed(input) {
         .setFooter({ text: `Demandé par ${input.requestedBy}` })
         .setTimestamp(new Date());
 }
-export async function handleStatusCommand(interaction, config, favoritesStore) {
+function isAdmin(interaction) {
+    return interaction.memberPermissions?.has(PermissionsBitField.Flags.Administrator) ?? false;
+}
+async function requireGuildAdmin(interaction) {
+    if (!interaction.guildId) {
+        await interaction.reply({ content: 'Cette commande doit être utilisée sur un serveur Discord.', ephemeral: true });
+        return false;
+    }
+    if (isAdmin(interaction)) {
+        return true;
+    }
+    await interaction.reply({ content: 'Seuls les administrateurs du serveur peuvent modifier la configuration du serveur.', ephemeral: true });
+    return false;
+}
+export async function handleStatusCommand(interaction, config, favoritesStore, guildConfigStore) {
     const subcommand = interaction.options.getSubcommand(true);
+    if (subcommand === 'set-channel') {
+        if (!await requireGuildAdmin(interaction)) {
+            return;
+        }
+        const guildId = interaction.guildId;
+        const channel = interaction.options.getChannel('channel', true);
+        await guildConfigStore.setDedicatedChannel(guildId, channel.id);
+        await interaction.reply({ content: `Salon dédié configuré sur <#${channel.id}> pour ce serveur.`, ephemeral: true });
+        return;
+    }
+    if (subcommand === 'clear-channel') {
+        if (!await requireGuildAdmin(interaction)) {
+            return;
+        }
+        const guildId = interaction.guildId;
+        const cleared = await guildConfigStore.clearDedicatedChannel(guildId);
+        await interaction.reply({
+            content: cleared
+                ? 'Salon dédié supprimé pour ce serveur.'
+                : 'Aucun salon dédié spécifique n’était configuré pour ce serveur.',
+            ephemeral: true,
+        });
+        return;
+    }
+    if (subcommand === 'set-mode') {
+        if (!await requireGuildAdmin(interaction)) {
+            return;
+        }
+        const guildId = interaction.guildId;
+        const mode = interaction.options.getString('mode', true);
+        await guildConfigStore.setPublishMode(guildId, mode);
+        await interaction.reply({
+            content: `Mode de publication configuré sur ${formatPublishMode(mode)} pour ce serveur.`,
+            ephemeral: true,
+        });
+        return;
+    }
+    if (subcommand === 'clear-mode') {
+        if (!await requireGuildAdmin(interaction)) {
+            return;
+        }
+        const guildId = interaction.guildId;
+        const cleared = await guildConfigStore.clearPublishMode(guildId);
+        await interaction.reply({
+            content: cleared
+                ? `Mode de publication spécifique supprimé. Le serveur réutilise maintenant le mode global ${formatPublishMode(config.publishMode)}.`
+                : 'Aucun mode de publication spécifique n’était configuré pour ce serveur.',
+            ephemeral: true,
+        });
+        return;
+    }
     if (subcommand !== 'status') {
         await interaction.reply({ content: 'Sous-commande non prise en charge.', ephemeral: true });
         return;
     }
-    const favoritesStatus = await favoritesStore.getStatus()
-        .then(() => 'ok')
-        .catch(error => error instanceof Error ? `erreur: ${error.message}` : 'erreur');
-    const dedicatedChannelStatus = config.dedicatedChannelId
-        ? await interaction.client.channels.fetch(config.dedicatedChannelId)
+    const storageStatus = await Promise.allSettled([
+        favoritesStore.getStatus(),
+        guildConfigStore.getStatus(),
+    ]).then(results => {
+        const rejected = results.find(result => result.status === 'rejected');
+        if (rejected?.status === 'rejected') {
+            const reason = rejected.reason;
+            return reason instanceof Error ? `erreur: ${reason.message}` : 'erreur';
+        }
+        return 'ok';
+    });
+    const guildConfig = interaction.guildId
+        ? await guildConfigStore.get(interaction.guildId)
+        : null;
+    const effectivePublishMode = guildConfig?.publishMode ?? config.publishMode;
+    const dedicatedChannelId = guildConfig?.dedicatedChannelId ?? config.dedicatedChannelId;
+    const dedicatedChannelStatus = dedicatedChannelId
+        ? await interaction.client.channels.fetch(dedicatedChannelId)
             .then(channel => channel && 'send' in channel ? `${channel.id}` : 'configuré mais inaccessible')
             .catch(error => error instanceof Error ? `erreur: ${error.message}` : 'erreur')
-        : 'non configuré';
+        : config.dedicatedChannelId
+            ? `par défaut: ${config.dedicatedChannelId}`
+            : 'non configuré';
     const embed = buildStatusEmbed({
         config,
         requestedBy: interaction.user.username,
         guildName: interaction.guild?.name ?? null,
         guildId: interaction.guildId,
+        effectivePublishMode,
         dedicatedChannelStatus,
-        favoritesStatus,
+        storageStatus,
         readyTimestamp: interaction.client.readyTimestamp,
     });
     await interaction.reply({ embeds: [embed], ephemeral: true });
@@ -99,13 +189,13 @@ export async function handleFavoriteAutocomplete(interaction, favoritesStore) {
         value: favorite.name,
     })));
 }
-export async function handleRollCommand(interaction, config) {
+export async function handleRollCommand(interaction, config, guildConfigStore) {
     const formula = interaction.options.getString('formula', true);
     const mode = parseMode(interaction.options.getString('mode'));
     const visibility = parseVisibility(interaction.options.getString('visibility'));
     try {
         const batch = await executeRoll(formula, mode, config.limits);
-        await publishResponse(interaction, buildRollMessage(batch, 'Jet Rollz', interaction.user.username), config, visibility);
+        await publishResponse(interaction, buildRollMessage(batch, 'Jet Rollz', interaction.user.username), config, guildConfigStore, visibility);
     }
     catch (error) {
         const message = error instanceof RollValidationError
@@ -121,7 +211,7 @@ export async function handleRollCommand(interaction, config) {
         }
     }
 }
-export async function handleFavoriteCommand(interaction, config, favoritesStore) {
+export async function handleFavoriteCommand(interaction, config, favoritesStore, guildConfigStore) {
     const guildId = interaction.guildId;
     const userId = interaction.user.id;
     if (!guildId) {
@@ -178,7 +268,7 @@ export async function handleFavoriteCommand(interaction, config, favoritesStore)
                 advantageMode: favorite.advantageMode,
                 successMode: favorite.successMode,
             }, config.limits);
-            await publishResponse(interaction, buildRollMessage(batch, `Favori ${favorite.name}`, interaction.user.username), config, visibility);
+            await publishResponse(interaction, buildRollMessage(batch, `Favori ${favorite.name}`, interaction.user.username), config, guildConfigStore, visibility);
         }
         catch (error) {
             const message = error instanceof Error ? error.message : 'Impossible de relancer ce favori.';
