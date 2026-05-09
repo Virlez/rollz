@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { loadConfig } from './config.js';
 import { registerCommands } from './register.js';
 async function main() {

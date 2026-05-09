@@ -22,4 +22,8 @@ export declare class FavoritesStore {
     }>;
     remove(guildId: string, name: string): Promise<boolean>;
     close(): void;
+    getStatus(): Promise<{
+        filePath: string;
+        reachable: boolean;
+    }>;
 }

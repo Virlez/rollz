@@ -33,4 +33,10 @@ export const favoriteCommand = new SlashCommandBuilder()
     .setName('roll')
     .setDescription('Relance un favori')
     .addStringOption(option => option.setName('name').setDescription('Nom du favori').setRequired(true)));
-export const commandDefinitions = [rollCommand, favoriteCommand];
+export const statusCommand = new SlashCommandBuilder()
+    .setName('rollz')
+    .setDescription('Diagnostic du bot Rollz')
+    .addSubcommand(subcommand => subcommand
+    .setName('status')
+    .setDescription('Affiche l’état de la configuration et des dépendances du bot'));
+export const commandDefinitions = [rollCommand, favoriteCommand, statusCommand];

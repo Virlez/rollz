@@ -1,4 +1,9 @@
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { config as loadDotenv } from 'dotenv';
 import { resolveLimits } from '@rollz/core';
+const currentDir = dirname(fileURLToPath(import.meta.url));
+loadDotenv({ path: resolve(currentDir, '../../../.env'), quiet: true });
 function requireEnv(name) {
     const value = process.env[name]?.trim();
     if (!value) {

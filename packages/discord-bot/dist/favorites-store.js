@@ -121,4 +121,12 @@ export class FavoritesStore {
         this.database?.close();
         this.database = null;
     }
+    async getStatus() {
+        const database = await this.getDatabase();
+        database.prepare('SELECT 1').get();
+        return {
+            filePath: this.filePath,
+            reachable: true,
+        };
+    }
 }

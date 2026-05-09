@@ -1,13 +1,12 @@
-import 'dotenv/config';
 import { Client, GatewayIntentBits } from 'discord.js';
 import { loadConfig } from './config.js';
 import { FavoritesStore } from './favorites-store.js';
-import { handleFavoriteCommand, handleRollCommand } from './handlers.js';
+import { handleFavoriteCommand, handleRollCommand, handleStatusCommand } from './handlers.js';
 async function main() {
     const config = loadConfig();
     const favoritesStore = new FavoritesStore(config.favoritesFilePath);
     const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-    client.once('ready', () => {
+    client.once('clientReady', () => {
         console.log(`Rollz Discord bot connected as ${client.user?.tag ?? 'unknown user'}`);
     });
     client.on('interactionCreate', async (interaction) => {
@@ -19,6 +18,10 @@ async function main() {
         }
         if (interaction.commandName === 'favorite') {
             await handleFavoriteCommand(interaction, config, favoritesStore);
+            return;
+        }
+        if (interaction.commandName === 'rollz') {
+            await handleStatusCommand(interaction, config, favoritesStore);
         }
     });
     await client.login(config.token);
