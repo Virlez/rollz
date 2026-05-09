@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { loadConfig } from './config.js';
 import { FavoritesStore } from './favorites-store.js';
-import { handleFavoriteCommand, handleRollCommand, handleStatusCommand } from './handlers.js';
+import { handleFavoriteAutocomplete, handleFavoriteCommand, handleRollCommand, handleStatusCommand } from './handlers.js';
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -14,6 +14,11 @@ async function main(): Promise<void> {
   });
 
   client.on('interactionCreate', async interaction => {
+    if (interaction.isAutocomplete()) {
+      await handleFavoriteAutocomplete(interaction, favoritesStore);
+      return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
     if (interaction.commandName === 'roll') {

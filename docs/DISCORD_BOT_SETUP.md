@@ -39,7 +39,8 @@ Le registre des slash commands est séparé du runtime. Il faut relancer `npm ru
 ## Notes MVP
 
 - Les favoris sont persistés dans une base SQLite montée via volume Docker.
+- Les favoris sont liés à l'utilisateur Discord et non plus au serveur. Un même nom de favori peut donc exister chez plusieurs utilisateurs.
 - Les jets peuvent être publiés dans le salon courant, un salon dédié, ou les deux selon la configuration.
-- Les embeds Discord détaillent les dés gardés/écartés, les rerolls, les succès/échecs et le fallback RNG quand il est utilisé.
+- Les embeds Discord reprennent la structure du rendu webapp: formule, groupes de dés, rerolls, dés gardés/écartés, sous-totaux, total final et notes éventuelles.
 - `/rollz status` permet de vérifier la portée des commandes, l’accès au salon dédié, l’état SQLite et les limites actives.
 - L'historique n'est pas inclus dans ce MVP.

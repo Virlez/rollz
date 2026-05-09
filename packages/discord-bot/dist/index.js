@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { loadConfig } from './config.js';
 import { FavoritesStore } from './favorites-store.js';
-import { handleFavoriteCommand, handleRollCommand, handleStatusCommand } from './handlers.js';
+import { handleFavoriteAutocomplete, handleFavoriteCommand, handleRollCommand, handleStatusCommand } from './handlers.js';
 async function main() {
     const config = loadConfig();
     const favoritesStore = new FavoritesStore(config.favoritesFilePath);
@@ -10,6 +10,10 @@ async function main() {
         console.log(`Rollz Discord bot connected as ${client.user?.tag ?? 'unknown user'}`);
     });
     client.on('interactionCreate', async (interaction) => {
+        if (interaction.isAutocomplete()) {
+            await handleFavoriteAutocomplete(interaction, favoritesStore);
+            return;
+        }
         if (!interaction.isChatInputCommand())
             return;
         if (interaction.commandName === 'roll') {

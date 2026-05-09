@@ -17,6 +17,14 @@ export const rollCommand = new SlashCommandBuilder()
         { name: 'advantage', value: 'advantage' },
         { name: 'disadvantage', value: 'disadvantage' },
         { name: 'success', value: 'success' },
+      ))
+  .addStringOption(option =>
+    option
+      .setName('visibility')
+      .setDescription('Visibilité du résultat')
+      .addChoices(
+        { name: 'public', value: 'public' },
+        { name: 'privé', value: 'private' },
       ));
 
 export const favoriteCommand = new SlashCommandBuilder()
@@ -42,7 +50,7 @@ export const favoriteCommand = new SlashCommandBuilder()
     subcommand
       .setName('remove')
       .setDescription('Supprime un favori')
-      .addStringOption(option => option.setName('name').setDescription('Nom du favori').setRequired(true)))
+      .addStringOption(option => option.setName('name').setDescription('Nom du favori').setRequired(true).setAutocomplete(true)))
   .addSubcommand(subcommand =>
     subcommand
       .setName('list')
@@ -51,7 +59,15 @@ export const favoriteCommand = new SlashCommandBuilder()
     subcommand
       .setName('roll')
       .setDescription('Relance un favori')
-      .addStringOption(option => option.setName('name').setDescription('Nom du favori').setRequired(true)));
+      .addStringOption(option => option.setName('name').setDescription('Nom du favori').setRequired(true).setAutocomplete(true))
+      .addStringOption(option =>
+        option
+          .setName('visibility')
+          .setDescription('Visibilité du résultat')
+          .addChoices(
+            { name: 'public', value: 'public' },
+            { name: 'privé', value: 'private' },
+          )));
 
 export const statusCommand = new SlashCommandBuilder()
   .setName('rollz')

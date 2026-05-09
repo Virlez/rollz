@@ -12,15 +12,17 @@ export type FavoriteEntry = {
 export declare class FavoritesStore {
     private readonly filePath;
     private database;
+    private static readonly TABLE_NAME;
     constructor(filePath: string);
     private getDatabase;
-    list(guildId: string): Promise<FavoriteEntry[]>;
-    getByName(guildId: string, name: string): Promise<FavoriteEntry | null>;
+    list(userId: string): Promise<FavoriteEntry[]>;
+    listMatching(userId: string, query: string, limit?: number): Promise<FavoriteEntry[]>;
+    getByName(userId: string, name: string): Promise<FavoriteEntry | null>;
     upsert(input: Omit<FavoriteEntry, 'id' | 'createdAt'>): Promise<{
         entry: FavoriteEntry;
         created: boolean;
     }>;
-    remove(guildId: string, name: string): Promise<boolean>;
+    remove(userId: string, name: string): Promise<boolean>;
     close(): void;
     getStatus(): Promise<{
         filePath: string;

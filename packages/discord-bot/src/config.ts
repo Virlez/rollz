@@ -43,7 +43,7 @@ export function loadConfig(): BotConfig {
   const dedicatedChannelId = process.env.ROLLZ_DEDICATED_CHANNEL_ID?.trim();
 
   if ((publishMode === 'dedicated' || publishMode === 'both') && !dedicatedChannelId) {
-    throw new Error('ROLLZ_DEDICATED_CHANNEL_ID is required when publish mode is dedicated or both.');
+    throw new Error('ROLLZ_DEDICATED_CHANNEL_ID est requis quand le mode de publication est dedicated ou both.');
   }
 
   return {

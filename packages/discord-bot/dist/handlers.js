@@ -1,6 +1,6 @@
 import { executeRoll, normalizeRollMode, RollValidationError } from '@rollz/core';
 import { EmbedBuilder } from 'discord.js';
-import { buildRollEmbed } from './format.js';
+import { buildRollMessage } from './format.js';
 import { publishResponse } from './publish.js';
 function parseMode(mode) {
     if (mode === 'advantage' || mode === 'disadvantage') {
@@ -11,40 +11,43 @@ function parseMode(mode) {
     }
     return normalizeRollMode({});
 }
+function parseVisibility(visibility) {
+    return visibility === 'private' ? 'private' : 'public';
+}
 function buildFavoritesEmbed(items) {
     return new EmbedBuilder()
-        .setTitle('Favoris Rollz')
+        .setTitle('Mes favoris Rollz')
         .setDescription(items.length > 0
-        ? items.map(item => `**${item.name}** — ${item.formula}${item.successMode ? ' [success]' : item.advantageMode !== 'none' ? ` [${item.advantageMode}]` : ''}`).join('\n')
-        : 'Aucun favori enregistré pour ce serveur.')
+        ? items.map(item => `**${item.name}** — ${item.formula}${item.successMode ? ' [succès]' : item.advantageMode === 'advantage' ? ' [avantage]' : item.advantageMode === 'disadvantage' ? ' [désavantage]' : ''}`).join('\n')
+        : 'Aucun favori enregistré pour cet utilisateur.')
         .setTimestamp(new Date());
 }
 function buildStatusEmbed(input) {
-    const uptime = input.readyTimestamp ? `${Math.max(0, Math.round((Date.now() - input.readyTimestamp) / 1000))}s` : 'unknown';
+    const uptime = input.readyTimestamp ? `${Math.max(0, Math.round((Date.now() - input.readyTimestamp) / 1000))}s` : 'inconnu';
     return new EmbedBuilder()
-        .setTitle('Rollz status')
+        .setTitle('État de Rollz')
         .addFields({
         name: 'Discord',
         value: [
-            `Guild: ${input.guildName ?? 'DM / unknown'}${input.guildId ? ` (${input.guildId})` : ''}`,
-            `Commands scope: ${input.config.guildId ? `guild ${input.config.guildId}` : 'global'}`,
-            `Publish mode: ${input.config.publishMode}`,
-            `Dedicated channel: ${input.dedicatedChannelStatus}`,
-            `Uptime: ${uptime}`,
+            `Serveur: ${input.guildName ?? 'Message privé / inconnu'}${input.guildId ? ` (${input.guildId})` : ''}`,
+            `Portée des commandes: ${input.config.guildId ? `serveur ${input.config.guildId}` : 'globale'}`,
+            `Mode de publication: ${input.config.publishMode}`,
+            `Salon dédié: ${input.dedicatedChannelStatus}`,
+            `Temps de fonctionnement: ${uptime}`,
         ].join('\n'),
     }, {
-        name: 'Storage',
+        name: 'Stockage',
         value: [
-            `Favorites DB: ${input.favoritesStatus}`,
-            `Path: ${input.config.favoritesFilePath}`,
+            `Base des favoris: ${input.favoritesStatus}`,
+            `Chemin: ${input.config.favoritesFilePath}`,
         ].join('\n'),
     }, {
-        name: 'Limits',
+        name: 'Limites',
         value: [
-            `Max repeats: ${input.config.limits.maxRepeatCount}`,
-            `Max formulas: ${input.config.limits.maxFormulasPerRequest}`,
-            `Max dice/formula: ${input.config.limits.maxDicePerFormula}`,
-            `Max input length: ${input.config.limits.maxInputLength}`,
+            `Répétitions max: ${input.config.limits.maxRepeatCount}`,
+            `Formules max: ${input.config.limits.maxFormulasPerRequest}`,
+            `Dés max/formule: ${input.config.limits.maxDicePerFormula}`,
+            `Longueur max de saisie: ${input.config.limits.maxInputLength}`,
         ].join('\n'),
     })
         .setFooter({ text: `Demandé par ${input.requestedBy}` })
@@ -58,12 +61,12 @@ export async function handleStatusCommand(interaction, config, favoritesStore) {
     }
     const favoritesStatus = await favoritesStore.getStatus()
         .then(() => 'ok')
-        .catch(error => error instanceof Error ? `error: ${error.message}` : 'error');
+        .catch(error => error instanceof Error ? `erreur: ${error.message}` : 'erreur');
     const dedicatedChannelStatus = config.dedicatedChannelId
         ? await interaction.client.channels.fetch(config.dedicatedChannelId)
-            .then(channel => channel && 'send' in channel ? `${channel.id}` : 'configured but inaccessible')
-            .catch(error => error instanceof Error ? `error: ${error.message}` : 'error')
-        : 'not configured';
+            .then(channel => channel && 'send' in channel ? `${channel.id}` : 'configuré mais inaccessible')
+            .catch(error => error instanceof Error ? `erreur: ${error.message}` : 'erreur')
+        : 'non configuré';
     const embed = buildStatusEmbed({
         config,
         requestedBy: interaction.user.username,
@@ -75,13 +78,34 @@ export async function handleStatusCommand(interaction, config, favoritesStore) {
     });
     await interaction.reply({ embeds: [embed], ephemeral: true });
 }
+export async function handleFavoriteAutocomplete(interaction, favoritesStore) {
+    if (interaction.commandName !== 'favorite') {
+        await interaction.respond([]);
+        return;
+    }
+    const subcommand = interaction.options.getSubcommand();
+    if (subcommand !== 'roll' && subcommand !== 'remove') {
+        await interaction.respond([]);
+        return;
+    }
+    const focused = interaction.options.getFocused(true);
+    if (focused.name !== 'name') {
+        await interaction.respond([]);
+        return;
+    }
+    const matches = await favoritesStore.listMatching(interaction.user.id, String(focused.value), 25);
+    await interaction.respond(matches.map(favorite => ({
+        name: favorite.name,
+        value: favorite.name,
+    })));
+}
 export async function handleRollCommand(interaction, config) {
     const formula = interaction.options.getString('formula', true);
     const mode = parseMode(interaction.options.getString('mode'));
+    const visibility = parseVisibility(interaction.options.getString('visibility'));
     try {
         const batch = await executeRoll(formula, mode, config.limits);
-        const embed = buildRollEmbed(batch, 'Jet Rollz', interaction.user.username);
-        await publishResponse(interaction, { embeds: [embed] }, config);
+        await publishResponse(interaction, buildRollMessage(batch, 'Jet Rollz', interaction.user.username), config, visibility);
     }
     catch (error) {
         const message = error instanceof RollValidationError
@@ -99,19 +123,20 @@ export async function handleRollCommand(interaction, config) {
 }
 export async function handleFavoriteCommand(interaction, config, favoritesStore) {
     const guildId = interaction.guildId;
+    const userId = interaction.user.id;
     if (!guildId) {
         await interaction.reply({ content: 'Les favoris ne sont disponibles que sur un serveur Discord.', ephemeral: true });
         return;
     }
     const subcommand = interaction.options.getSubcommand(true);
     if (subcommand === 'list') {
-        const favorites = await favoritesStore.list(guildId);
+        const favorites = await favoritesStore.list(userId);
         await interaction.reply({ embeds: [buildFavoritesEmbed(favorites)], ephemeral: true });
         return;
     }
     if (subcommand === 'remove') {
         const name = interaction.options.getString('name', true);
-        const removed = await favoritesStore.remove(guildId, name);
+        const removed = await favoritesStore.remove(userId, name);
         await interaction.reply({ content: removed ? `Favori ${name} supprimé.` : `Favori ${name} introuvable.`, ephemeral: true });
         return;
     }
@@ -123,7 +148,7 @@ export async function handleFavoriteCommand(interaction, config, favoritesStore)
             await executeRoll(formula, mode, config.limits);
             const result = await favoritesStore.upsert({
                 guildId,
-                userId: interaction.user.id,
+                userId,
                 name,
                 formula,
                 successMode: mode.successMode,
@@ -142,7 +167,8 @@ export async function handleFavoriteCommand(interaction, config, favoritesStore)
     }
     if (subcommand === 'roll') {
         const name = interaction.options.getString('name', true);
-        const favorite = await favoritesStore.getByName(guildId, name);
+        const visibility = parseVisibility(interaction.options.getString('visibility'));
+        const favorite = await favoritesStore.getByName(userId, name);
         if (!favorite) {
             await interaction.reply({ content: `Favori ${name} introuvable.`, ephemeral: true });
             return;
@@ -152,8 +178,7 @@ export async function handleFavoriteCommand(interaction, config, favoritesStore)
                 advantageMode: favorite.advantageMode,
                 successMode: favorite.successMode,
             }, config.limits);
-            const embed = buildRollEmbed(batch, `Favori ${favorite.name}`, interaction.user.username);
-            await publishResponse(interaction, { embeds: [embed] }, config);
+            await publishResponse(interaction, buildRollMessage(batch, `Favori ${favorite.name}`, interaction.user.username), config, visibility);
         }
         catch (error) {
             const message = error instanceof Error ? error.message : 'Impossible de relancer ce favori.';

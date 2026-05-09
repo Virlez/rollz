@@ -5,7 +5,16 @@ async function resolveDedicatedChannel(interaction, channelId) {
     }
     return channel;
 }
-export async function publishResponse(interaction, payload, config) {
+export async function publishResponse(interaction, payload, config, visibility = 'public') {
+    if (visibility === 'private') {
+        if (interaction.deferred || interaction.replied) {
+            await interaction.followUp({ ...payload, flags: undefined, ephemeral: true });
+        }
+        else {
+            await interaction.reply({ ...payload, flags: undefined, ephemeral: true });
+        }
+        return;
+    }
     const mode = config.publishMode;
     const replyPayload = { ...payload, flags: undefined };
     if (mode === 'invocation' || mode === 'both') {
@@ -27,7 +36,7 @@ export async function publishResponse(interaction, payload, config) {
     if ((mode === 'dedicated' || mode === 'both') && config.dedicatedChannelId) {
         const channel = await resolveDedicatedChannel(interaction, config.dedicatedChannelId);
         if (!channel) {
-            throw new Error('Dedicated channel is not accessible or is not text-based.');
+            throw new Error('Le salon dédié est inaccessible ou n\'est pas un salon textuel.');
         }
         await channel.send(payload);
     }

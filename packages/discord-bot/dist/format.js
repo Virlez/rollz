@@ -2,66 +2,126 @@ import { describeFormula } from '@rollz/core';
 import { EmbedBuilder } from 'discord.js';
 function renderMode(mode) {
     if (mode.successMode)
-        return 'success';
+        return 'succès';
     if (mode.advantageMode === 'advantage')
-        return 'advantage';
+        return 'avantage';
     if (mode.advantageMode === 'disadvantage')
-        return 'disadvantage';
+        return 'désavantage';
     return 'normal';
 }
-function formatDieToken(token, detail, successMode) {
+function wrapChip(value, classes = []) {
+    if (classes.includes('discarded'))
+        return `~~${value}~~`;
+    if (classes.includes('kept'))
+        return `**${value}**`;
+    if (classes.includes('success'))
+        return `**${value}**✓`;
+    if (classes.includes('failure'))
+        return `${value}✗`;
+    if (classes.includes('max'))
+        return `**${value}**`;
+    if (classes.includes('min'))
+        return `_${value}_`;
+    return value;
+}
+function classifyBaseRoll(value, sides) {
+    const classes = [];
+    if (value === sides)
+        classes.push('max');
+    if (value === 1)
+        classes.push('min');
+    return classes;
+}
+function formatFormulaHeader(execution) {
+    return describeFormula(execution.result.tokens);
+}
+function formatKeptLabel(execution) {
+    if (execution.result.advantageMode === 'advantage')
+        return 'gardé (avantage)';
+    if (execution.result.advantageMode === 'disadvantage')
+        return 'gardé (désavantage)';
+    return 'gardé';
+}
+function formatDieToken(token, detail, successMode, execution) {
     if (successMode) {
-        const rolls = detail.finalRolls.map((value, index) => `${value}${detail.successMatches[index] ? '✓' : '✗'}`);
+        const rolls = detail.finalRolls.map((value, index) => wrapChip(String(value), [detail.successMatches[index] ? 'success' : 'failure', ...classifyBaseRoll(value, token.sides)]));
         const bonus = detail.bonusRolls.length > 0
-            ? ` | bonus ${detail.bonusRolls.map(value => `${value}${value % 2 === 0 ? '✓' : '✗'}`).join(', ')}`
+            ? `\n🎁 bonus: ${detail.bonusRolls.map(value => wrapChip(String(value), [value % 2 === 0 ? 'success' : 'failure', ...classifyBaseRoll(value, token.sides)])).join(' • ')}`
             : '';
         if (detail.ignored) {
-            return `${token.raw}: ignored`;
+            return `🎲 **${token.raw}**\nignoré`;
         }
-        return `${token.raw}: ${rolls.join(', ')}${bonus} => ${detail.subtotal} successes`;
+        return `🎲 **${token.raw}**\n${rolls.join(' • ')}${bonus}\nΣ **${detail.subtotal}** succès`;
     }
     if (detail.advantagePair) {
         const [firstRoll, secondRoll] = detail.advantagePair;
-        const kept = detail.keptFirst;
-        const discarded = detail.discardedFirst;
-        const rest = detail.restDrawn && detail.restDrawn.length > 0 ? `, rest ${detail.restDrawn.join(', ')}` : '';
-        return `${token.raw}: ${kept} kept, ${discarded} discarded (pair ${firstRoll}/${secondRoll})${rest} => ${detail.subtotal}`;
+        const kept = wrapChip(String(detail.keptFirst), ['kept', ...classifyBaseRoll(detail.keptFirst ?? firstRoll, token.sides)]);
+        const discardedValue = firstRoll === secondRoll
+            ? null
+            : wrapChip(String(detail.discardedFirst), ['discarded', ...classifyBaseRoll(detail.discardedFirst ?? secondRoll, token.sides)]);
+        const rest = detail.restDrawn && detail.restDrawn.length > 0
+            ? `\n  autres: ${detail.restDrawn.map(value => wrapChip(String(value), classifyBaseRoll(value, token.sides))).join(' • ')}`
+            : '';
+        return [
+            `🎲 **${token.raw}**`,
+            `${formatKeptLabel(execution)}: ${kept}`,
+            discardedValue ? `écarté: ${discardedValue}` : null,
+            rest ? rest.trimStart() : null,
+            `= **${detail.subtotal}**`,
+        ].filter(Boolean).join('\n');
     }
     const pieces = detail.finalRolls.map((value, index) => {
         if (detail.rerollMask[index] && detail.originalRolls[index] !== undefined) {
-            return `${detail.originalRolls[index]}→${value}`;
+            return `${wrapChip(String(detail.originalRolls[index]), ['discarded', ...classifyBaseRoll(detail.originalRolls[index], token.sides)])}→${wrapChip(String(value), token.successThreshold !== undefined ? [detail.successMatches[index] ? 'success' : 'failure', ...classifyBaseRoll(value, token.sides)] : classifyBaseRoll(value, token.sides))}`;
         }
         if (token.successThreshold !== undefined) {
-            return `${value}${detail.successMatches[index] ? '✓' : '✗'}`;
+            return wrapChip(String(value), [detail.successMatches[index] ? 'success' : 'failure', ...classifyBaseRoll(value, token.sides)]);
         }
-        return String(value);
+        return wrapChip(String(value), classifyBaseRoll(value, token.sides));
     });
-    const suffix = token.successThreshold !== undefined ? ` => ${detail.subtotal} successes` : ` => ${detail.subtotal}`;
-    return `${token.raw}: ${pieces.join(', ')}${suffix}`;
+    const suffix = token.successThreshold !== undefined ? `${detail.subtotal} succès` : String(detail.subtotal);
+    return `🎲 **${token.raw}**\n${pieces.join(' • ')}\nΣ **${suffix}**`;
 }
 function formatModifierToken(token) {
-    return `modifier: ${token.value >= 0 ? `+${token.value}` : token.value}`;
+    return `➕ **${token.value >= 0 ? `+${token.value}` : token.value}**`;
 }
-function formatExecution(execution) {
-    const lines = execution.result.tokens.flatMap((token, index) => {
+function formatExecution(execution, compact = false) {
+    const groups = execution.result.tokens.flatMap((token, index) => {
         if (token.type === 'modifier') {
             return formatModifierToken(token);
         }
         const detail = execution.result.tokenResults[index];
         if (!detail)
-            return `${token.raw}: no details`;
-        return formatDieToken(token, detail, execution.result.successMode);
+            return `🎲 **${token.raw}**\naucun détail`;
+        return formatDieToken(token, detail, execution.result.successMode, execution);
     });
+    const totalLabel = execution.result.totalKind === 'successes' || execution.result.successMode ? 'Succès' : 'Total';
+    const notes = [];
     if (execution.result.criticalFailure) {
-        lines.push('critical failure');
+        notes.push('💥 échec critique');
     }
     if (execution.result.randomSource === 'crypto') {
-        lines.push('fallback random source: crypto');
+        notes.push('🛟 source aléatoire de secours: crypto');
     }
-    lines.push(`total: ${execution.result.total}`);
-    return lines.join('\n');
+    if (compact) {
+        return [
+            `\`${formatFormulaHeader(execution)}\``,
+            groups.join(' · '),
+            `🏁 **${execution.result.total}**`,
+            ...(notes.length > 0 ? [notes.join(' · ')] : []),
+        ].join('\n');
+    }
+    return [
+        `\`${formatFormulaHeader(execution)}\``,
+        groups.join('\n'),
+        `🏁 **${totalLabel}: ${execution.result.total}**`,
+        ...(notes.length > 0 ? [notes.join('\n')] : []),
+    ].join('\n\n');
 }
 function buildFieldName(batch, execution, index) {
+    if (batch.executions.length === 1) {
+        return execution.formula;
+    }
     if (batch.request.repeatCount <= 1) {
         return `${index + 1}. ${execution.formula}`;
     }
@@ -75,14 +135,32 @@ export function buildRollEmbed(batch, title, requestedBy) {
         .setTitle(title)
         .setDescription([
         `Input: ${batch.input}`,
-        `Parsed: ${describeFormula(batch.request.formulas[0]?.tokens ?? [])}${batch.request.formulas.length > 1 ? ` + ${batch.request.formulas.length - 1} other formula(s)` : ''}`,
         `Mode: ${renderMode(batch.mode)}`,
+        batch.request.repeatCount > 1 ? `Repeats: ${batch.request.repeatCount}` : null,
     ].join('\n'))
         .addFields(batch.executions.map((execution, index) => ({
         name: buildFieldName(batch, execution, index),
-        value: formatExecution(execution),
+        value: `\`\`\`md\n${formatExecution(execution)}\n\`\`\``,
     })))
         .setFooter({ text: `Demandé par ${requestedBy}` })
         .setTimestamp(new Date());
     return embed;
+}
+export function buildRollMessage(batch, title, requestedBy) {
+    const useInlineResults = batch.executions.length > 1 && batch.executions.length <= 4;
+    const embed = new EmbedBuilder()
+        .setTitle(title)
+        .setFooter({ text: `Demandé par ${requestedBy}` })
+        .setTimestamp(new Date());
+    if (batch.request.repeatCount > 1) {
+        embed.setDescription(`**Répétitions**: ${batch.request.repeatCount}`);
+    }
+    embed.addFields(batch.executions.map((execution, index) => ({
+        name: buildFieldName(batch, execution, index),
+        value: formatExecution(execution, useInlineResults),
+        inline: useInlineResults,
+    })));
+    return {
+        embeds: [embed],
+    };
 }

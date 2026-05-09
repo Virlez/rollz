@@ -4,8 +4,8 @@ async function main() {
     const config = loadConfig();
     await registerCommands(config);
     console.log(config.guildId
-        ? `Slash commands registered for guild ${config.guildId}.`
-        : 'Global slash commands registered.');
+        ? `Commandes slash enregistrées pour le serveur ${config.guildId}.`
+        : 'Commandes slash globales enregistrées.');
 }
 main().catch(error => {
     console.error(error);

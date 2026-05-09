@@ -9,7 +9,11 @@ export const rollCommand = new SlashCommandBuilder()
     .addStringOption(option => option
     .setName('mode')
     .setDescription('Mode de lancer')
-    .addChoices({ name: 'normal', value: 'normal' }, { name: 'advantage', value: 'advantage' }, { name: 'disadvantage', value: 'disadvantage' }, { name: 'success', value: 'success' }));
+    .addChoices({ name: 'normal', value: 'normal' }, { name: 'advantage', value: 'advantage' }, { name: 'disadvantage', value: 'disadvantage' }, { name: 'success', value: 'success' }))
+    .addStringOption(option => option
+    .setName('visibility')
+    .setDescription('Visibilité du résultat')
+    .addChoices({ name: 'public', value: 'public' }, { name: 'privé', value: 'private' }));
 export const favoriteCommand = new SlashCommandBuilder()
     .setName('favorite')
     .setDescription('Gère les favoris Rollz')
@@ -25,14 +29,18 @@ export const favoriteCommand = new SlashCommandBuilder()
     .addSubcommand(subcommand => subcommand
     .setName('remove')
     .setDescription('Supprime un favori')
-    .addStringOption(option => option.setName('name').setDescription('Nom du favori').setRequired(true)))
+    .addStringOption(option => option.setName('name').setDescription('Nom du favori').setRequired(true).setAutocomplete(true)))
     .addSubcommand(subcommand => subcommand
     .setName('list')
     .setDescription('Liste les favoris du serveur'))
     .addSubcommand(subcommand => subcommand
     .setName('roll')
     .setDescription('Relance un favori')
-    .addStringOption(option => option.setName('name').setDescription('Nom du favori').setRequired(true)));
+    .addStringOption(option => option.setName('name').setDescription('Nom du favori').setRequired(true).setAutocomplete(true))
+    .addStringOption(option => option
+    .setName('visibility')
+    .setDescription('Visibilité du résultat')
+    .addChoices({ name: 'public', value: 'public' }, { name: 'privé', value: 'private' })));
 export const statusCommand = new SlashCommandBuilder()
     .setName('rollz')
     .setDescription('Diagnostic du bot Rollz')
