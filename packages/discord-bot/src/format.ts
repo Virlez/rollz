@@ -80,7 +80,9 @@ function formatDieToken(token: Extract<Token, { type: 'dice' }>, detail: TokenRe
 }
 
 function formatModifierToken(token: Extract<Token, { type: 'modifier' }>): string {
-  return `➕ **${token.value >= 0 ? `+${token.value}` : token.value}**`;
+  return token.value >= 0
+    ? `➕ **${token.value}**`
+    : `➖ **${Math.abs(token.value)}**`;
 }
 
 

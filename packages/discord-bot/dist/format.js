@@ -83,7 +83,9 @@ function formatDieToken(token, detail, successMode, execution) {
     return `🎲 **${token.raw}**\n${pieces.join(' • ')}\nΣ **${suffix}**`;
 }
 function formatModifierToken(token) {
-    return `➕ **${token.value >= 0 ? `+${token.value}` : token.value}**`;
+    return token.value >= 0
+        ? `➕ **${token.value}**`
+        : `➖ **${Math.abs(token.value)}**`;
 }
 function formatExecution(execution, compact = false) {
     const groups = execution.result.tokens.flatMap((token, index) => {
