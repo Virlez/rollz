@@ -1,0 +1,41 @@
+import { resolveLimits } from '@rollz/core';
+function requireEnv(name) {
+    const value = process.env[name]?.trim();
+    if (!value) {
+        throw new Error(`Missing required environment variable: ${name}`);
+    }
+    return value;
+}
+function parsePublishMode(value) {
+    if (value === 'dedicated' || value === 'both')
+        return value;
+    return 'invocation';
+}
+function parseNumber(name, fallback) {
+    const raw = process.env[name];
+    if (!raw)
+        return fallback;
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+export function loadConfig() {
+    const publishMode = parsePublishMode(process.env.ROLLZ_PUBLISH_MODE);
+    const dedicatedChannelId = process.env.ROLLZ_DEDICATED_CHANNEL_ID?.trim();
+    if ((publishMode === 'dedicated' || publishMode === 'both') && !dedicatedChannelId) {
+        throw new Error('ROLLZ_DEDICATED_CHANNEL_ID is required when publish mode is dedicated or both.');
+    }
+    return {
+        token: requireEnv('DISCORD_TOKEN'),
+        applicationId: requireEnv('DISCORD_APPLICATION_ID'),
+        guildId: process.env.DISCORD_GUILD_ID?.trim() || undefined,
+        publishMode,
+        dedicatedChannelId,
+        favoritesFilePath: process.env.ROLLZ_FAVORITES_FILE?.trim() || '/data/favorites.db',
+        limits: resolveLimits({
+            maxRepeatCount: parseNumber('ROLLZ_MAX_REPEAT_COUNT', 20),
+            maxFormulasPerRequest: parseNumber('ROLLZ_MAX_FORMULAS_PER_REQUEST', 10),
+            maxDicePerFormula: parseNumber('ROLLZ_MAX_DICE_PER_FORMULA', 100),
+            maxInputLength: parseNumber('ROLLZ_MAX_INPUT_LENGTH', 500),
+        }),
+    };
+}

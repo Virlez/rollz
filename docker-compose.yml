@@ -1,0 +1,11 @@
+services:
+  rollz-discord-bot:
+    build:
+      context: .
+      dockerfile: packages/discord-bot/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./data:/data
+    restart: unless-stopped

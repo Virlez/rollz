@@ -3,10 +3,17 @@
   "version": "1.0.0",
   "description": "[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-222?style=for-the-badge&logo=githubpages&logoColor=white)](https://virlez.github.io/rollz/) [![random.org](https://img.shields.io/badge/random.org-True%20Random-0b7fab?style=for-the-badge)](https://www.random.org/) [![Vanilla JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-f7df1e?style=for-the-badge&logo=javascript&logoColor=111)](https://developer.mozilla.org/en-US/docs/Web/JavaScript) [![Language](https://img.shields.io/badge/Language-4a4a4a?style=for-the-badge)](#francais)[![FR](https://img.shields.io/badge/FR-6b46c1?style=for-the-badge)](#francais)[![EN](https://img.shields.io/badge/EN-6b46c1?style=for-the-badge)](#english)",
   "main": "index.js",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "assets:pwa": "powershell -ExecutionPolicy Bypass -File .\\scripts\\generate-pwa-assets.ps1",
     "version:app": "node scripts/bump-app-version.mjs",
     "test": "npm run test:e2e:all",
+    "test:core": "npm run test --workspace @rollz/core",
+    "build:bot": "npm run build --workspace @rollz/core && npm run build --workspace @rollz/discord-bot",
+    "bot:dev": "npm run dev --workspace @rollz/discord-bot",
+    "bot:register": "npm run register --workspace @rollz/discord-bot",
     "test:e2e:all": "playwright test -c tests/playwright.config.ts",
     "test:e2e:coverage": "node scripts/run-e2e-coverage.mjs",
     "test:ui": "playwright test -c tests/playwright.config.ts --ui",

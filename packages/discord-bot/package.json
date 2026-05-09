@@ -1,0 +1,21 @@
+{
+  "name": "@rollz/discord-bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "register": "tsx src/register-cli.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@rollz/core": "0.1.0",
+    "discord.js": "^14.23.2",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6"
+  }
+}
