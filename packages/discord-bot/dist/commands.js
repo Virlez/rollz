@@ -69,4 +69,7 @@ export const statusCommand = new SlashCommandBuilder()
     .addSubcommand(subcommand => subcommand
     .setName('clear-mode')
     .setDescription('Réutilise le mode de publication global pour ce serveur'));
-export const commandDefinitions = [rollCommand, favoriteCommand, statusCommand];
+export const helpCommand = new SlashCommandBuilder()
+    .setName('help')
+    .setDescription('Affiche l’aide du bot Rollz');
+export const commandDefinitions = [rollCommand, favoriteCommand, statusCommand, helpCommand];

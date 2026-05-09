@@ -2,7 +2,7 @@ import { Client, GatewayIntentBits } from 'discord.js';
 import { loadConfig } from './config.js';
 import { FavoritesStore } from './favorites-store.js';
 import { GuildConfigStore } from './guild-config-store.js';
-import { handleFavoriteAutocomplete, handleFavoriteCommand, handleRollCommand, handleStatusCommand } from './handlers.js';
+import { handleFavoriteAutocomplete, handleFavoriteCommand, handleHelpCommand, handleRollCommand, handleStatusCommand } from './handlers.js';
 async function main() {
     const config = loadConfig();
     const favoritesStore = new FavoritesStore(config.favoritesFilePath);
@@ -24,6 +24,10 @@ async function main() {
         }
         if (interaction.commandName === 'favorite') {
             await handleFavoriteCommand(interaction, config, favoritesStore, guildConfigStore);
+            return;
+        }
+        if (interaction.commandName === 'help') {
+            await handleHelpCommand(interaction);
             return;
         }
         if (interaction.commandName === 'rollz') {

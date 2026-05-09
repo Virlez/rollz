@@ -31,6 +31,47 @@ function buildFavoritesEmbed(items) {
         : 'Aucun favori enregistré pour cet utilisateur.')
         .setTimestamp(new Date());
 }
+function buildHelpEmbed(isAdministrator) {
+    const embed = new EmbedBuilder()
+        .setTitle('Aide Rollz')
+        .setDescription('Commandes disponibles pour lancer des jets, gerer des favoris et comprendre la publication des resultats.')
+        .addFields({
+        name: '/roll',
+        value: [
+            'Lance une formule Rollz.',
+            'Usage: /roll formula:<formule> [mode] [visibility]',
+            'Exemples: /roll formula:1d20+7 ; /roll formula:4d6R1>=4 mode:success visibility:prive',
+        ].join('\n'),
+    }, {
+        name: '/favorite',
+        value: [
+            'Gere tes favoris personnels.',
+            'Usage: /favorite add name:<nom> formula:<formule> [mode]',
+            'Autres sous-commandes: list, remove, roll',
+            'Exemple: /favorite roll name:attaque visibility:prive',
+        ].join('\n'),
+    }, {
+        name: 'Publication',
+        value: [
+            'visibility:public suit le mode de publication du serveur.',
+            'visibility:prive envoie toujours une reponse ephemere visible seulement par toi.',
+        ].join('\n'),
+    })
+        .setTimestamp(new Date());
+    if (isAdministrator) {
+        embed.addFields({
+            name: 'Commandes admin',
+            value: [
+                '/rollz status',
+                '/rollz set-channel channel:<salon>',
+                '/rollz clear-channel',
+                '/rollz set-mode mode:<invocation|dedicated|both>',
+                '/rollz clear-mode',
+            ].join('\n'),
+        });
+    }
+    return embed;
+}
 function buildStatusEmbed(input) {
     const uptime = input.readyTimestamp ? `${Math.max(0, Math.round((Date.now() - input.readyTimestamp) / 1000))}s` : 'inconnu';
     return new EmbedBuilder()
@@ -188,6 +229,10 @@ export async function handleFavoriteAutocomplete(interaction, favoritesStore) {
         name: favorite.name,
         value: favorite.name,
     })));
+}
+export async function handleHelpCommand(interaction) {
+    const embed = buildHelpEmbed(isAdmin(interaction));
+    await interaction.reply({ embeds: [embed], ephemeral: true });
 }
 export async function handleRollCommand(interaction, config, guildConfigStore) {
     const formula = interaction.options.getString('formula', true);
