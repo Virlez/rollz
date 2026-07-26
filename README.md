@@ -6,7 +6,7 @@
 
 ## English
 
-Rollz is a dark-fantasy TTRPG dice roller built with plain HTML, CSS, and JavaScript. It uses `random.org` when available and falls back to `crypto` when needed.
+Rollz is a TTRPG dice roller built with plain HTML, CSS, and JavaScript. It uses `random.org` when available and falls back to `crypto` when needed.
 
 Detailed guides:
 
