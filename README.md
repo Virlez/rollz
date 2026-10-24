@@ -8,6 +8,10 @@
 
 Rollz is a TTRPG dice roller built with plain HTML, CSS, and JavaScript. It uses `random.org` when available and falls back to `crypto` when needed.
 
+### Why Rollz?
+
+Rollz grew out of a question about the source of randomness in digital dice rollers. I wanted to use a physical source of entropy through RANDOM.ORG rather than rely solely on a local pseudorandom generator. When the service is unavailable, a cryptographic generator keeps the dice roller usable.
+
 Detailed guides:
 
 - English: [docs/WIKI_USER_GUIDE.md](docs/WIKI_USER_GUIDE.md)
@@ -103,6 +107,10 @@ This repository is distributed under the custom license in [LICENSE](LICENSE).
 ## Français
 
 Rollz est un lanceur de dés JDR/TTRPG dark fantasy conçu en HTML, CSS et JavaScript vanilla. Il utilise `random.org` quand disponible et bascule sur `crypto` si nécessaire.
+
+### Pourquoi Rollz ?
+
+Rollz est né d’une interrogation sur la source de l’aléatoire dans les lanceurs de dés numériques. Je souhaitais utiliser une source physique d’entropie via RANDOM.ORG plutôt que dépendre uniquement d’un générateur pseudo-aléatoire local. Lorsque le service est indisponible, un générateur cryptographique permet de continuer à jouer.
 
 Guides détaillés :
 
