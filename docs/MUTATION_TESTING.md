@@ -27,9 +27,23 @@ Rapports générés, exclus de Git :
 - `reports/mutation/mutation.json` : résultats complets exploitables par outil.
 
 La CI `.github/workflows/test.yml` vérifie les types, les tests unitaires et le
-build du bot avant la campagne de mutation. Les rapports sont conservés comme
-artefacts pendant 14 jours, y compris si le seuil échoue. Aucun service externe
-ni secret n'est nécessaire aux tests unitaires.
+build du bot, puis lance les E2E et les mutations dans des jobs séparés en parallèle.
+
+| Déclenchement | Tests unitaires, types et build | E2E | Mutations |
+| --- | --- | --- | --- |
+| Pull request | Oui | Chromium | Oui, seuil bloquant de 90 % |
+| Push sur `main` | Oui | Chromium, Firefox et WebKit | Oui, seuil bloquant de 90 % |
+| Lancement manuel | Oui | Chromium, Firefox et WebKit | Oui, seuil bloquant de 90 % |
+
+Aucune exécution planifiée ou nocturne n'est configurée. Chaque job E2E installe
+uniquement son navigateur et les dépendances système nécessaires, avec
+`playwright install --with-deps`. La configuration Playwright démarre le serveur
+HTTP local ; aucun site déployé n'est nécessaire. Un échec sur un navigateur
+n'annule pas les autres navigateurs.
+
+Les rapports HTML E2E et mutation ainsi que les traces Playwright disponibles
+sont conservés comme artefacts pendant 14 jours, même en cas d'échec. Aucun
+service externe ni secret n'est nécessaire aux tests unitaires.
 
 ## Périmètre et méthode
 
