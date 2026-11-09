@@ -37,7 +37,9 @@ build du bot, puis lance les E2E et les mutations dans des jobs séparés en par
 
 Aucune exécution planifiée ou nocturne n'est configurée. Chaque job E2E installe
 uniquement son navigateur et les dépendances système nécessaires, avec
-`playwright install --with-deps`. La configuration Playwright démarre le serveur
+`playwright install --with-deps`. Les jobs E2E utilisent explicitement
+`ubuntu-24.04`, compatible avec Playwright 1.59.1 : `ubuntu-latest` peut changer
+vers une version non prise en charge (échec observé sur Ubuntu 26.04). La configuration Playwright démarre le serveur
 HTTP local ; aucun site déployé n'est nécessaire. Un échec sur un navigateur
 n'annule pas les autres navigateurs.
 

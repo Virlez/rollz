@@ -53,7 +53,8 @@ jobs:
   e2e:
     name: E2E (${{ matrix.browser }})
     needs: unit
-    runs-on: ubuntu-latest
+    # Playwright 1.59.1 supports Ubuntu 24.04; latest can select unsupported releases.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
