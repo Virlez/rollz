@@ -1,0 +1,1768 @@
+{
+  "date": "2026-11-09",
+  "baseCommit": "126f8509dc78065ac365e0592d460dc4b8bed190",
+  "node": "24.22.1",
+  "stryker": "10.1.1",
+  "vitest": "5.1.0",
+  "testCounts": {
+    "baseline": 4,
+    "intermediate": 119,
+    "final": 141,
+    "pyramid": 157
+  },
+  "campaigns": {
+    "baseline": {
+      "total": 1522,
+      "counts": {
+        "Killed": 265,
+        "NoCoverage": 1037,
+        "Survived": 220
+      },
+      "score": 17.41,
+      "files": {
+        "app/js/engine.js": {
+          "NoCoverage": 345
+        },
+        "app/js/parser.js": {
+          "NoCoverage": 342
+        },
+        "app/js/random.js": {
+          "NoCoverage": 66
+        },
+        "packages/core/src/engine.ts": {
+          "Killed": 131,
+          "NoCoverage": 130,
+          "Survived": 84
+        },
+        "packages/core/src/limits.ts": {
+          "Killed": 19,
+          "NoCoverage": 10,
+          "Survived": 16
+        },
+        "packages/core/src/parser.ts": {
+          "Killed": 115,
+          "NoCoverage": 76,
+          "Survived": 120
+        },
+        "packages/core/src/random.ts": {
+          "NoCoverage": 57
+        },
+        "packages/core/src/roll-service.ts": {
+          "NoCoverage": 11
+        }
+      },
+      "reportSha256": "ddc828de330b43060d70900fb3e23e7753bd53a705fb192b442e2e031a4b5768"
+    },
+    "intermediate": {
+      "total": 1522,
+      "counts": {
+        "Killed": 1369,
+        "NoCoverage": 4,
+        "Survived": 142,
+        "Timeout": 7
+      },
+      "score": 90.41,
+      "files": {
+        "app/js/parser.js": {
+          "Killed": 296,
+          "NoCoverage": 2,
+          "Survived": 44
+        },
+        "packages/core/src/parser.ts": {
+          "Killed": 266,
+          "NoCoverage": 2,
+          "Survived": 43
+        },
+        "app/js/engine.js": {
+          "Killed": 318,
+          "Survived": 27
+        },
+        "app/js/random.js": {
+          "Killed": 62,
+          "Survived": 1,
+          "Timeout": 3
+        },
+        "packages/core/src/engine.ts": {
+          "Killed": 319,
+          "Survived": 26
+        },
+        "packages/core/src/limits.ts": {
+          "Killed": 45
+        },
+        "packages/core/src/random.ts": {
+          "Killed": 53,
+          "Survived": 1,
+          "Timeout": 3
+        },
+        "packages/core/src/roll-service.ts": {
+          "Killed": 10,
+          "Timeout": 1
+        }
+      },
+      "reportSha256": "340520f7d8710b2f3d30fd2d4c734826a3af49d207d5eda7d1a137b654387cc4"
+    },
+    "final": {
+      "total": 1522,
+      "counts": {
+        "Killed": 1423,
+        "NoCoverage": 2,
+        "Survived": 90,
+        "Timeout": 7
+      },
+      "score": 93.96,
+      "files": {
+        "app/js/parser.js": {
+          "Killed": 322,
+          "NoCoverage": 1,
+          "Survived": 19
+        },
+        "packages/core/src/parser.ts": {
+          "Killed": 291,
+          "NoCoverage": 1,
+          "Survived": 19
+        },
+        "app/js/engine.js": {
+          "Killed": 320,
+          "Survived": 25
+        },
+        "app/js/random.js": {
+          "Killed": 62,
+          "Survived": 1,
+          "Timeout": 3
+        },
+        "packages/core/src/engine.ts": {
+          "Killed": 320,
+          "Survived": 25
+        },
+        "packages/core/src/limits.ts": {
+          "Killed": 45
+        },
+        "packages/core/src/random.ts": {
+          "Killed": 53,
+          "Survived": 1,
+          "Timeout": 3
+        },
+        "packages/core/src/roll-service.ts": {
+          "Killed": 10,
+          "Timeout": 1
+        }
+      },
+      "reportSha256": "a6d4d33966408ae5ec8c4e07a2da5da2248ead7d3d16445ac213bb281adb779c"
+    },
+    "pyramid": {
+      "total": 1522,
+      "counts": {
+        "Killed": 1423,
+        "NoCoverage": 2,
+        "Survived": 90,
+        "Timeout": 7
+      },
+      "score": 93.96,
+      "files": {
+        "app/js/parser.js": {
+          "Killed": 322,
+          "NoCoverage": 1,
+          "Survived": 19
+        },
+        "packages/core/src/parser.ts": {
+          "Killed": 291,
+          "NoCoverage": 1,
+          "Survived": 19
+        },
+        "app/js/engine.js": {
+          "Killed": 320,
+          "Survived": 25
+        },
+        "app/js/random.js": {
+          "Killed": 62,
+          "Survived": 1,
+          "Timeout": 3
+        },
+        "packages/core/src/engine.ts": {
+          "Killed": 320,
+          "Survived": 25
+        },
+        "packages/core/src/limits.ts": {
+          "Killed": 45
+        },
+        "packages/core/src/random.ts": {
+          "Killed": 53,
+          "Survived": 1,
+          "Timeout": 3
+        },
+        "packages/core/src/roll-service.ts": {
+          "Killed": 10,
+          "Timeout": 1
+        }
+      },
+      "reportSha256": "95a6bf1cf874d5749b53ac6c410f806192c3de42a57bdeca6d3bf770032f6029"
+    }
+  },
+  "remainingMutants": [
+    {
+      "file": "app/js/parser.js",
+      "id": "504",
+      "status": "NoCoverage",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 41,
+          "line": 141
+        },
+        "start": {
+          "column": 39,
+          "line": 141
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "377",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 14,
+          "line": 36
+        },
+        "start": {
+          "column": 7,
+          "line": 36
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "382",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 31,
+          "line": 45
+        },
+        "start": {
+          "column": 9,
+          "line": 45
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "397",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 24,
+          "line": 52
+        },
+        "start": {
+          "column": 16,
+          "line": 52
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "416",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 31,
+          "line": 62
+        },
+        "start": {
+          "column": 7,
+          "line": 62
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "454",
+      "status": "Survived",
+      "mutatorName": "Regex",
+      "location": {
+        "end": {
+          "column": 37,
+          "line": 111
+        },
+        "start": {
+          "column": 31,
+          "line": 111
+        }
+      },
+      "replacement": "/\\s/g"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "459",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 11,
+          "line": 112
+        },
+        "start": {
+          "column": 7,
+          "line": 112
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "498",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 38,
+          "line": 139
+        },
+        "start": {
+          "column": 16,
+          "line": 139
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "503",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 30,
+          "line": 141
+        },
+        "start": {
+          "column": 11,
+          "line": 141
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "527",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 54,
+          "line": 162
+        },
+        "start": {
+          "column": 7,
+          "line": 162
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "528",
+      "status": "Survived",
+      "mutatorName": "LogicalOperator",
+      "location": {
+        "end": {
+          "column": 54,
+          "line": 162
+        },
+        "start": {
+          "column": 7,
+          "line": 162
+        }
+      },
+      "replacement": "parts.length === 0 && parts.some(part => !part)"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "529",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 25,
+          "line": 162
+        },
+        "start": {
+          "column": 7,
+          "line": 162
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "531",
+      "status": "Survived",
+      "mutatorName": "MethodExpression",
+      "location": {
+        "end": {
+          "column": 54,
+          "line": 162
+        },
+        "start": {
+          "column": 29,
+          "line": 162
+        }
+      },
+      "replacement": "parts.every(part => !part)"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "532",
+      "status": "Survived",
+      "mutatorName": "ArrowFunction",
+      "location": {
+        "end": {
+          "column": 53,
+          "line": 162
+        },
+        "start": {
+          "column": 40,
+          "line": 162
+        }
+      },
+      "replacement": "() => undefined"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "551",
+      "status": "Survived",
+      "mutatorName": "StringLiteral",
+      "location": {
+        "end": {
+          "column": 66,
+          "line": 175
+        },
+        "start": {
+          "column": 64,
+          "line": 175
+        }
+      },
+      "replacement": "\"Stryker was here!\""
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "554",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 11,
+          "line": 176
+        },
+        "start": {
+          "column": 7,
+          "line": 176
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "565",
+      "status": "Survived",
+      "mutatorName": "MethodExpression",
+      "location": {
+        "end": {
+          "column": 41,
+          "line": 185
+        },
+        "start": {
+          "column": 20,
+          "line": 185
+        }
+      },
+      "replacement": "repeatMatch[2]"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "568",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 22,
+          "line": 186
+        },
+        "start": {
+          "column": 9,
+          "line": 186
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "593",
+      "status": "Survived",
+      "mutatorName": "MethodExpression",
+      "location": {
+        "end": {
+          "column": 103,
+          "line": 242
+        },
+        "start": {
+          "column": 25,
+          "line": 242
+        }
+      },
+      "replacement": "formulas.flatMap(entry => entry.tokens)"
+    },
+    {
+      "file": "app/js/parser.js",
+      "id": "596",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 102,
+          "line": 242
+        },
+        "start": {
+          "column": 81,
+          "line": 242
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1324",
+      "status": "NoCoverage",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 41,
+          "line": 86
+        },
+        "start": {
+          "column": 39,
+          "line": 86
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1197",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 14,
+          "line": 8
+        },
+        "start": {
+          "column": 7,
+          "line": 8
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1202",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 31,
+          "line": 16
+        },
+        "start": {
+          "column": 9,
+          "line": 16
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1217",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 24,
+          "line": 23
+        },
+        "start": {
+          "column": 16,
+          "line": 23
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1236",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 31,
+          "line": 33
+        },
+        "start": {
+          "column": 7,
+          "line": 33
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1274",
+      "status": "Survived",
+      "mutatorName": "Regex",
+      "location": {
+        "end": {
+          "column": 37,
+          "line": 56
+        },
+        "start": {
+          "column": 31,
+          "line": 56
+        }
+      },
+      "replacement": "/\\s/g"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1279",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 11,
+          "line": 57
+        },
+        "start": {
+          "column": 7,
+          "line": 57
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1318",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 38,
+          "line": 84
+        },
+        "start": {
+          "column": 16,
+          "line": 84
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1323",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 30,
+          "line": 86
+        },
+        "start": {
+          "column": 11,
+          "line": 86
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1347",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 54,
+          "line": 103
+        },
+        "start": {
+          "column": 7,
+          "line": 103
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1348",
+      "status": "Survived",
+      "mutatorName": "LogicalOperator",
+      "location": {
+        "end": {
+          "column": 54,
+          "line": 103
+        },
+        "start": {
+          "column": 7,
+          "line": 103
+        }
+      },
+      "replacement": "parts.length === 0 && parts.some(part => !part)"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1349",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 25,
+          "line": 103
+        },
+        "start": {
+          "column": 7,
+          "line": 103
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1351",
+      "status": "Survived",
+      "mutatorName": "MethodExpression",
+      "location": {
+        "end": {
+          "column": 54,
+          "line": 103
+        },
+        "start": {
+          "column": 29,
+          "line": 103
+        }
+      },
+      "replacement": "parts.every(part => !part)"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1352",
+      "status": "Survived",
+      "mutatorName": "ArrowFunction",
+      "location": {
+        "end": {
+          "column": 53,
+          "line": 103
+        },
+        "start": {
+          "column": 40,
+          "line": 103
+        }
+      },
+      "replacement": "() => undefined"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1371",
+      "status": "Survived",
+      "mutatorName": "StringLiteral",
+      "location": {
+        "end": {
+          "column": 66,
+          "line": 112
+        },
+        "start": {
+          "column": 64,
+          "line": 112
+        }
+      },
+      "replacement": "\"Stryker was here!\""
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1374",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 11,
+          "line": 113
+        },
+        "start": {
+          "column": 7,
+          "line": 113
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1385",
+      "status": "Survived",
+      "mutatorName": "MethodExpression",
+      "location": {
+        "end": {
+          "column": 41,
+          "line": 122
+        },
+        "start": {
+          "column": 20,
+          "line": 122
+        }
+      },
+      "replacement": "repeatMatch[2]"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1388",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 22,
+          "line": 123
+        },
+        "start": {
+          "column": 9,
+          "line": 123
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1413",
+      "status": "Survived",
+      "mutatorName": "MethodExpression",
+      "location": {
+        "end": {
+          "column": 148,
+          "line": 153
+        },
+        "start": {
+          "column": 25,
+          "line": 153
+        }
+      },
+      "replacement": "formulas.flatMap(entry => entry.tokens)"
+    },
+    {
+      "file": "packages/core/src/parser.ts",
+      "id": "1416",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 147,
+          "line": 153
+        },
+        "start": {
+          "column": 126,
+          "line": 153
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "8",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 51,
+          "line": 56
+        },
+        "start": {
+          "column": 30,
+          "line": 56
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "10",
+      "status": "Survived",
+      "mutatorName": "StringLiteral",
+      "location": {
+        "end": {
+          "column": 51,
+          "line": 56
+        },
+        "start": {
+          "column": 45,
+          "line": 56
+        }
+      },
+      "replacement": "\"\""
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "12",
+      "status": "Survived",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 23,
+          "line": 58
+        },
+        "start": {
+          "column": 21,
+          "line": 58
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "11",
+      "status": "Survived",
+      "mutatorName": "ObjectLiteral",
+      "location": {
+        "end": {
+          "column": 8,
+          "line": 66
+        },
+        "start": {
+          "column": 7,
+          "line": 57
+        }
+      },
+      "replacement": "{}"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "14",
+      "status": "Survived",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 23,
+          "line": 60
+        },
+        "start": {
+          "column": 21,
+          "line": 60
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "13",
+      "status": "Survived",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 26,
+          "line": 59
+        },
+        "start": {
+          "column": 24,
+          "line": 59
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "15",
+      "status": "Survived",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 27,
+          "line": 61
+        },
+        "start": {
+          "column": 25,
+          "line": 61
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "16",
+      "status": "Survived",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 23,
+          "line": 63
+        },
+        "start": {
+          "column": 21,
+          "line": 63
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "17",
+      "status": "Survived",
+      "mutatorName": "BooleanLiteral",
+      "location": {
+        "end": {
+          "column": 23,
+          "line": 64
+        },
+        "start": {
+          "column": 18,
+          "line": 64
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "24",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 52,
+          "line": 75
+        },
+        "start": {
+          "column": 31,
+          "line": 75
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "43",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 31,
+          "line": 84
+        },
+        "start": {
+          "column": 10,
+          "line": 84
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "44",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 31,
+          "line": 84
+        },
+        "start": {
+          "column": 10,
+          "line": 84
+        }
+      },
+      "replacement": "diceTokens.length >= 0"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "64",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 86,
+          "line": 105
+        },
+        "start": {
+          "column": 51,
+          "line": 105
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "96",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 43,
+          "line": 123
+        },
+        "start": {
+          "column": 28,
+          "line": 123
+        }
+      },
+      "replacement": "token.count <= 0"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "142",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 47,
+          "line": 172
+        },
+        "start": {
+          "column": 28,
+          "line": 172
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "150",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 58,
+          "line": 174
+        },
+        "start": {
+          "column": 28,
+          "line": 174
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "167",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 45,
+          "line": 189
+        },
+        "start": {
+          "column": 29,
+          "line": 189
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "168",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 45,
+          "line": 189
+        },
+        "start": {
+          "column": 29,
+          "line": 189
+        }
+      },
+      "replacement": "drawn.length >= 0"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "179",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 37,
+          "line": 190
+        },
+        "start": {
+          "column": 21,
+          "line": 190
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "180",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 37,
+          "line": 190
+        },
+        "start": {
+          "column": 21,
+          "line": 190
+        }
+      },
+      "replacement": "drawn.length >= 0"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "213",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 60,
+          "line": 198
+        },
+        "start": {
+          "column": 36,
+          "line": 198
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "312",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 36,
+          "line": 302
+        },
+        "start": {
+          "column": 21,
+          "line": 302
+        }
+      },
+      "replacement": "token.count <= 0"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "319",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 33,
+          "line": 309
+        },
+        "start": {
+          "column": 18,
+          "line": 309
+        }
+      },
+      "replacement": "token.count <= 0"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "334",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 36,
+          "line": 322
+        },
+        "start": {
+          "column": 21,
+          "line": 322
+        }
+      },
+      "replacement": "token.count <= 0"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "340",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 33,
+          "line": 324
+        },
+        "start": {
+          "column": 18,
+          "line": 324
+        }
+      },
+      "replacement": "token.count <= 0"
+    },
+    {
+      "file": "app/js/random.js",
+      "id": "747",
+      "status": "Survived",
+      "mutatorName": "ArithmeticOperator",
+      "location": {
+        "end": {
+          "column": 68,
+          "line": 45
+        },
+        "start": {
+          "column": 47,
+          "line": 45
+        }
+      },
+      "replacement": "count + values.length"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "777",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 51,
+          "line": 12
+        },
+        "start": {
+          "column": 30,
+          "line": 12
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "779",
+      "status": "Survived",
+      "mutatorName": "StringLiteral",
+      "location": {
+        "end": {
+          "column": 51,
+          "line": 12
+        },
+        "start": {
+          "column": 45,
+          "line": 12
+        }
+      },
+      "replacement": "\"\""
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "780",
+      "status": "Survived",
+      "mutatorName": "ObjectLiteral",
+      "location": {
+        "end": {
+          "column": 8,
+          "line": 22
+        },
+        "start": {
+          "column": 7,
+          "line": 13
+        }
+      },
+      "replacement": "{}"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "781",
+      "status": "Survived",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 23,
+          "line": 14
+        },
+        "start": {
+          "column": 21,
+          "line": 14
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "782",
+      "status": "Survived",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 26,
+          "line": 15
+        },
+        "start": {
+          "column": 24,
+          "line": 15
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "783",
+      "status": "Survived",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 23,
+          "line": 16
+        },
+        "start": {
+          "column": 21,
+          "line": 16
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "784",
+      "status": "Survived",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 27,
+          "line": 17
+        },
+        "start": {
+          "column": 25,
+          "line": 17
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "785",
+      "status": "Survived",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 23,
+          "line": 19
+        },
+        "start": {
+          "column": 21,
+          "line": 19
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "786",
+      "status": "Survived",
+      "mutatorName": "BooleanLiteral",
+      "location": {
+        "end": {
+          "column": 23,
+          "line": 20
+        },
+        "start": {
+          "column": 18,
+          "line": 20
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "793",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 52,
+          "line": 27
+        },
+        "start": {
+          "column": 31,
+          "line": 27
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "812",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 31,
+          "line": 32
+        },
+        "start": {
+          "column": 10,
+          "line": 32
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "813",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 31,
+          "line": 32
+        },
+        "start": {
+          "column": 10,
+          "line": 32
+        }
+      },
+      "replacement": "diceTokens.length >= 0"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "833",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 86,
+          "line": 48
+        },
+        "start": {
+          "column": 51,
+          "line": 48
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "865",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 43,
+          "line": 67
+        },
+        "start": {
+          "column": 28,
+          "line": 67
+        }
+      },
+      "replacement": "token.count <= 0"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "911",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 47,
+          "line": 114
+        },
+        "start": {
+          "column": 28,
+          "line": 114
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "919",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 58,
+          "line": 116
+        },
+        "start": {
+          "column": 28,
+          "line": 116
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "936",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 45,
+          "line": 131
+        },
+        "start": {
+          "column": 29,
+          "line": 131
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "937",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 45,
+          "line": 131
+        },
+        "start": {
+          "column": 29,
+          "line": 131
+        }
+      },
+      "replacement": "drawn.length >= 0"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "949",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 37,
+          "line": 132
+        },
+        "start": {
+          "column": 21,
+          "line": 132
+        }
+      },
+      "replacement": "drawn.length >= 0"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "948",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 37,
+          "line": 132
+        },
+        "start": {
+          "column": 21,
+          "line": 132
+        }
+      },
+      "replacement": "true"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "982",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 60,
+          "line": 140
+        },
+        "start": {
+          "column": 36,
+          "line": 140
+        }
+      },
+      "replacement": "false"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "1081",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 36,
+          "line": 243
+        },
+        "start": {
+          "column": 21,
+          "line": 243
+        }
+      },
+      "replacement": "token.count <= 0"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "1088",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 33,
+          "line": 250
+        },
+        "start": {
+          "column": 18,
+          "line": 250
+        }
+      },
+      "replacement": "token.count <= 0"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "1103",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 36,
+          "line": 263
+        },
+        "start": {
+          "column": 21,
+          "line": 263
+        }
+      },
+      "replacement": "token.count <= 0"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "1109",
+      "status": "Survived",
+      "mutatorName": "EqualityOperator",
+      "location": {
+        "end": {
+          "column": 33,
+          "line": 265
+        },
+        "start": {
+          "column": 18,
+          "line": 265
+        }
+      },
+      "replacement": "token.count <= 0"
+    },
+    {
+      "file": "packages/core/src/random.ts",
+      "id": "1527",
+      "status": "Survived",
+      "mutatorName": "ArithmeticOperator",
+      "location": {
+        "end": {
+          "column": 68,
+          "line": 35
+        },
+        "start": {
+          "column": 47,
+          "line": 35
+        }
+      },
+      "replacement": "count + values.length"
+    }
+  ],
+  "remainingMutantsCampaign": "pyramid"
+}

@@ -13,9 +13,6 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "node --test --import tsx tests/**/*.test.ts"
-  },
-  "devDependencies": {
-    "tsx": "^4.20.6"
+    "test": "vitest run --config ../../vitest.config.mts packages/core/tests"
   }
 }

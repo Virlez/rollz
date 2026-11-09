@@ -36,36 +36,6 @@ test.describe('Roll action — normal mode', () => {
     await expect(app.resultTotal).toHaveText('5');
   });
 
-  test('adds modifier to dice result', async ({ page }) => {
-    await mockRandomOrg(page, [3]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.rollFormula('1d6 + 4');
-
-    await expect(app.resultTotal).toHaveText('7');
-  });
-
-  test('subtracts modifier from dice result', async ({ page }) => {
-    await mockRandomOrg(page, [15]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.rollFormula('1d20 - 5');
-
-    await expect(app.resultTotal).toHaveText('10');
-  });
-
-  test('sums multiple dice groups', async ({ page }) => {
-    await mockRandomOrg(page, [3, 4, 2]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.rollFormula('2d6 + 1d4');
-
-    await expect(app.resultTotal).toHaveText('9');
-  });
-
   test('result shows die values in breakdown chips', async ({ page }) => {
     await mockRandomOrg(page, [6]);
 
@@ -105,16 +75,6 @@ test.describe('Roll action — normal mode', () => {
     await app.pressEnterOnFormula();
 
     await expect(app.resultSection).toBeVisible();
-  });
-
-  test('negative modifier formula works', async ({ page }) => {
-    await mockRandomOrg(page, [4]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.rollFormula('1d4 - 3');
-
-    await expect(app.resultTotal).toHaveText('1');
   });
 
   test('semicolon-separated formulas render one result block per formula', async ({ page }) => {
@@ -239,21 +199,27 @@ test.describe('Roll action — normal mode', () => {
     await app.toggleExpertMode();
     await app.rollFormula('1d20 + 4;1d8 + 2;1d6 + 1');
 
-    const containerBox = await app.resultMulti.boundingBox();
-    const firstBox = await app.resultBlock(0).boundingBox();
-    const secondBox = await app.resultBlock(1).boundingBox();
-    const thirdBox = await app.resultBlock(2).boundingBox();
-
-    expect(containerBox).not.toBeNull();
-    expect(firstBox).not.toBeNull();
-    expect(secondBox).not.toBeNull();
-    expect(thirdBox).not.toBeNull();
-    expect(secondBox!.x).toBeGreaterThan(firstBox!.x + firstBox!.width / 2);
-    expect(thirdBox!.y).toBeGreaterThan(firstBox!.y + 8);
-
-    const containerCenter = containerBox!.x + (containerBox!.width / 2);
-    const thirdCenter = thirdBox!.x + (thirdBox!.width / 2);
-    expect(Math.abs(thirdCenter - containerCenter)).toBeLessThanOrEqual(8);
+    // Capture every rectangle in one browser task so the entrance animation
+    // cannot move the layout between measurements. Retry actual geometry.
+    await expect(async () => {
+      const { container, blocks } = await app.resultMulti.evaluate(element => {
+        const measure = (node: Element) => {
+          const { x, y, width } = node.getBoundingClientRect();
+          return { x, y, width };
+        };
+        return {
+          container: measure(element),
+          blocks: Array.from(element.querySelectorAll('.result-sub-block'), measure),
+        };
+      });
+      expect(blocks).toHaveLength(3);
+      const [first, second, third] = blocks;
+      expect(second.x).toBeGreaterThan(first.x + first.width / 2);
+      expect(third.y).toBeGreaterThan(first.y + 8);
+      const containerCenter = container.x + container.width / 2;
+      const thirdCenter = third.x + third.width / 2;
+      expect(Math.abs(thirdCenter - containerCenter)).toBeLessThanOrEqual(8);
+    }).toPass({ timeout: 5000 });
   });
 
   test('threshold syntax counts dice at or above the threshold', async ({ page }) => {
@@ -318,18 +284,6 @@ test.describe('Roll action — normal mode', () => {
 });
 
 test.describe('Roll action — advantage/disadvantage', () => {
-  test('advantage keeps the higher of two rolls for the first die', async ({ page }) => {
-    await mockRandomOrg(page, [8, 15]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.fillFormula('1d20');
-    await app.toggleMode('advantage');
-    await app.roll();
-
-    await expect(app.resultTotal).toHaveText('15');
-  });
-
   test('disadvantage keeps the lower of two rolls for the first die', async ({ page }) => {
     await mockRandomOrg(page, [12, 5]);
 
@@ -351,20 +305,10 @@ test.describe('Roll action — advantage/disadvantage', () => {
     await app.toggleMode('advantage');
     await app.roll();
 
+    await expect(app.resultTotal).toHaveText('17');
+
     await expect(page.locator('.is-kept')).toHaveCount(1);
     await expect(page.locator('.is-discarded')).toHaveCount(1);
-  });
-
-  test('advantage applies only to first die of multi-die roll', async ({ page }) => {
-    await mockRandomOrg(page, [2, 5, 4]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.fillFormula('2d6');
-    await app.toggleMode('advantage');
-    await app.roll();
-
-    await expect(app.resultTotal).toHaveText('9');
   });
 
   test('equal advantage rolls do not show discarded chip', async ({ page }) => {
@@ -396,42 +340,6 @@ test.describe('Roll action — advantage/disadvantage', () => {
 });
 
 test.describe('Roll action — success mode', () => {
-  test('counts even results as successes', async ({ page }) => {
-    await mockRandomOrg(page, [2, 4, 3]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.fillFormula('3d6');
-    await app.toggleMode('success');
-    await app.roll();
-
-    await expect(app.resultTotal).toHaveText('2');
-  });
-
-  test('adds modifier to success count', async ({ page }) => {
-    await mockRandomOrg(page, [4, 3]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.fillFormula('2d6 + 3');
-    await app.toggleMode('success');
-    await app.roll();
-
-    await expect(app.resultTotal).toHaveText('4');
-  });
-
-  test('critical failure (all odd) gives total 0', async ({ page }) => {
-    await mockRandomOrg(page, [1, 3]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.fillFormula('2d6');
-    await app.toggleMode('success');
-    await app.roll();
-
-    await expect(app.resultTotal).toHaveText('0');
-  });
-
   test('critical failure shows fumble note', async ({ page }) => {
     await setStoredLanguageOnInit(page, 'en');
     await mockRandomOrg(page, [1, 3]);
@@ -441,6 +349,8 @@ test.describe('Roll action — success mode', () => {
     await app.fillFormula('2d6');
     await app.toggleMode('success');
     await app.roll();
+
+    await expect(app.resultTotal).toHaveText('0');
 
     await expect(app.resultTotalNote).toContainText('Fumble');
   });
@@ -455,18 +365,7 @@ test.describe('Roll action — success mode', () => {
     await app.roll();
 
     await expect(app.resultTotal).toHaveText('2');
-  });
-
-  test('bonus reroll adds its even results', async ({ page }) => {
-    await mockRandomOrg(page, [2, 4, 6, 2]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.fillFormula('2d6');
-    await app.toggleMode('success');
-    await app.roll();
-
-    await expect(app.resultTotal).toHaveText('4');
+    await expect(app.resultBreakdown.locator('.breakdown-bonus .die-result')).toHaveText(['1', '5']);
   });
 
   test('even dice are styled is-success, odd dice is-failure', async ({ page }) => {
@@ -477,6 +376,8 @@ test.describe('Roll action — success mode', () => {
     await app.fillFormula('3d6');
     await app.toggleMode('success');
     await app.roll();
+
+    await expect(app.resultTotal).toHaveText('2');
 
     await expect(app.dieResults('.die-result.is-success')).toHaveCount(2);
     await expect(app.dieResults('.die-result.is-failure')).toHaveCount(1);

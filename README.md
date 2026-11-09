@@ -48,6 +48,11 @@ Useful examples:
 
 ### Testing
 
+Use Node.js 24 and `npm ci`. Unit and mutation testing: [guide and results](docs/MUTATION_TESTING.md).
+
+- `npm run test:unit`
+- `npm run test:mutation`
+- `npm run typecheck:unit`
 - `npm test`
 - `npm run test:ui`
 - `npm run typecheck:e2e`
@@ -148,6 +153,11 @@ Exemples utiles :
 
 ### Tests
 
+Utiliser Node.js 24 et `npm ci`. Tests unitaires et de mutation : [guide et résultats](docs/MUTATION_TESTING.md).
+
+- `npm run test:unit`
+- `npm run test:mutation`
+- `npm run typecheck:unit`
 - `npm test`
 - `npm run test:ui`
 - `npm run typecheck:e2e`
