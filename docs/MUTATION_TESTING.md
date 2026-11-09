@@ -68,8 +68,32 @@ La première campagne utilise les quatre tests initiaux, portés de `node:test`
 vers Vitest sans changer leurs assertions, avec le même périmètre de mutation.
 Elle mesure donc les tests unitaires initiaux, sans préjuger de la qualité des E2E.
 
-Les mesures et l'analyse des survivants sont détaillées ci-dessous après la
-campagne finale.
+Sur les mêmes **1 522 mutants**, les résultats mesurés sont :
+
+| Campagne | Tests | Tués | Timeouts | Survivants | Non couverts | Score |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Initiale | 4 | 265 | 0 | 220 | 1 037 | 17,41 % |
+| Intermédiaire | 119 | 1 369 | 7 | 142 | 4 | 90,41 % |
+| Finale | 141 | 1 423 | 7 | 90 | 2 | **93,96 %** |
+
+Le score final dépasse le **seuil bloquant de 90 %** demandé. Le score est
+`(tués + timeouts) / (tués + timeouts + survivants + non couverts)`.
+Les six timeouts crypto détectent des boucles rendues non terminantes ; le
+septième détecte l'incrément inversé de la boucle de répétition.
+
+Les compteurs par fichier et l'inventaire des mutants restants sont conservés
+dans [MUTATION_RESULTS.json](MUTATION_RESULTS.json). Les survivants restent
+inclus dans le score : gardes redondantes du parseur, structures initiales
+réécrites avant retour dans les moteurs, conditions équivalentes pour des
+requêtes parsées valides et changement de taille des lots crypto sans changement
+des valeurs produites. Les deux non couverts concernent la garde `Number.isNaN`
+sur un entier déjà contraint par la regex. Cette analyse s'applique aux requêtes
+valides et à un RNG respectant le nombre de valeurs demandé ; elle ne constitue
+pas une preuve générale d'équivalence.
+
+Vérifications locales : 141 tests unitaires et 133 E2E Chromium passent, ainsi que
+les vérifications TypeScript et le build du bot. Le test E2E bonus renforcé a
+également été rejoué avec succès. Firefox et WebKit n'ont pas été exécutés.
 
 ## Corrections des tests
 
@@ -98,9 +122,9 @@ bonus et vérifie aussi les détails retournés.
 
 ## Entretien
 
-Le seuil bloquant de 85 % est fixé sur l'ensemble de ce périmètre ; les repères
+Le seuil bloquant de 90 % est fixé sur l'ensemble de ce périmètre ; les repères
 visuels sont 90 % et 95 %. Il laisse une marge aux mutations équivalentes sans
-masquer les survivants. Il ne garantit pas que chaque fichier dépasse 85 %.
+masquer les survivants. Il ne garantit pas que chaque fichier dépasse 90 %.
 Pour toute évolution, examiner le rapport et ajouter des cas métier avant
 d'envisager une exclusion. Ne pas baisser le seuil simplement pour faire passer
 la CI, ni tester des états impossibles uniquement pour gagner des points.

@@ -13,5 +13,5 @@ export default {
   concurrency: 2,
   timeoutMS: 2000,
   timeoutFactor: 1.5,
-  thresholds: { high: 95, low: 90, break: 85 },
+  thresholds: { high: 95, low: 90, break: 90 },
 };
