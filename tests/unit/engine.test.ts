@@ -19,6 +19,40 @@ const detail = (finalRolls: number[], subtotal: number) => ({
 });
 for (const [name, evaluate] of Object.entries({ core, web })) {
   describe(`${name} engine`, () => {
+    // These calculation variants previously started a browser each time.
+    test.each<{
+      formula: string;
+      batches: { count: number; sides: number; values: number[] }[];
+      options?: { advantageMode?: 'advantage'; successMode?: boolean };
+      total: number;
+      finalRolls: number[];
+    }>([
+      { formula: '1d6 + 4', batches: [{ count: 1, sides: 6, values: [3] }], total: 7, finalRolls: [3] },
+      { formula: '1d20 - 5', batches: [{ count: 1, sides: 20, values: [15] }], total: 10, finalRolls: [15] },
+      { formula: '2d6 + 1d4', batches: [
+        { count: 1, sides: 4, values: [2] }, { count: 2, sides: 6, values: [3, 4] },
+      ], total: 9, finalRolls: [3, 4] },
+      { formula: '1d4 - 3', batches: [{ count: 1, sides: 4, values: [4] }], total: 1, finalRolls: [4] },
+      { formula: '3d6 + 2d4 + 1d8 + 10', batches: [
+        { count: 2, sides: 4, values: [2, 2] }, { count: 3, sides: 6, values: [3, 3, 3] },
+        { count: 1, sides: 8, values: [5] },
+      ], total: 28, finalRolls: [3, 3, 3] },
+      { formula: '2d6', options: { advantageMode: 'advantage' },
+        batches: [{ count: 3, sides: 6, values: [2, 5, 4] }], total: 9, finalRolls: [5, 4] },
+      { formula: '2d6 + 3', options: { successMode: true },
+        batches: [{ count: 2, sides: 6, values: [4, 3] }], total: 4, finalRolls: [4, 3] },
+      { formula: '2d6', options: { successMode: true }, batches: [
+        { count: 2, sides: 6, values: [2, 4] }, { count: 2, sides: 6, values: [6, 2] },
+      ], total: 4, finalRolls: [2, 4] },
+    ])('calculates $formula with $options', async ({ formula, batches, options, total, finalRolls }) => {
+      const drawNumbers = rng(batches);
+      const result = await evaluate(parseFormula(formula), { ...options, drawNumbers });
+      expect(result.total).toBe(total);
+      expect(result.tokenResults[0]?.finalRolls).toEqual(finalRolls);
+      expect(result.totalKind).toBe(options?.successMode ? 'successes' : 'total');
+      expect(drawNumbers).toHaveBeenCalledTimes(batches.length);
+    });
+
     test('pools equal-sided dice without reusing values, adds modifiers and subtracts negative groups', async () => {
       const tokens = parseFormula('2+2d6-1d6+1d4-3');
       const drawNumbers = rng([{ count: 1, sides: 4, values: [2] }, { count: 3, sides: 6, values: [1, 6, 4] }]);

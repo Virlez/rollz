@@ -7,7 +7,8 @@
   "testCounts": {
     "baseline": 4,
     "intermediate": 119,
-    "final": 141
+    "final": 141,
+    "pyramid": 157
   },
   "campaigns": {
     "baseline": {
@@ -147,6 +148,54 @@
         }
       },
       "reportSha256": "a6d4d33966408ae5ec8c4e07a2da5da2248ead7d3d16445ac213bb281adb779c"
+    },
+    "pyramid": {
+      "total": 1522,
+      "counts": {
+        "Killed": 1423,
+        "NoCoverage": 2,
+        "Survived": 90,
+        "Timeout": 7
+      },
+      "score": 93.96,
+      "files": {
+        "app/js/parser.js": {
+          "Killed": 322,
+          "NoCoverage": 1,
+          "Survived": 19
+        },
+        "packages/core/src/parser.ts": {
+          "Killed": 291,
+          "NoCoverage": 1,
+          "Survived": 19
+        },
+        "app/js/engine.js": {
+          "Killed": 320,
+          "Survived": 25
+        },
+        "app/js/random.js": {
+          "Killed": 62,
+          "Survived": 1,
+          "Timeout": 3
+        },
+        "packages/core/src/engine.ts": {
+          "Killed": 320,
+          "Survived": 25
+        },
+        "packages/core/src/limits.ts": {
+          "Killed": 45
+        },
+        "packages/core/src/random.ts": {
+          "Killed": 53,
+          "Survived": 1,
+          "Timeout": 3
+        },
+        "packages/core/src/roll-service.ts": {
+          "Killed": 10,
+          "Timeout": 1
+        }
+      },
+      "reportSha256": "95a6bf1cf874d5749b53ac6c410f806192c3de42a57bdeca6d3bf770032f6029"
     }
   },
   "remainingMutants": [
@@ -866,23 +915,6 @@
     },
     {
       "file": "app/js/engine.js",
-      "id": "11",
-      "status": "Survived",
-      "mutatorName": "ObjectLiteral",
-      "location": {
-        "end": {
-          "column": 8,
-          "line": 66
-        },
-        "start": {
-          "column": 7,
-          "line": 57
-        }
-      },
-      "replacement": "{}"
-    },
-    {
-      "file": "app/js/engine.js",
       "id": "12",
       "status": "Survived",
       "mutatorName": "ArrayDeclaration",
@@ -900,20 +932,20 @@
     },
     {
       "file": "app/js/engine.js",
-      "id": "13",
+      "id": "11",
       "status": "Survived",
-      "mutatorName": "ArrayDeclaration",
+      "mutatorName": "ObjectLiteral",
       "location": {
         "end": {
-          "column": 26,
-          "line": 59
+          "column": 8,
+          "line": 66
         },
         "start": {
-          "column": 24,
-          "line": 59
+          "column": 7,
+          "line": 57
         }
       },
-      "replacement": "[\"Stryker was here\"]"
+      "replacement": "{}"
     },
     {
       "file": "app/js/engine.js",
@@ -928,6 +960,23 @@
         "start": {
           "column": 21,
           "line": 60
+        }
+      },
+      "replacement": "[\"Stryker was here\"]"
+    },
+    {
+      "file": "app/js/engine.js",
+      "id": "13",
+      "status": "Survived",
+      "mutatorName": "ArrayDeclaration",
+      "location": {
+        "end": {
+          "column": 26,
+          "line": 59
+        },
+        "start": {
+          "column": 24,
+          "line": 59
         }
       },
       "replacement": "[\"Stryker was here\"]"
@@ -1580,23 +1629,6 @@
     },
     {
       "file": "packages/core/src/engine.ts",
-      "id": "948",
-      "status": "Survived",
-      "mutatorName": "ConditionalExpression",
-      "location": {
-        "end": {
-          "column": 37,
-          "line": 132
-        },
-        "start": {
-          "column": 21,
-          "line": 132
-        }
-      },
-      "replacement": "true"
-    },
-    {
-      "file": "packages/core/src/engine.ts",
       "id": "949",
       "status": "Survived",
       "mutatorName": "EqualityOperator",
@@ -1611,6 +1643,23 @@
         }
       },
       "replacement": "drawn.length >= 0"
+    },
+    {
+      "file": "packages/core/src/engine.ts",
+      "id": "948",
+      "status": "Survived",
+      "mutatorName": "ConditionalExpression",
+      "location": {
+        "end": {
+          "column": 37,
+          "line": 132
+        },
+        "start": {
+          "column": 21,
+          "line": 132
+        }
+      },
+      "replacement": "true"
     },
     {
       "file": "packages/core/src/engine.ts",
@@ -1714,5 +1763,6 @@
       },
       "replacement": "count + values.length"
     }
-  ]
+  ],
+  "remainingMutantsCampaign": "pyramid"
 }

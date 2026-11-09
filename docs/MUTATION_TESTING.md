@@ -88,7 +88,8 @@ Sur les mêmes **1 522 mutants**, les résultats mesurés sont :
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Initiale | 4 | 265 | 0 | 220 | 1 037 | 17,41 % |
 | Intermédiaire | 119 | 1 369 | 7 | 142 | 4 | 90,41 % |
-| Finale | 141 | 1 423 | 7 | 90 | 2 | **93,96 %** |
+| Avant rééquilibrage | 141 | 1 423 | 7 | 90 | 2 | 93,96 % |
+| Après rééquilibrage | 157 | 1 423 | 7 | 90 | 2 | **93,96 %** |
 
 Le score final dépasse le **seuil bloquant de 90 %** demandé. Le score est
 `(tués + timeouts) / (tués + timeouts + survivants + non couverts)`.
@@ -105,9 +106,12 @@ sur un entier déjà contraint par la regex. Cette analyse s'applique aux requê
 valides et à un RNG respectant le nombre de valeurs demandé ; elle ne constitue
 pas une preuve générale d'équivalence.
 
-Vérifications locales : 141 tests unitaires et 133 E2E Chromium passent, ainsi que
-les vérifications TypeScript et le build du bot. Le test E2E bonus renforcé a
-également été rejoué avec succès. Firefox et WebKit n'ont pas été exécutés.
+Vérifications locales après rééquilibrage : **157 tests unitaires** et **122 E2E
+Chromium** passent, ainsi que les vérifications TypeScript unitaires et E2E. La
+campagne de mutation complète conserve le score de **93,96 %** en **5 min 25 s**,
+avec un seuil bloquant de 90 % et un code de sortie 0. Le build du bot avait été
+validé avant cette réorganisation, qui ne modifie aucune source de production.
+Firefox et WebKit n'ont pas été exécutés localement.
 
 ## Corrections des tests
 
@@ -133,6 +137,48 @@ un nombre différent de dés pairs et impairs. Un bonus de deux dés contenant u
 pair et un impair ne détectait pas l'inversion de la parité : les deux prédicats
 retournaient le même total. Le nouveau scénario compte un pair parmi trois dés
 bonus et vérifie aussi les détails retournés.
+
+## Répartition dans la pyramide de tests
+
+La suite passe de **141 à 157 tests unitaires** et de **133 à 122 E2E par
+navigateur**. Les huit variantes de calcul sont maintenant paramétrées dans
+`tests/unit/engine.test.ts`, et chacune s'exécute contre le moteur web et le
+moteur partagé. Les tirages injectés contrôlent le nombre et les faces des dés,
+les résultats finaux et le nombre d'appels.
+
+| Ancien E2E | Protection conservée |
+| --- | --- |
+| Ajout d'un modificateur : `1d6 + 4` | Cas unitaire : tirage 3, total 7. |
+| Soustraction : `1d20 - 5` | Cas unitaire : tirage 15, total 10. |
+| Somme de groupes : `2d6 + 1d4` | Cas unitaire : tirages 3, 4 et 2, total 9. |
+| Modificateur négatif : `1d4 - 3` | Cas unitaire : tirage 4, total 1. |
+| Grande formule : `3d6 + 2d4 + 1d8 + 10` | Cas unitaire : trois groupes distincts, total 28. |
+| Avantage sur le premier dé de `2d6` | Cas unitaire : tirages 2, 5, 4 ; conserve 5 et 4, total 9. |
+| Modificateur en mode réussites : `2d6 + 3` | Cas unitaire : tirages 4 et 3, total 4. |
+| Comptage du bonus de réussites | Cas unitaire : tirages 2, 4 puis 6, 2, total 4. |
+
+Trois scénarios navigateur redondants sont regroupés :
+
+- le total avec avantage est vérifié dans le test des dés conservé et rejeté ;
+- le total de réussites est vérifié dans le test des styles succès/échec ;
+- le total nul d'échec critique est vérifié dans le test du message « Fumble ».
+
+Ces E2E conservent le clic sur le mode, le vrai service web et l'affichage du
+résultat. Le test de désavantage reste également au niveau navigateur. Les
+répétitions, formules multiples et modes limités à la première formule restent
+testés en E2E, car le service web possède sa propre orchestration, différente du
+service du package partagé.
+
+Les scénarios de responsive, focus/curseur, glisser-déposer, persistance après
+rechargement, récupération après erreur et parcours complets restent en E2E.
+Les tests de validation du builder, des favoris et de l'historique ne sont pas
+réorganisés dans ce premier lot. Le score de mutation porte sur le périmètre
+métier documenté et ne suffit pas à justifier la suppression d'une protection UI.
+
+Le test de centrage mobile conserve ses critères de placement. Les rectangles
+sont désormais lus dans une seule tâche navigateur et les assertions sont
+réessayées pendant la stabilisation, pour éviter de comparer des positions
+mesurées à différents instants de l'animation d'apparition.
 
 ## Entretien
 

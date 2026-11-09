@@ -69,16 +69,6 @@ test.describe('Edge cases', () => {
     await expect(app.resultTotal).toHaveText('77');
   });
 
-  test('large formula (many dice groups) resolves correctly', async ({ page }) => {
-    await mockRandomOrg(page, [3, 3, 3, 2, 2, 5]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.rollFormula('3d6 + 2d4 + 1d8 + 10');
-
-    await expect(app.resultTotal).toHaveText('28');
-  });
-
   test('formula with leading spaces is parsed correctly', async ({ page }) => {
     await mockRandomOrg(page, [3]);
 
