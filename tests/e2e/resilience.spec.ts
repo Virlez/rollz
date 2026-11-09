@@ -3,17 +3,6 @@ import { expect, test } from './support/test';
 import { disableCryptoFallback, mockRandomOrg } from './support/test-helpers';
 
 test.describe('Error handling', () => {
-  test('network error shows error banner', async ({ page }) => {
-    await disableCryptoFallback(page);
-    await page.route(/random\.org\/integers/, route => route.abort());
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.rollFormula('1d6');
-
-    await expect(app.errorBanner).toBeVisible();
-  });
-
   test('error banner is hidden after a successful retry', async ({ page }) => {
     await disableCryptoFallback(page);
 
@@ -43,18 +32,6 @@ test.describe('Error handling', () => {
     await expect(app.errorBanner).toBeHidden();
   });
 
-  test('non-ok HTTP response from random.org shows error banner', async ({ page }) => {
-    await disableCryptoFallback(page);
-    await page.route(/random\.org\/integers/, route =>
-      route.fulfill({ status: 503, body: 'Service Unavailable' })
-    );
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.rollFormula('1d6');
-
-    await expect(app.errorBanner).toBeVisible();
-  });
 });
 
 test.describe('Edge cases', () => {
@@ -67,16 +44,6 @@ test.describe('Edge cases', () => {
     await app.roll();
 
     await expect(app.resultTotal).toHaveText('77');
-  });
-
-  test('formula with leading spaces is parsed correctly', async ({ page }) => {
-    await mockRandomOrg(page, [3]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.fillFormula('  1d6  ');
-
-    await expect(app.rollButton).toBeEnabled();
   });
 
   test('roll result card can be re-rolled without clearing', async ({ page }) => {
@@ -103,16 +70,4 @@ test.describe('Edge cases', () => {
     }
   });
 
-  test('success mode ignores additional dice groups beyond the first', async ({ page }) => {
-    await mockRandomOrg(page, [4, 2, 1, 3]);
-
-    const app = new RollzApp(page);
-    await app.goto();
-    await app.fillFormula('2d6 + 1d8');
-    await app.toggleMode('success');
-    await app.roll();
-
-    await expect(app.resultTotal).toHaveText('2');
-    await expect(page.locator('.breakdown-group.is-ignored')).toHaveCount(1);
-  });
 });

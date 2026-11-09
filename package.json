@@ -9,7 +9,7 @@
   "scripts": {
     "assets:pwa": "powershell -ExecutionPolicy Bypass -File .\\scripts\\generate-pwa-assets.ps1",
     "version:app": "node scripts/bump-app-version.mjs",
-    "test": "npm run test:unit && npm run test:e2e:all",
+    "test": "npm run test:unit && npm run test:integration && npm run test:e2e:all",
     "test:core": "npm run test --workspace @rollz/core",
     "build:bot": "npm run build --workspace @rollz/core && npm run build --workspace @rollz/discord-bot",
     "bot:dev": "npm run dev --workspace @rollz/discord-bot",
@@ -22,7 +22,9 @@
     "ci:e2e": "npm run typecheck:e2e && npm run test:e2e:all",
     "test:unit": "vitest run",
     "test:mutation": "stryker run",
-    "typecheck:unit": "tsc -p tests/tsconfig.unit.json"
+    "typecheck:unit": "tsc -p tests/tsconfig.unit.json",
+    "test:integration": "vitest run --config vitest.integration.config.mts",
+    "typecheck:integration": "tsc -p tests/tsconfig.integration.json"
   },
   "repository": {
     "type": "git",
@@ -40,13 +42,15 @@
     "@playwright/test": "^1.59.1",
     "@stryker-mutator/core": "^10.1.1",
     "@stryker-mutator/vitest-runner": "^10.1.1",
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^25.6.0",
     "http-server": "^14.1.1",
+    "jsdom": "^31.0.0",
     "monocart-coverage-reports": "^2.12.9",
     "typescript": "^6.0.2",
     "vitest": "^5.1.0"
   },
   "engines": {
-    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   }
 }

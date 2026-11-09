@@ -1,4 +1,4 @@
-name: Unit, E2E and mutation tests
+name: Unit, integration, E2E and mutation tests
 
 on:
   pull_request:
@@ -26,6 +26,8 @@ jobs:
       - run: npm ci
       - run: npm run typecheck:unit
       - run: npm run test:unit
+      - run: npm run typecheck:integration
+      - run: npm run test:integration
       - run: npm run build:bot
       - run: npm run typecheck:e2e
 
