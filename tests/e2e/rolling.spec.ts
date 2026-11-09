@@ -455,6 +455,7 @@ test.describe('Roll action — success mode', () => {
     await app.roll();
 
     await expect(app.resultTotal).toHaveText('2');
+    await expect(app.resultBreakdown.locator('.breakdown-bonus .die-result')).toHaveText(['1', '5']);
   });
 
   test('bonus reroll adds its even results', async ({ page }) => {

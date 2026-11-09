@@ -30,3 +30,7 @@ desktop.ini
 .github/agents/
 .github/skills/
 
+
+# Mutation testing artifacts
+.stryker-tmp/
+reports/mutation/
