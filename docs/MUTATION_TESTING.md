@@ -1,17 +1,19 @@
-# Tests unitaires et tests de mutation
+# Tests unitaires, intégration, E2E et mutation
 
 ## Exécution
 
-Utiliser Node.js 24 et les dépendances verrouillées :
+Utiliser Node.js 24.15 ou plus récent dans la branche 24 et les dépendances verrouillées :
 
 ```sh
 npm ci
 npm run typecheck:unit
 npm run test:unit
+npm run typecheck:integration
+npm run test:integration
 npm run test:mutation
 ```
 
-`npm test` lance désormais les tests unitaires puis les tests E2E existants.
+`npm test` lance les tests unitaires, les tests d’intégration puis les tests E2E.
 `npm run test:core` conserve un point d'entrée pour les tests du package partagé.
 Les navigateurs des tests E2E s'installent avec `npx playwright install --with-deps`.
 
@@ -26,10 +28,11 @@ Rapports générés, exclus de Git :
 - `reports/mutation/index.html` : exploration des mutants dans leur source ;
 - `reports/mutation/mutation.json` : résultats complets exploitables par outil.
 
-La CI `.github/workflows/test.yml` vérifie les types, les tests unitaires et le
-build du bot, puis lance les E2E et les mutations dans des jobs séparés en parallèle.
+La CI `.github/workflows/test.yml` vérifie les types et exécute les tests unitaires,
+les tests d’intégration et le build du bot, puis lance les E2E et les mutations
+dans des jobs séparés en parallèle.
 
-| Déclenchement | Tests unitaires, types et build | E2E | Mutations |
+| Déclenchement | Tests unitaires, intégration, types et build | E2E | Mutations |
 | --- | --- | --- | --- |
 | Pull request | Oui | Chromium | Oui, seuil bloquant de 90 % |
 | Push sur `main` | Oui | Chromium, Firefox et WebKit | Oui, seuil bloquant de 90 % |
@@ -181,6 +184,68 @@ Le test de centrage mobile conserve ses critères de placement. Les rectangles
 sont désormais lus dans une seule tâche navigateur et les assertions sont
 réessayées pendant la stabilisation, pour éviter de comparer des positions
 mesurées à différents instants de l'animation d'apparition.
+
+## Tests d’intégration du front
+
+Après le merge de la première PR (`796626afad601dd591a80bf7334239fbca6e65ba`),
+une couche d’intégration remplace **33 E2E** : **157 tests unitaires**, **40 tests
+d’intégration** et **89 E2E par navigateur** constituent la nouvelle répartition.
+Les mesures de mutation et les 122 E2E décrits plus haut sont l’état historique
+avant cette seconde migration.
+
+`vitest.integration.config.mts` sélectionne uniquement `tests/integration/`.
+Chaque test crée une nouvelle fenêtre jsdom à partir du **vrai `app/index.html`**
+et importe le **vrai `app/js/app.js`** après réinitialisation du graphe de modules.
+Les tests utilisent les événements DOM des contrôles et vérifient le résultat
+rendu, les classes, les attributs et le stockage. Aucun module interne, moteur,
+parseur, service de lancer ou fonction de rendu n’est mocké.
+
+Les fenêtres sont fermées après chaque test : DOM, écouteurs, stockage et
+singletons ne sont pas partagés entre scénarios. Le réseau est simulé avec des
+réponses HTTP déterministes ; les tirages attendus vérifient le nombre de dés,
+les faces et le nombre d’appels. Le localStorage est celui de jsdom, sans mock.
+Les indisponibilités réseau/crypto sont injectées à leur frontière. `matchMedia`
+et `scrollIntoView`, non implémentés par jsdom, disposent de substituts minimaux.
+Aucune assertion de géométrie ou de visibilité CSS n’est faite dans cette couche.
+
+| E2E déplacés | Nombre | Tests d’intégration qui les remplacent |
+| --- | ---: | --- |
+| Compteurs, combinaison des dés, sélection et bouton activé | 4 | `builder.test.ts` : événements des boutons de dés, formule, compteurs et aperçu. |
+| Modificateurs et remise à zéro lors de la saisie manuelle | 4 | `builder.test.ts` : boutons +/−, saisie du modificateur et saisie manuelle. |
+| Variantes de validation et remise à zéro de l’aperçu | 6 | `builder.test.ts` : formules valides, invalides et champ vide. |
+| Effacement : bouton désactivé, compteurs et erreur | 3 | `builder.test.ts` : événement clear et état complet après effacement. |
+| Exclusion du mode réussites avec avantage/désavantage | 2 | `builder.test.ts` : les six transitions entre les trois modes. |
+| Avertissements de modes et suppression de l’avertissement | 4 | `builder.test.ts` : avertissements selon formule et mode. |
+| Répétitions, syntaxe sans espace, groupes, portée des modes et syntaxe invalide | 6 | `rolling.test.ts` : rendu de chaque groupe, historique persisté, refus avant HTTP ; syntaxe invalide dans `builder.test.ts`. |
+| Erreurs réseau/HTTP, espaces de saisie, groupes ignorés en mode réussites | 4 | `rolling.test.ts` : erreurs sans historique et contrôles rétablis, groupes ignorés ; espaces dans `builder.test.ts`. |
+
+Des tests d’intégration complémentaires vérifient la persistance des résultats
+dans l’ordre le plus récent d’abord, la récupération après une erreur et l’état
+pendant une réponse HTTP en attente (bouton désactivé, spinner, puis restauration).
+Ils attendent une condition observable, sans délai fixe.
+
+Les E2E gardent un parcours de saisie valide/invalide, la construction classique
+et experte, un lancer simple, la portée des modes dans un lancer répété, le rendu
+avancé, la récupération après erreur, la persistance après rechargement, le
+focus/curseur, le glisser-déposer et le responsive. Les contrôles propres au
+navigateur (PWA, Web Crypto réel, CSS) restent également dans cette couche.
+
+Stryker conserve son périmètre et son runner unitaire : les nouveaux tests
+d’intégration s’exécutent séparément en CI et ne sont pas utilisés pour gonfler
+le score de mutation historique de 93,96 %. Le seuil bloquant reste à 90 %.
+Les sources de production et la planification CI ne sont pas modifiées : aucune
+exécution nocturne n’est ajoutée.
+
+Vérification locale de cette migration : **157 tests unitaires**, **40 intégrations**
+et **89 E2E Chromium** passent. Les trois vérifications TypeScript (unitaire,
+intégration, E2E), le build du bot et actionlint passent également. La suite
+intégration a pris 4,87 s et la suite Chromium 50,8 s sur cet environnement ; ces
+durées ne constituent pas un benchmark comparatif. La campagne de mutation
+n’a pas été rejouée localement pour cette migration, car ses tests, sa
+configuration et ses sources mutées sont inchangés ; elle est exécutée en CI.
+
+Les outils d’intégration nécessitent les versions Node.js déclarées dans
+`package.json` (22.22.2+, 24.15+ dans ces branches LTS, ou 26+). La CI utilise Node 24.
 
 ## Entretien
 
